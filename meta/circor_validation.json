@@ -1,0 +1,151 @@
+{
+ "dataset": "circor-heart-sound-1.0.3",
+ "licence": "ODC-By",
+ "generated": "2026-11-07T12:59:09.833Z",
+ "nPatients": 941,
+ "nRecordings": 3118,
+ "nErrors": 0,
+ "murmurPatient": {
+  "sens": [
+   71,
+   179
+  ],
+  "spec": [
+   687,
+   694
+  ],
+  "unknownFlagged": [
+   1,
+   68
+  ]
+ },
+ "murmurSite": {
+  "sens": [
+   145,
+   487
+  ],
+  "spec": [
+   2466,
+   2475
+  ],
+  "audibleSens": [
+   49,
+   177
+  ]
+ },
+ "byGrade": {
+  "I/VI": [
+   19,
+   104
+  ],
+  "II/VI": [
+   11,
+   28
+  ],
+  "III/VI": [
+   41,
+   46
+  ]
+ },
+ "byTiming": {
+  "Holosystolic": [
+   47,
+   101
+  ],
+  "Early-systolic": [
+   13,
+   59
+  ],
+  "Mid-systolic": [
+   11,
+   17
+  ],
+  "Late-systolic": [
+   0,
+   1
+  ]
+ },
+ "byAge": {
+  "Neonate": [
+   0,
+   1
+  ],
+  "Infant": [
+   3,
+   25
+  ],
+  "Child": [
+   59,
+   132
+  ],
+  "Adolescent": [
+   7,
+   16
+  ]
+ },
+ "diastolic": {
+  "truthN": 16,
+  "detected": [
+   2,
+   16
+  ],
+  "falsePos": [
+   61,
+   3102
+  ]
+ },
+ "s3": {
+  "note": "CirCor does not label S3; rate only, not validated",
+  "rate": [
+   29,
+   3118
+  ]
+ },
+ "segmentation": {
+  "nRecordings": 3118,
+  "s1Recall": [
+   44933,
+   63554
+  ],
+  "s2Recall": [
+   44432,
+   62944
+  ],
+  "s1FalsePos": [
+   10250,
+   63554
+  ],
+  "s1ErrMedianMs": 48.6,
+  "s2ErrMedianMs": 44.7,
+  "tolMs": 100
+ },
+ "gates": {
+  "hrResolved": [
+   3040,
+   3118
+  ],
+  "beatsGE3": [
+   3029,
+   3118
+  ],
+  "quietGE3": [
+   2972,
+   3118
+  ],
+  "sysDiaResolved": [
+   2958,
+   3118
+  ]
+ },
+ "sysDiaByTruth": {
+  "murmur": 2.774,
+  "normal": 1.059
+ },
+ "confounds": [
+  "Browsable cohort over-samples murmurs (70 of 120) vs 19% real prevalence; these figures are from the full set, not the cohort.",
+  "Single auscultation campaign per patient (Campaign field); device and setting not randomised.",
+  "Baseline is another patient's control recording, not the same patient at rest.",
+  "CirCor is paediatric; the adult heart-rate gate is untested here."
+ ],
+ "partial": null
+}

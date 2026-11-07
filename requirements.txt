@@ -1,0 +1,5 @@
+numpy
+scipy
+scikit-learn
+openpyxl
+imageio-ffmpeg   # static ffmpeg binary; used by encode_audio.py when ffmpeg is not on PATH
