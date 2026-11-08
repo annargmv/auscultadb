@@ -69,6 +69,12 @@ python3 pipeline/merge.py --add circor   # append to web/data without rebuilding
 python3 pipeline/circor_discover.py      # -> discover.json['circor'] (threshold/feature analysis)
 python3 pipeline/merge.py --bump         # re-stamp the cache key — ALWAYS last, after any discover script
 
+# apnea / AHI on real nights (Discoveries 12) — PSG-Audio pilot, needs huggingface.co + us.aws.cdn.hf.co
+npm run build:apnea                      # prep 10 patients -> validate -> discover -> --bump
+python3 pipeline/psg_audio_prep.py 10    #   HF mirror -> raw/psg_audio/<pid>/h<k>_{trach,mic}.wav (8 kHz) + meta/psg_audio_index.json
+node pipeline/psg_audio_validate.js      #   page's own computeFlow/scoreFlow per hour -> meta/features/psg_audio.jsonl (resumable)
+python3 pipeline/psg_audio_discover.py   #   -> meta/psg_audio_validation.json + discover.json['apnea']
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -162,7 +168,8 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
 | KAUH (Fraiwan et al., Mendeley jwyy9np4gv v3) | in use: 112 subjects, 12–90 y | CC BY 4.0 | 4 kHz Littmann 3200, resampled to 8 kHz; one site per subject; whole-recording labels, no event timings |
 | CB / emphysema (Fraiwan, Haider & Khassawneh, Mendeley 9hdrddjpny v1) | in use: Discoveries only, 234 recordings | CC BY 4.0 | 86 chronic bronchitis + 148 emphysema, **same Littmann 3200 and protocol as KAUH** — the only device-matched disease comparison here. No healthy recordings and no per-file age/sex/site; filter mode not stated. Not browsable: findings need a baseline and the set has no controls |
 | CirCor DigiScope 1.0.3 (PhysioNet) | in use: 120 browsable patients; all 941 validated | **ODC-By 1.0** (checked: `LICENSE.txt` in the release — attribution, republishing allowed) | 942 patients, 3,163 recordings (3,118 primary takes used; `_1/_2/_3` repeats and `Phc` skipped). 4 kHz, up to 4 valve sites. Per-valve murmur truth plus `.tsv` S1/systole/S2/diastole segmentation — the only set here that can score the cardiac detectors |
-| PhysioNet overnight / sleep sets | wanted | varies | For real apnea/AHI validation against PSG |
+| PSG-Audio (Korompili et al., Sci Data 2021; Science Data Bank 10.11922/sciencedb.00345) | in use: Discoveries 12 only, **pilot of 10 patients / 44 h** | CC BY 4.0 (HF mirror card + scidb page) | 212 adults, Athens sleep lab, PSG scored by technician + physician; tracheal contact mic + ambient mic at 48 kHz in hourly EDF (V3), `.rml` events + **UserStaging** (ignore MachineStaging). Read from the partial HF mirror `dust-systems/psg-audio` (the scidb FTP logins are time-limited). File names literally contain `%5B001%5D` — escape `%` in URLs. **Audio never goes to `web/`** (overnight audio can hold speech) |
+| PhysioNet overnight / sleep sets | wanted | varies | Still useful for healthy sleepers and children — PSG-Audio is ~89 % severe OSA, adults only |
 | ICBHI 2017 | wanted — **not obtainable**, see below | research only | Same devices from children to elderly, so a true lifespan curve; don't republish its audio |
 | HF_Lung | optional | V1_IP CC BY-NC | |
 
@@ -174,10 +181,15 @@ cannot be answered on clips that short and all wait on overnight recordings from
 - breathing rate and heart rate over a whole night rather than one clip;
 - the acoustic AHI checked against a scored sleep study (PSG).
 
-**Apnea / AHI scoring is untested on real data.** `computeFlow` / `scoreFlow` implement the AASM
-rules and pass `npm run test:ahi` (11/11), but that test runs on a *synthetic* file from
-`tests/make_test_audio.py`. Nothing here has been scored against a real night. Two limits are
-structural, not bugs:
+**Apnea / AHI scoring on real nights — measured (PSG-Audio pilot, 10 adults, 44.2 h, shipped thresholds).**
+Tracheal mic: finds **44.8 %** of 1,975 scored events (OA 52 %, H 34 %, CA 25 % of 20, MA 59 %), and **72.5 %** of
+what it scores is real. Patient AHI **under-counts by 26 /h** on average (LoA −52 to −0.2; all 10 under even per PSG
+sleep hour, so it is missed events, not missing TST); rank correlation ρ 0.58 (p 0.08, n.s.); severity class 4/10
+(all misses are one class too low). Ambient mic: 38.4 % / 68.8 %, ρ 0.70 (p 0.02). **Why**: detection tracks how far
+quiet breathing sits above the channel's noise floor (tracheal: 26 % found below the median headroom vs 58 % above,
+ρ 0.53, p < 0.001) — the flow proxy has no noise-floor subtraction, and EDF storage cut the audio to 16 bit. Note
+also that the breath period often falls back to the age norm overnight (autocorrelation finds no rhythm). The
+synthetic `npm run test:ahi` (11/11 + 0 on clean breathing) still passes. Two limits are structural, not bugs:
 - it cannot separate obstructive from central events — airflow sound alone does not carry that;
 - there is no SpO₂ channel, so hypopneas are scored on the airflow drop only, without the
   desaturation criterion the AASM rules also allow.
@@ -193,13 +205,13 @@ only, so it never listens to the audio.
 | # | Entry | Status | Blocker |
 |---|---|---|---|
 | 9 | HeAR embeddings vs hand-made features | blocked | HF token + network; compare against the existing probe (AUC 0.61 pooled, 0.52–0.56 within a release) |
-| 12 | Overnight apnea / AHI vs PSG | blocked | PhysioNet overnight data |
+| 12 | Overnight apnea / AHI vs PSG | **pilot result** (PSG-Audio, 10 patients) | more patients, healthy sleepers, children |
 | 10 | Breath sounds across the lifespan | *has a result*, device-confounded | needs ICBHI (children→elderly on one device) for a true curve |
 | 11 | Adult diseases | *has a result* from KAUH | more adult data would strengthen it; not blocked |
 | 14 | Generalisation across stethoscopes | *has a result* (SPRSound vs KAUH) | per-device recalibration is open work, not missing access |
 | 13 | Murmur / S3 on real heart sounds | **done** — CirCor 1.0.3 ingested and validated | — |
 
-Only 9 and 12 are genuinely waiting on access. 10, 11 and 14 are published with their limits stated;
+Only 9 is genuinely waiting on access; 12 has a pilot result. 10, 11 and 14 are published with their limits stated;
 13 was completed and its result is live.
 
 ## Source notes (checked 2026-11-08)
@@ -286,8 +298,13 @@ arousal channel exists; Levine I–VI used properly.
    - Embed 2-s windows at 16 kHz, mean-pool per patient, then the same linear probe as `person_probe.py`.
    - Compare against the hand-made features: AUC 0.61 pooled, 0.52–0.56 within a release.
 4. **MedGemma** (text and images only, no audio) could draft the written report from the structured findings. 4B needs about 8 GB of RAM.
-5. Make all 860 SPRSound children browsable (currently 191). Uploaded patients are not saved across reloads.
-6. Overnight data → real AHI validation.
+5. **Apnea flow proxy: noise-floor correction.** The PSG-Audio pilot shows missed events are a headroom problem
+   (see "Apnea / AHI scoring on real nights"). Try subtracting the channel's floor (e.g. a low percentile of band
+   RMS) before the 30 % / 90 % ratios. Rule 4: fit on *new* PSG-Audio patients (not the 10 in
+   `meta/psg_audio_index.json`) and report on another fresh set. Changing `computeFlow`/`scoreFlow` does not touch
+   the precomputed SPRSound/KAUH analysis (flow is computed live), but rerun `npm run test:ahi`.
+6. Make all 860 SPRSound children browsable (currently 191). Uploaded patients are not saved across reloads.
+7. Healthy sleepers and children for apnea specificity — PSG-Audio has neither.
 
 ## Publishing as a claude.ai artifact (if asked)
 - The artifact hosts at most **512 files**.
@@ -295,3 +312,8 @@ arousal channel exists; Levine I–VI used properly.
 - Only text and HTML/JSON extensions are served (no `.bin`, no `.mp3`), which is why audio is base64 JSON and the analysis is sharded.
 - Existing artifact: claude.ai/artifact/JawqvH3vX7cXXqbo94SXDB (slug `8e68b339-2080-481b-822f-6581919abf92`).
 - Publish `web/` only. Never publish `raw/`, `build/`, `meta/` or `tests/`.
+
+## Cloud environment
+This repo's sessions run on the personal environment **auscultadb** (not Default): package registries plus
+`huggingface.co`, `cdn-lfs.huggingface.co`, `cas-bridge.xethub.hf.co`, `us.aws.cdn.hf.co` (HF file downloads) and
+`www.scidb.cn`. The HF hosts are also what task 3 (HeAR) needs, together with a token.

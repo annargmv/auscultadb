@@ -1,0 +1,10578 @@
+{
+ "source": {
+  "name": "PSG-Audio (V3)",
+  "mirror": "https://huggingface.co/datasets/dust-systems/psg-audio",
+  "doi": "10.11922/sciencedb.00345",
+  "paper": "10.1038/s41597-021-00977-w",
+  "licence": "CC BY 4.0",
+  "hospital": "Sismanoglio \u2013 Amalia Fleming General Hospital, Athens",
+  "channels": {
+   "trach": "Tracheal contact microphone (Clockaudio CTH100)",
+   "mic": "Ambient microphone ~1 m above bed (Behringer ECM8000)"
+  },
+  "selection": "V3 patients with an .rml and every hourly EDF part in the mirror, sorted by id, first 10"
+ },
+ "patients": [
+  {
+   "pid": "00000999-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 3420.0,
+     "wav": {
+      "trach": "00000999-100507/h1_trach.wav",
+      "mic": "00000999-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 155.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 209.0,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 264.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 295.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 347.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 382.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 415.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 481.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 535.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 592.5,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 647.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 698.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 726.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 765.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 820.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 860.0,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 967.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1000.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1040.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1098.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1132.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1224.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1250.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1301.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1332.0,
+       "dur": 17.0
+      },
+      {
+       "type": "MA",
+       "start": 1388.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1425.0,
+       "dur": 15.0
+      },
+      {
+       "type": "MA",
+       "start": 1468.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1523.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 1548.5,
+       "dur": 26.0
+      },
+      {
+       "type": "H",
+       "start": 1638.0,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 1685.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1756.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 1814.0,
+       "dur": 21.0
+      },
+      {
+       "type": "MA",
+       "start": 1863.5,
+       "dur": 32.0
+      },
+      {
+       "type": "H",
+       "start": 1938.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1965.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 2031.0,
+       "dur": 17.0
+      },
+      {
+       "type": "MA",
+       "start": 2099.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2125.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 2182.0,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 2248.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2276.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 2366.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2401.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2441.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2475.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2506.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 2565.0,
+       "dur": 29.5
+      },
+      {
+       "type": "H",
+       "start": 2651.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 2682.0,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 2745.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 2800.5,
+       "dur": 29.5
+      },
+      {
+       "type": "MA",
+       "start": 2898.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2994.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 3059.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3112.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 3172.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 3226.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3272.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3330.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3370.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3423.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 3492.0,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 3574.5,
+       "dur": 16.0
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3390.0,
+     "wav": {
+      "trach": "00000999-100507/h2_trach.wav",
+      "mic": "00000999-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 56.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 111.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 136.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 177.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 226.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 291.0,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 367.0,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 460.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 538.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 594.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 616.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 690.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 741.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 783.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 836.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 868.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 918.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 961.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1021.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1065.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 1122.0,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 1154.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1226.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1287.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1319.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 1372.5,
+       "dur": 21.0
+      },
+      {
+       "type": "CA",
+       "start": 1496.0,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 1559.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1621.5,
+       "dur": 11.5
+      },
+      {
+       "type": "MA",
+       "start": 1696.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1804.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1878.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1917.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1981.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2041.5,
+       "dur": 19.0
+      },
+      {
+       "type": "CA",
+       "start": 2137.5,
+       "dur": 13.5
+      },
+      {
+       "type": "CA",
+       "start": 2229.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2265.0,
+       "dur": 15.5
+      },
+      {
+       "type": "CA",
+       "start": 2353.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 2440.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 2528.0,
+       "dur": 26.0
+      },
+      {
+       "type": "H",
+       "start": 2583.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 2624.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2799.5,
+       "dur": 22.5
+      },
+      {
+       "type": "H",
+       "start": 2878.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2929.0,
+       "dur": 42.0
+      },
+      {
+       "type": "CA",
+       "start": 3092.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3169.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 3211.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3240.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3312.0,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 3425.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 3490.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3547.0,
+       "dur": 14.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3240.0,
+     "wav": {
+      "trach": "00000999-100507/h3_trach.wav",
+      "mic": "00000999-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 8.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 76.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 118.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 148.0,
+       "dur": 16.0
+      },
+      {
+       "type": "MA",
+       "start": 222.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 251.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 377.0,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 449.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 526.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 555.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 655.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 773.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 866.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1015.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 1235.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1298.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 1420.5,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 1530.5,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 1681.5,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 1777.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2566.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 2628.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2686.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2881.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2929.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 3051.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3279.5,
+       "dur": 11.5
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3600.0,
+     "sleep": 3060.0,
+     "wav": {
+      "trach": "00000999-100507/h4_trach.wav",
+      "mic": "00000999-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "CA",
+       "start": 27.5,
+       "dur": 12.0
+      },
+      {
+       "type": "CA",
+       "start": 105.5,
+       "dur": 13.5
+      },
+      {
+       "type": "MA",
+       "start": 180.0,
+       "dur": 12.0
+      },
+      {
+       "type": "MA",
+       "start": 219.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 249.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 334.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 371.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 395.0,
+       "dur": 17.0
+      },
+      {
+       "type": "MA",
+       "start": 457.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 493.0,
+       "dur": 20.0
+      },
+      {
+       "type": "MA",
+       "start": 546.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 590.5,
+       "dur": 21.0
+      },
+      {
+       "type": "MA",
+       "start": 736.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 794.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 877.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 916.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1048.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1135.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1196.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1601.0,
+       "dur": 13.0
+      },
+      {
+       "type": "CA",
+       "start": 1640.5,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 1691.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1773.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 1834.5,
+       "dur": 15.5
+      },
+      {
+       "type": "MA",
+       "start": 1875.0,
+       "dur": 16.5
+      },
+      {
+       "type": "MA",
+       "start": 1953.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2024.0,
+       "dur": 15.0
+      },
+      {
+       "type": "MA",
+       "start": 2064.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 2094.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2124.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2159.0,
+       "dur": 18.5
+      },
+      {
+       "type": "CA",
+       "start": 2349.5,
+       "dur": 10.0
+      },
+      {
+       "type": "CA",
+       "start": 2442.0,
+       "dur": 11.0
+      },
+      {
+       "type": "CA",
+       "start": 2487.5,
+       "dur": 17.0
+      },
+      {
+       "type": "CA",
+       "start": 2529.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2580.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2618.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2810.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 2854.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 2882.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2916.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2976.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 3062.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3094.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3136.5,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 3176.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3222.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 3266.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 3304.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 3327.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3377.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3423.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 3461.5,
+       "dur": 13.5
+      }
+     ]
+    },
+    {
+     "k": 5,
+     "start": 14400.0,
+     "dur": 501.0,
+     "sleep": 420.0,
+     "wav": {
+      "trach": "00000999-100507/h5_trach.wav",
+      "mic": "00000999-100507/h5_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 31.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 133.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 262.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 311.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 358.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 394.5,
+       "dur": 11.5
+      }
+     ]
+    }
+   ],
+   "recorded": 14901.0,
+   "events": 205,
+   "sleep": 13530.0
+  },
+  {
+   "pid": "00001006-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 3510.0,
+     "wav": {
+      "trach": "00001006-100507/h1_trach.wav",
+      "mic": "00001006-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 401.0,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 456.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 493.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 540.5,
+       "dur": 40.0
+      },
+      {
+       "type": "OA",
+       "start": 600.5,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 663.5,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 705.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 751.5,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 814.5,
+       "dur": 31.5
+      },
+      {
+       "type": "MA",
+       "start": 866.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 927.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 987.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 1037.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 1091.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 1209.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1255.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1448.5,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 1514.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1577.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 1971.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2060.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 2130.0,
+       "dur": 27.0
+      },
+      {
+       "type": "H",
+       "start": 2186.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 2250.5,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 2314.5,
+       "dur": 20.5
+      },
+      {
+       "type": "H",
+       "start": 2423.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2475.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 2749.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 2819.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2844.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3125.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 3167.0,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 3226.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 3274.5,
+       "dur": 82.0
+      },
+      {
+       "type": "OA",
+       "start": 3392.5,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 3458.5,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 3513.0,
+       "dur": 103.0
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3540.0,
+     "wav": {
+      "trach": "00001006-100507/h2_trach.wav",
+      "mic": "00001006-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 160.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 211.5,
+       "dur": 38.5
+      },
+      {
+       "type": "OA",
+       "start": 276.5,
+       "dur": 59.5
+      },
+      {
+       "type": "OA",
+       "start": 366.5,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 437.0,
+       "dur": 50.0
+      },
+      {
+       "type": "OA",
+       "start": 520.0,
+       "dur": 41.0
+      },
+      {
+       "type": "OA",
+       "start": 599.5,
+       "dur": 52.0
+      },
+      {
+       "type": "OA",
+       "start": 681.5,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 756.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 820.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 877.5,
+       "dur": 85.0
+      },
+      {
+       "type": "OA",
+       "start": 988.0,
+       "dur": 69.0
+      },
+      {
+       "type": "OA",
+       "start": 1092.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1155.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 1210.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1277.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 1558.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1598.5,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 1684.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1717.0,
+       "dur": 22.0
+      },
+      {
+       "type": "H",
+       "start": 1791.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1848.0,
+       "dur": 21.5
+      },
+      {
+       "type": "H",
+       "start": 1908.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1954.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 2002.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2093.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2144.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2275.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2387.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2593.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2659.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 2715.5,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 2772.0,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 2818.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 3089.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 3135.0,
+       "dur": 33.0
+      },
+      {
+       "type": "OA",
+       "start": 3196.0,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 3252.5,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 3324.0,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 3380.5,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 3439.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 3492.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 3564.0,
+       "dur": 13.0
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3600.0,
+     "wav": {
+      "trach": "00001006-100507/h3_trach.wav",
+      "mic": "00001006-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 18.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 59.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 112.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 169.5,
+       "dur": 86.5
+      },
+      {
+       "type": "MA",
+       "start": 299.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 337.0,
+       "dur": 16.5
+      },
+      {
+       "type": "MA",
+       "start": 374.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 421.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 464.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 531.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 577.5,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 638.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 690.0,
+       "dur": 57.0
+      },
+      {
+       "type": "OA",
+       "start": 783.0,
+       "dur": 38.0
+      },
+      {
+       "type": "OA",
+       "start": 878.5,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 964.5,
+       "dur": 52.0
+      },
+      {
+       "type": "OA",
+       "start": 1064.0,
+       "dur": 38.0
+      },
+      {
+       "type": "OA",
+       "start": 1144.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 1209.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 1284.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1335.5,
+       "dur": 57.5
+      },
+      {
+       "type": "H",
+       "start": 1434.0,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 1501.0,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 1561.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2003.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2052.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 2225.5,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 2316.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2392.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 2635.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 2706.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 2765.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2835.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 2883.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3000.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 3206.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 3275.5,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 3334.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 3435.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 3494.0,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 3521.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 3572.0,
+       "dur": 13.0
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3515.0,
+     "sleep": 3060.0,
+     "wav": {
+      "trach": "00001006-100507/h4_trach.wav",
+      "mic": "00001006-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 161.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 211.0,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 250.0,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 302.5,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 349.5,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 427.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 470.5,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 519.5,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 571.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 635.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 698.0,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 751.5,
+       "dur": 33.5
+      },
+      {
+       "type": "H",
+       "start": 820.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 892.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 949.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 1011.5,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 1134.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 1194.0,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 1225.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1251.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 1311.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1363.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 1409.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1457.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1484.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1508.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1554.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 1602.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 1646.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1697.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1725.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 1787.0,
+       "dur": 27.0
+      },
+      {
+       "type": "H",
+       "start": 1843.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1902.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1948.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1987.0,
+       "dur": 25.5
+      },
+      {
+       "type": "CA",
+       "start": 2301.0,
+       "dur": 21.0
+      },
+      {
+       "type": "CA",
+       "start": 2500.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2767.0,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 2794.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3137.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3197.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3237.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3287.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3353.0,
+       "dur": 13.0
+      }
+     ]
+    }
+   ],
+   "recorded": 14315.0,
+   "events": 167,
+   "sleep": 13710.0
+  },
+  {
+   "pid": "00001014-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 3270.0,
+     "wav": {
+      "trach": "00001014-100507/h1_trach.wav",
+      "mic": "00001014-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 173.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 214.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 259.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 652.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 681.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 713.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 742.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 795.0,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 834.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 870.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 901.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 927.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 969.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1003.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1028.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1049.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1109.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1133.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1169.0,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 1242.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1339.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1414.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1447.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1521.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1548.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1570.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1595.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1621.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1641.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1664.0,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 1693.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 1729.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1761.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1789.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1815.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1842.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 1875.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1905.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1938.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1970.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1992.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2018.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 2061.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2119.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2179.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 2214.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2237.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 2274.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2307.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2330.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2372.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2392.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2434.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2472.5,
+       "dur": 20.5
+      },
+      {
+       "type": "H",
+       "start": 2518.0,
+       "dur": 21.0
+      },
+      {
+       "type": "H",
+       "start": 2558.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2630.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2718.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2753.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2958.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3314.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3368.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3411.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3431.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3535.0,
+       "dur": 11.0
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3240.0,
+     "wav": {
+      "trach": "00001014-100507/h2_trach.wav",
+      "mic": "00001014-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 223.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 309.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 360.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 579.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 664.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 694.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 768.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 794.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 828.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 862.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 884.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 914.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 957.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 990.0,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 1095.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1123.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1149.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1180.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1205.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 1236.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1275.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1348.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1372.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1403.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1429.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1458.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1488.5,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 1525.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1557.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1588.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1614.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1646.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1682.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 1720.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 1752.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 1790.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1827.0,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 1868.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1901.0,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 1952.5,
+       "dur": 11.5
+      },
+      {
+       "type": "CA",
+       "start": 2072.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 2914.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2975.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 3228.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 3257.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3288.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 3558.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3591.0,
+       "dur": 11.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3600.0,
+     "wav": {
+      "trach": "00001014-100507/h3_trach.wav",
+      "mic": "00001014-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 19.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 62.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 87.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 114.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 147.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 191.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 223.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 253.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 286.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 318.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 349.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 382.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 411.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 442.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 485.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 518.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 555.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 595.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 624.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 656.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 690.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 721.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 757.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 814.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 845.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 946.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 976.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1016.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1073.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1141.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1455.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1486.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1509.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1542.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1576.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1607.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1642.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1677.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1715.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 1753.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 1792.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1828.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1880.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1925.5,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 1972.0,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 2019.0,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 2062.5,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2103.5,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 2153.0,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 2205.0,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 2252.5,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 2308.5,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2348.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2403.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 2434.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 2483.5,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 2530.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2577.5,
+       "dur": 29.0
+      },
+      {
+       "type": "H",
+       "start": 2655.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2680.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2721.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2748.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2779.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 2811.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2839.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 2867.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 2904.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2935.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 2973.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 3004.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 3043.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 3079.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 3120.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 3163.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 3196.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3228.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 3264.0,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 3305.5,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 3345.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 3389.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 3428.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 3473.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 3511.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 3548.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 3580.5,
+       "dur": 18.0
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 2268.0,
+     "sleep": 2238.0,
+     "wav": {
+      "trach": "00001014-100507/h4_trach.wav",
+      "mic": "00001014-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 12.0,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 44.5,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 79.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 117.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 160.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 196.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 235.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 275.5,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 312.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 348.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 390.0,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 423.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 462.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 502.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 539.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 574.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 614.5,
+       "dur": 25.5
+      },
+      {
+       "type": "MA",
+       "start": 658.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 704.5,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 740.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 784.5,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 822.0,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 856.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 902.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 945.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 983.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1017.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1052.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1086.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1129.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1179.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 1231.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1277.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1396.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1496.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1523.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1553.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1603.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1643.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1676.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 1715.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1769.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1810.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1847.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1900.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1920.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1975.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2005.5,
+       "dur": 15.0
+      },
+      {
+       "type": "MA",
+       "start": 2033.0,
+       "dur": 17.0
+      },
+      {
+       "type": "MA",
+       "start": 2069.0,
+       "dur": 23.5
+      },
+      {
+       "type": "MA",
+       "start": 2109.0,
+       "dur": 25.5
+      },
+      {
+       "type": "MA",
+       "start": 2149.0,
+       "dur": 29.5
+      },
+      {
+       "type": "MA",
+       "start": 2195.0,
+       "dur": 24.0
+      },
+      {
+       "type": "MA",
+       "start": 2236.5,
+       "dur": 26.5
+      }
+     ]
+    }
+   ],
+   "recorded": 13068.0,
+   "events": 252,
+   "sleep": 12348.0
+  },
+  {
+   "pid": "00001016-100507",
+   "sex": "Female",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 3270.0,
+     "wav": {
+      "trach": "00001016-100507/h1_trach.wav",
+      "mic": "00001016-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 469.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1530.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1672.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1722.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 2268.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2356.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2421.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 2647.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2922.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2990.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 3021.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 3043.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 3076.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3101.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 3122.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3149.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 3179.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3199.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3241.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3405.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 3443.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3477.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3503.5,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 3545.0,
+       "dur": 13.5
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3600.0,
+     "wav": {
+      "trach": "00001016-100507/h2_trach.wav",
+      "mic": "00001016-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 87.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 387.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 423.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 543.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1650.0,
+       "dur": 20.0
+      },
+      {
+       "type": "H",
+       "start": 2487.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2532.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2626.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2688.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2820.0,
+       "dur": 10.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3600.0,
+     "wav": {
+      "trach": "00001016-100507/h3_trach.wav",
+      "mic": "00001016-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "MA",
+       "start": 632.0,
+       "dur": 12.5
+      },
+      {
+       "type": "MA",
+       "start": 1805.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1910.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1973.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 1999.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2110.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2487.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2513.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3100.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3145.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3196.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3331.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 3580.0,
+       "dur": 12.0
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3600.0,
+     "sleep": 3570.0,
+     "wav": {
+      "trach": "00001016-100507/h4_trach.wav",
+      "mic": "00001016-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 32.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 103.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 130.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 256.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 294.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 371.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 415.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 519.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 546.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 571.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 607.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 651.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 737.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 757.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 820.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 844.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 863.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 883.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 959.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 980.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1002.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1026.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1077.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1096.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1183.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1228.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1253.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1345.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1465.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1491.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1516.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1537.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1554.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1576.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1606.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1632.0,
+       "dur": 14.5
+      },
+      {
+       "type": "MA",
+       "start": 1711.5,
+       "dur": 12.5
+      },
+      {
+       "type": "MA",
+       "start": 2636.5,
+       "dur": 18.0
+      }
+     ]
+    },
+    {
+     "k": 5,
+     "start": 14400.0,
+     "dur": 3600.0,
+     "sleep": 3540.0,
+     "wav": {
+      "trach": "00001016-100507/h5_trach.wav",
+      "mic": "00001016-100507/h5_mic.wav"
+     },
+     "events": [
+      {
+       "type": "MA",
+       "start": 691.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 716.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 1475.0,
+       "dur": 20.0
+      },
+      {
+       "type": "CA",
+       "start": 2390.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2435.5,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 2470.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2728.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2844.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 2877.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2904.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3004.0,
+       "dur": 10.0
+      }
+     ]
+    },
+    {
+     "k": 6,
+     "start": 18000.0,
+     "dur": 3600.0,
+     "sleep": 3540.0,
+     "wav": {
+      "trach": "00001016-100507/h6_trach.wav",
+      "mic": "00001016-100507/h6_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 379.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 1745.0,
+       "dur": 13.0
+      },
+      {
+       "type": "MA",
+       "start": 2332.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 2514.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2551.5,
+       "dur": 12.5
+      },
+      {
+       "type": "MA",
+       "start": 2616.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2655.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 2724.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3414.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 3434.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 3460.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3531.5,
+       "dur": 11.0
+      }
+     ]
+    },
+    {
+     "k": 7,
+     "start": 21600.0,
+     "dur": 244.0,
+     "sleep": 244.0,
+     "wav": {
+      "trach": "00001016-100507/h7_trach.wav",
+      "mic": "00001016-100507/h7_mic.wav"
+     },
+     "events": []
+    }
+   ],
+   "recorded": 21844.0,
+   "events": 108,
+   "sleep": 21364.0
+  },
+  {
+   "pid": "00001018-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 2250.0,
+     "wav": {
+      "trach": "00001018-100507/h1_trach.wav",
+      "mic": "00001018-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 713.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 753.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1140.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2170.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2205.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2231.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2277.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2303.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2326.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2374.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2397.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2421.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2443.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2470.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2492.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2512.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2545.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2580.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2616.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2637.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2655.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2682.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 2698.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2719.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2738.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2774.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2795.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2833.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2856.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2873.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2894.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2929.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2963.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2994.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3011.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3040.0,
+       "dur": 13.0
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3090.0,
+     "wav": {
+      "trach": "00001018-100507/h2_trach.wav",
+      "mic": "00001018-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 389.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 411.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 478.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 515.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 542.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 578.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 610.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 652.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 751.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 778.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 798.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 821.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 844.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 864.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 891.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 912.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 930.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 954.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1263.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1340.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1358.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1388.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1585.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1986.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2329.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2874.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3072.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3216.0,
+       "dur": 10.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3540.0,
+     "wav": {
+      "trach": "00001018-100507/h3_trach.wav",
+      "mic": "00001018-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 150.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 195.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 217.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 237.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 257.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 283.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 305.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 327.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 352.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 372.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 399.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 418.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 441.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 468.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 493.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 515.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 535.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 555.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 578.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 614.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 633.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 653.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 688.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 708.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 730.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 754.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 774.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 797.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 820.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 841.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 863.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 883.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 908.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 926.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 950.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 973.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 996.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1016.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1040.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1063.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1087.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1110.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1129.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1149.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1174.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1197.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 1236.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1262.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1281.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1308.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1328.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 1351.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1371.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1398.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1419.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1459.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1501.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1526.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1553.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1582.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1609.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1636.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1663.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1691.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1787.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1808.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1828.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 1852.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1983.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2006.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2045.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3436.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3472.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 3553.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 3572.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3594.5,
+       "dur": 11.0
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3600.0,
+     "sleep": 3090.0,
+     "wav": {
+      "trach": "00001018-100507/h4_trach.wav",
+      "mic": "00001018-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 16.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 63.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 155.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 175.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 199.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 281.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 304.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 366.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 384.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 587.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1123.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1157.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1182.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1205.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1230.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1253.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1274.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1296.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1365.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1414.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1477.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1506.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1530.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1551.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1649.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1671.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1693.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1716.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1744.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1773.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1795.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1897.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1920.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1946.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1966.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1988.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2007.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2026.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2047.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2075.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2105.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 2138.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2180.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2200.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2792.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2820.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2871.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2912.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2936.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3144.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3164.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3185.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 3208.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3231.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3255.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3280.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3301.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3326.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3353.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 3400.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3421.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3444.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3570.0,
+       "dur": 10.0
+      }
+     ]
+    },
+    {
+     "k": 5,
+     "start": 14400.0,
+     "dur": 869.0,
+     "sleep": 840.0,
+     "wav": {
+      "trach": "00001018-100507/h5_trach.wav",
+      "mic": "00001018-100507/h5_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 169.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 317.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 340.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 387.0,
+       "dur": 10.0
+      }
+     ]
+    }
+   ],
+   "recorded": 15269.0,
+   "events": 207,
+   "sleep": 12810.0
+  },
+  {
+   "pid": "00001026-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 2670.0,
+     "wav": {
+      "trach": "00001026-100507/h1_trach.wav",
+      "mic": "00001026-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 823.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 865.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1146.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1184.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1248.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1320.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1345.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1384.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1414.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1464.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1496.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1522.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1547.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 1579.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1609.5,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 1666.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1690.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1715.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1750.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1787.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1813.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1844.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1888.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1919.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1939.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 1972.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 2002.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2028.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2052.0,
+       "dur": 17.5
+      },
+      {
+       "type": "MA",
+       "start": 2088.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 2124.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 2159.5,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 2201.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2254.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 2277.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2301.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 2331.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 2369.0,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 2429.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 2461.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 2492.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 2546.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2578.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 2620.5,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2678.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2713.5,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2750.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2782.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 2821.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 2865.5,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 2908.0,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 2963.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 2978.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 2993.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 3009.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 3027.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 3065.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 3105.5,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 3139.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 3180.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 3206.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3240.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 3264.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 3285.0,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 3328.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 3359.5,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 3422.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 3442.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 3475.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 3512.0,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 3554.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 3595.0,
+       "dur": 36.0
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3570.0,
+     "wav": {
+      "trach": "00001026-100507/h2_trach.wav",
+      "mic": "00001026-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 47.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 75.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 106.5,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 158.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 191.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 227.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 266.5,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 306.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 342.5,
+       "dur": 34.0
+      },
+      {
+       "type": "OA",
+       "start": 394.5,
+       "dur": 33.0
+      },
+      {
+       "type": "OA",
+       "start": 450.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 474.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 501.0,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 541.5,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 586.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 621.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 660.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 700.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 741.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 786.5,
+       "dur": 32.5
+      },
+      {
+       "type": "MA",
+       "start": 839.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 867.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 900.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 933.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 970.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1013.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1050.0,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 1085.5,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 1124.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 1166.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 1207.0,
+       "dur": 34.0
+      },
+      {
+       "type": "OA",
+       "start": 1267.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 1302.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 1330.5,
+       "dur": 34.0
+      },
+      {
+       "type": "OA",
+       "start": 1377.0,
+       "dur": 39.0
+      },
+      {
+       "type": "OA",
+       "start": 1425.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 1487.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1508.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1529.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1552.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 1579.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1606.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1646.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1687.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1724.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1757.5,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 1806.0,
+       "dur": 36.0
+      },
+      {
+       "type": "OA",
+       "start": 1856.0,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 1900.5,
+       "dur": 31.5
+      },
+      {
+       "type": "OA",
+       "start": 1948.0,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 1992.0,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 2037.0,
+       "dur": 36.5
+      },
+      {
+       "type": "OA",
+       "start": 2088.5,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 2137.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 2184.5,
+       "dur": 38.0
+      },
+      {
+       "type": "OA",
+       "start": 2233.5,
+       "dur": 37.5
+      },
+      {
+       "type": "OA",
+       "start": 2283.5,
+       "dur": 33.5
+      },
+      {
+       "type": "OA",
+       "start": 2330.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 2377.0,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 2426.0,
+       "dur": 35.0
+      },
+      {
+       "type": "OA",
+       "start": 2474.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 2505.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 2538.5,
+       "dur": 33.0
+      },
+      {
+       "type": "MA",
+       "start": 2603.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 2630.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 2669.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 2710.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2744.0,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 2795.5,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 2847.0,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 2885.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 2922.0,
+       "dur": 34.0
+      },
+      {
+       "type": "OA",
+       "start": 2968.0,
+       "dur": 31.5
+      },
+      {
+       "type": "OA",
+       "start": 3012.5,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 3060.0,
+       "dur": 33.5
+      },
+      {
+       "type": "OA",
+       "start": 3107.0,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 3156.0,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 3204.0,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 3243.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 3290.5,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 3331.0,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 3373.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 3412.0,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 3448.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 3500.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 3547.5,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 3587.5,
+       "dur": 34.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3600.0,
+     "wav": {
+      "trach": "00001026-100507/h3_trach.wav",
+      "mic": "00001026-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 34.5,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 76.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 122.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 157.0,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 192.5,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 241.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 270.0,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 297.5,
+       "dur": 33.5
+      },
+      {
+       "type": "OA",
+       "start": 348.0,
+       "dur": 33.0
+      },
+      {
+       "type": "OA",
+       "start": 394.5,
+       "dur": 33.0
+      },
+      {
+       "type": "OA",
+       "start": 441.5,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 487.5,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 537.5,
+       "dur": 33.0
+      },
+      {
+       "type": "OA",
+       "start": 588.0,
+       "dur": 36.0
+      },
+      {
+       "type": "OA",
+       "start": 642.5,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 689.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 735.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 778.5,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 818.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 854.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 897.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 942.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 979.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1021.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 1070.5,
+       "dur": 35.0
+      },
+      {
+       "type": "OA",
+       "start": 1120.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 1172.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1220.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 1270.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 1317.5,
+       "dur": 33.5
+      },
+      {
+       "type": "OA",
+       "start": 1368.5,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1406.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 1438.5,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 1482.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 1523.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1560.0,
+       "dur": 19.0
+      },
+      {
+       "type": "H",
+       "start": 1592.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1613.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1648.5,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 1697.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1724.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 1778.0,
+       "dur": 26.0
+      },
+      {
+       "type": "MA",
+       "start": 1817.0,
+       "dur": 54.0
+      },
+      {
+       "type": "MA",
+       "start": 1887.5,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 1932.5,
+       "dur": 25.0
+      },
+      {
+       "type": "MA",
+       "start": 1970.0,
+       "dur": 38.0
+      },
+      {
+       "type": "OA",
+       "start": 2021.5,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 2070.5,
+       "dur": 37.5
+      },
+      {
+       "type": "OA",
+       "start": 2123.0,
+       "dur": 42.0
+      },
+      {
+       "type": "MA",
+       "start": 2178.0,
+       "dur": 35.0
+      },
+      {
+       "type": "OA",
+       "start": 2226.5,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 2268.5,
+       "dur": 29.5
+      },
+      {
+       "type": "MA",
+       "start": 2313.0,
+       "dur": 39.5
+      },
+      {
+       "type": "OA",
+       "start": 2364.5,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 2414.5,
+       "dur": 38.0
+      },
+      {
+       "type": "OA",
+       "start": 2468.0,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 2505.5,
+       "dur": 40.0
+      },
+      {
+       "type": "OA",
+       "start": 2558.5,
+       "dur": 42.0
+      },
+      {
+       "type": "OA",
+       "start": 2612.5,
+       "dur": 36.0
+      },
+      {
+       "type": "OA",
+       "start": 2685.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2713.0,
+       "dur": 14.0
+      },
+      {
+       "type": "MA",
+       "start": 2744.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2777.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2815.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 2863.5,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 2916.5,
+       "dur": 22.0
+      },
+      {
+       "type": "MA",
+       "start": 2961.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 3010.0,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 3056.5,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 3108.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 3154.0,
+       "dur": 33.5
+      },
+      {
+       "type": "OA",
+       "start": 3205.5,
+       "dur": 25.5
+      },
+      {
+       "type": "MA",
+       "start": 3254.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 3299.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 3335.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 3387.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 3433.0,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 3477.0,
+       "dur": 23.5
+      },
+      {
+       "type": "MA",
+       "start": 3523.5,
+       "dur": 30.5
+      },
+      {
+       "type": "MA",
+       "start": 3571.5,
+       "dur": 28.5
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 2576.0,
+     "sleep": 2550.0,
+     "wav": {
+      "trach": "00001026-100507/h4_trach.wav",
+      "mic": "00001026-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 20.5,
+       "dur": 27.0
+      },
+      {
+       "type": "MA",
+       "start": 66.5,
+       "dur": 33.0
+      },
+      {
+       "type": "MA",
+       "start": 114.5,
+       "dur": 36.5
+      },
+      {
+       "type": "OA",
+       "start": 168.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 214.0,
+       "dur": 38.5
+      },
+      {
+       "type": "MA",
+       "start": 271.5,
+       "dur": 28.5
+      },
+      {
+       "type": "H",
+       "start": 317.5,
+       "dur": 30.5
+      },
+      {
+       "type": "MA",
+       "start": 366.0,
+       "dur": 33.5
+      },
+      {
+       "type": "H",
+       "start": 418.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 461.0,
+       "dur": 21.0
+      },
+      {
+       "type": "MA",
+       "start": 507.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 557.0,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 603.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 648.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 692.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 741.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 777.5,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 816.0,
+       "dur": 31.5
+      },
+      {
+       "type": "OA",
+       "start": 863.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 906.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 952.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 993.5,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 1040.0,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 1084.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 1123.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 1167.0,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 1210.0,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 1254.0,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 1300.5,
+       "dur": 35.0
+      },
+      {
+       "type": "OA",
+       "start": 1351.0,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 1396.5,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 1442.0,
+       "dur": 26.5
+      },
+      {
+       "type": "H",
+       "start": 1487.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1529.5,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1575.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 1621.0,
+       "dur": 29.5
+      },
+      {
+       "type": "MA",
+       "start": 1667.5,
+       "dur": 16.0
+      },
+      {
+       "type": "MA",
+       "start": 1714.0,
+       "dur": 24.5
+      },
+      {
+       "type": "MA",
+       "start": 1760.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 1814.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1855.0,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 1899.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 1944.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1984.5,
+       "dur": 19.0
+      },
+      {
+       "type": "MA",
+       "start": 2030.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 2072.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 2114.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 2157.5,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 2204.5,
+       "dur": 28.5
+      },
+      {
+       "type": "MA",
+       "start": 2247.5,
+       "dur": 33.0
+      },
+      {
+       "type": "H",
+       "start": 2297.0,
+       "dur": 26.5
+      },
+      {
+       "type": "H",
+       "start": 2341.0,
+       "dur": 25.0
+      },
+      {
+       "type": "H",
+       "start": 2380.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 2420.5,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2463.0,
+       "dur": 24.5
+      },
+      {
+       "type": "MA",
+       "start": 2505.0,
+       "dur": 27.0
+      }
+     ]
+    }
+   ],
+   "recorded": 13376.0,
+   "events": 295,
+   "sleep": 12390.0
+  },
+  {
+   "pid": "00001028-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 2730.0,
+     "wav": {
+      "trach": "00001028-100507/h1_trach.wav",
+      "mic": "00001028-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 284.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2379.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2840.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 2997.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3084.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3354.0,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 3391.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3417.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3459.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 3496.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3529.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3562.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3588.5,
+       "dur": 12.5
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3210.0,
+     "wav": {
+      "trach": "00001028-100507/h2_trach.wav",
+      "mic": "00001028-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 21.5,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 58.5,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 106.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 134.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 167.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 211.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 254.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 285.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 306.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 345.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 381.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 425.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 454.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 491.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 531.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 567.0,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 613.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 635.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 665.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 699.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 729.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 760.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 797.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 825.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1960.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2611.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2726.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2747.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2783.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2816.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2944.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2972.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3074.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3099.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3145.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3244.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3395.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3422.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3452.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 3484.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 3512.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 3544.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3573.0,
+       "dur": 15.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3510.0,
+     "wav": {
+      "trach": "00001028-100507/h3_trach.wav",
+      "mic": "00001028-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 7.0,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 54.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 90.0,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 184.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 218.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 872.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1544.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 1589.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1752.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1784.0,
+       "dur": 11.0
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3600.0,
+     "sleep": 3330.0,
+     "wav": {
+      "trach": "00001028-100507/h4_trach.wav",
+      "mic": "00001028-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 515.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 550.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 585.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 621.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 714.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 752.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 778.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 815.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 843.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 867.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 895.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 923.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 952.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 976.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1014.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1051.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1076.0,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 1171.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1197.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1231.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 1285.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1317.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1348.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1382.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1412.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1461.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1501.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1528.5,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 1568.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1602.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 1630.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1671.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1696.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1718.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1796.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1829.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1880.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1904.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1925.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1961.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1992.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2025.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2047.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2083.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2112.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2138.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2162.5,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 2201.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 2239.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2277.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2318.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 2361.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 2394.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 2437.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2467.0,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 2506.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 2539.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2568.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 2600.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 2671.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 2722.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2755.0,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 2797.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2830.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2955.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3002.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 3034.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3066.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3139.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 3199.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3229.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3251.0,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 3288.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 3318.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 3359.5,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 3454.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 3483.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3562.0,
+       "dur": 12.5
+      }
+     ]
+    },
+    {
+     "k": 5,
+     "start": 14400.0,
+     "dur": 3600.0,
+     "sleep": 3510.0,
+     "wav": {
+      "trach": "00001028-100507/h5_trach.wav",
+      "mic": "00001028-100507/h5_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 114.5,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 158.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 192.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 426.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 446.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 477.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 502.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 532.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 564.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 591.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 621.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 650.5,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 690.5,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 723.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 758.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 785.5,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 1482.0,
+       "dur": 25.5
+      },
+      {
+       "type": "H",
+       "start": 1661.0,
+       "dur": 29.5
+      },
+      {
+       "type": "H",
+       "start": 1747.5,
+       "dur": 24.0
+      },
+      {
+       "type": "H",
+       "start": 1846.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 1987.5,
+       "dur": 21.5
+      },
+      {
+       "type": "H",
+       "start": 2056.0,
+       "dur": 39.5
+      },
+      {
+       "type": "H",
+       "start": 2122.0,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 2214.0,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 2296.5,
+       "dur": 20.0
+      },
+      {
+       "type": "H",
+       "start": 2346.5,
+       "dur": 69.5
+      },
+      {
+       "type": "H",
+       "start": 2481.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2516.5,
+       "dur": 19.0
+      },
+      {
+       "type": "H",
+       "start": 2567.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 2599.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2641.5,
+       "dur": 24.0
+      },
+      {
+       "type": "H",
+       "start": 2692.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2766.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 3197.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3458.0,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 3503.0,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 3576.0,
+       "dur": 20.0
+      }
+     ]
+    },
+    {
+     "k": 6,
+     "start": 18000.0,
+     "dur": 3600.0,
+     "sleep": 3240.0,
+     "wav": {
+      "trach": "00001028-100507/h6_trach.wav",
+      "mic": "00001028-100507/h6_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 189.0,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 859.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1097.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1126.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1157.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1282.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1308.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1332.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1363.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1401.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 1449.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1475.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1508.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 1545.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1579.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1612.5,
+       "dur": 21.0
+      },
+      {
+       "type": "H",
+       "start": 1761.0,
+       "dur": 12.0
+      },
+      {
+       "type": "MA",
+       "start": 2047.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2078.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2198.5,
+       "dur": 12.5
+      }
+     ]
+    },
+    {
+     "k": 7,
+     "start": 21600.0,
+     "dur": 484.0,
+     "sleep": 480.0,
+     "wav": {
+      "trach": "00001028-100507/h7_trach.wav",
+      "mic": "00001028-100507/h7_mic.wav"
+     },
+     "events": []
+    }
+   ],
+   "recorded": 22084.0,
+   "events": 201,
+   "sleep": 20010.0
+  },
+  {
+   "pid": "00001039-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 3570.0,
+     "wav": {
+      "trach": "00001039-100507/h1_trach.wav",
+      "mic": "00001039-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 264.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 335.5,
+       "dur": 33.5
+      },
+      {
+       "type": "H",
+       "start": 408.0,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 451.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 486.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 539.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 574.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 656.5,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 715.0,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 806.5,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 920.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 1029.5,
+       "dur": 42.0
+      },
+      {
+       "type": "H",
+       "start": 1198.0,
+       "dur": 49.0
+      },
+      {
+       "type": "H",
+       "start": 1316.5,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 1771.0,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 1863.5,
+       "dur": 20.0
+      },
+      {
+       "type": "H",
+       "start": 1913.0,
+       "dur": 29.5
+      },
+      {
+       "type": "H",
+       "start": 1966.5,
+       "dur": 30.5
+      },
+      {
+       "type": "H",
+       "start": 2019.0,
+       "dur": 25.5
+      },
+      {
+       "type": "H",
+       "start": 2115.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2165.0,
+       "dur": 29.0
+      },
+      {
+       "type": "H",
+       "start": 2237.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2297.0,
+       "dur": 33.0
+      },
+      {
+       "type": "H",
+       "start": 2360.0,
+       "dur": 28.0
+      },
+      {
+       "type": "H",
+       "start": 2407.5,
+       "dur": 34.0
+      },
+      {
+       "type": "H",
+       "start": 2484.0,
+       "dur": 29.0
+      },
+      {
+       "type": "H",
+       "start": 2565.0,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 2623.5,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 2665.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 2716.5,
+       "dur": 28.0
+      },
+      {
+       "type": "H",
+       "start": 2776.0,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 2823.0,
+       "dur": 37.5
+      },
+      {
+       "type": "H",
+       "start": 2945.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 2981.5,
+       "dur": 27.0
+      },
+      {
+       "type": "H",
+       "start": 3035.5,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 3090.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 3158.0,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 3208.5,
+       "dur": 32.0
+      },
+      {
+       "type": "MA",
+       "start": 3268.5,
+       "dur": 38.5
+      },
+      {
+       "type": "OA",
+       "start": 3334.0,
+       "dur": 25.0
+      },
+      {
+       "type": "H",
+       "start": 3384.5,
+       "dur": 30.5
+      },
+      {
+       "type": "H",
+       "start": 3436.5,
+       "dur": 35.5
+      },
+      {
+       "type": "H",
+       "start": 3496.0,
+       "dur": 46.5
+      },
+      {
+       "type": "OA",
+       "start": 3559.5,
+       "dur": 49.5
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3030.0,
+     "wav": {
+      "trach": "00001039-100507/h2_trach.wav",
+      "mic": "00001039-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 34.0,
+       "dur": 38.5
+      },
+      {
+       "type": "H",
+       "start": 95.5,
+       "dur": 45.0
+      },
+      {
+       "type": "H",
+       "start": 161.5,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 236.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 272.0,
+       "dur": 29.5
+      },
+      {
+       "type": "H",
+       "start": 337.0,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 394.0,
+       "dur": 27.0
+      },
+      {
+       "type": "H",
+       "start": 441.5,
+       "dur": 36.0
+      },
+      {
+       "type": "H",
+       "start": 501.0,
+       "dur": 29.5
+      },
+      {
+       "type": "H",
+       "start": 555.0,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 600.0,
+       "dur": 30.0
+      },
+      {
+       "type": "H",
+       "start": 689.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 724.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 834.5,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 894.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 932.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 970.0,
+       "dur": 36.5
+      },
+      {
+       "type": "H",
+       "start": 1035.5,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 1083.0,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 1133.5,
+       "dur": 36.0
+      },
+      {
+       "type": "OA",
+       "start": 1193.0,
+       "dur": 39.0
+      },
+      {
+       "type": "OA",
+       "start": 1252.5,
+       "dur": 36.0
+      },
+      {
+       "type": "OA",
+       "start": 1301.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1348.5,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 1399.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 1446.0,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 1501.5,
+       "dur": 41.0
+      },
+      {
+       "type": "H",
+       "start": 1563.0,
+       "dur": 42.0
+      },
+      {
+       "type": "OA",
+       "start": 1626.0,
+       "dur": 44.0
+      },
+      {
+       "type": "OA",
+       "start": 1693.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1747.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1804.0,
+       "dur": 24.0
+      },
+      {
+       "type": "H",
+       "start": 1849.0,
+       "dur": 31.5
+      },
+      {
+       "type": "MA",
+       "start": 1909.5,
+       "dur": 27.5
+      },
+      {
+       "type": "H",
+       "start": 1986.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2010.5,
+       "dur": 13.0
+      },
+      {
+       "type": "MA",
+       "start": 3494.5,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 3589.0,
+       "dur": 15.0
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3600.0,
+     "wav": {
+      "trach": "00001039-100507/h3_trach.wav",
+      "mic": "00001039-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 62.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 143.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 183.5,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 239.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 282.5,
+       "dur": 18.0
+      },
+      {
+       "type": "CA",
+       "start": 327.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 362.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 414.5,
+       "dur": 22.5
+      },
+      {
+       "type": "H",
+       "start": 475.5,
+       "dur": 34.0
+      },
+      {
+       "type": "H",
+       "start": 533.5,
+       "dur": 20.0
+      },
+      {
+       "type": "H",
+       "start": 622.5,
+       "dur": 30.5
+      },
+      {
+       "type": "H",
+       "start": 686.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 730.0,
+       "dur": 24.0
+      },
+      {
+       "type": "H",
+       "start": 789.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 841.0,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 908.5,
+       "dur": 25.5
+      },
+      {
+       "type": "H",
+       "start": 953.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 1004.5,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 1040.5,
+       "dur": 19.0
+      },
+      {
+       "type": "MA",
+       "start": 1094.5,
+       "dur": 30.5
+      },
+      {
+       "type": "H",
+       "start": 1146.0,
+       "dur": 20.0
+      },
+      {
+       "type": "OA",
+       "start": 1202.0,
+       "dur": 38.0
+      },
+      {
+       "type": "H",
+       "start": 1273.0,
+       "dur": 16.0
+      },
+      {
+       "type": "MA",
+       "start": 1320.0,
+       "dur": 28.5
+      },
+      {
+       "type": "H",
+       "start": 1426.0,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 1474.5,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 1523.0,
+       "dur": 27.0
+      },
+      {
+       "type": "MA",
+       "start": 1576.0,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 1629.0,
+       "dur": 33.0
+      },
+      {
+       "type": "OA",
+       "start": 1685.5,
+       "dur": 25.0
+      },
+      {
+       "type": "H",
+       "start": 1728.5,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 1793.5,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 1841.0,
+       "dur": 20.0
+      },
+      {
+       "type": "H",
+       "start": 1890.0,
+       "dur": 18.5
+      },
+      {
+       "type": "MA",
+       "start": 1935.0,
+       "dur": 40.5
+      },
+      {
+       "type": "H",
+       "start": 2008.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 2061.0,
+       "dur": 37.0
+      },
+      {
+       "type": "H",
+       "start": 2117.0,
+       "dur": 19.0
+      },
+      {
+       "type": "H",
+       "start": 2161.5,
+       "dur": 33.0
+      },
+      {
+       "type": "H",
+       "start": 2228.5,
+       "dur": 46.5
+      },
+      {
+       "type": "OA",
+       "start": 2298.0,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 2350.0,
+       "dur": 21.5
+      },
+      {
+       "type": "H",
+       "start": 2396.5,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 2444.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 2481.0,
+       "dur": 23.0
+      },
+      {
+       "type": "H",
+       "start": 2527.0,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 2585.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 2630.0,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 2697.5,
+       "dur": 21.0
+      },
+      {
+       "type": "H",
+       "start": 2739.5,
+       "dur": 34.0
+      },
+      {
+       "type": "OA",
+       "start": 2795.5,
+       "dur": 19.0
+      },
+      {
+       "type": "H",
+       "start": 2827.5,
+       "dur": 34.5
+      },
+      {
+       "type": "H",
+       "start": 2879.0,
+       "dur": 35.0
+      },
+      {
+       "type": "H",
+       "start": 2931.0,
+       "dur": 37.0
+      },
+      {
+       "type": "H",
+       "start": 2988.0,
+       "dur": 35.0
+      },
+      {
+       "type": "OA",
+       "start": 3042.0,
+       "dur": 38.0
+      },
+      {
+       "type": "OA",
+       "start": 3102.0,
+       "dur": 28.5
+      },
+      {
+       "type": "H",
+       "start": 3154.0,
+       "dur": 38.0
+      },
+      {
+       "type": "H",
+       "start": 3217.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 3262.0,
+       "dur": 24.0
+      },
+      {
+       "type": "H",
+       "start": 3310.5,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 3351.0,
+       "dur": 27.0
+      },
+      {
+       "type": "MA",
+       "start": 3405.0,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 3447.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 3495.0,
+       "dur": 24.5
+      },
+      {
+       "type": "H",
+       "start": 3537.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 3576.0,
+       "dur": 28.5
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 2563.0,
+     "sleep": 2550.0,
+     "wav": {
+      "trach": "00001039-100507/h4_trach.wav",
+      "mic": "00001039-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 29.5,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 83.5,
+       "dur": 30.5
+      },
+      {
+       "type": "H",
+       "start": 142.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 191.5,
+       "dur": 26.0
+      },
+      {
+       "type": "H",
+       "start": 239.5,
+       "dur": 33.0
+      },
+      {
+       "type": "H",
+       "start": 292.5,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 352.0,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 420.0,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 459.0,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 503.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 537.5,
+       "dur": 31.0
+      },
+      {
+       "type": "H",
+       "start": 605.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 641.0,
+       "dur": 39.5
+      },
+      {
+       "type": "H",
+       "start": 700.0,
+       "dur": 29.0
+      },
+      {
+       "type": "H",
+       "start": 755.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 812.5,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 852.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 892.5,
+       "dur": 30.5
+      },
+      {
+       "type": "H",
+       "start": 954.5,
+       "dur": 35.0
+      },
+      {
+       "type": "H",
+       "start": 1016.5,
+       "dur": 40.0
+      },
+      {
+       "type": "OA",
+       "start": 1082.0,
+       "dur": 38.0
+      },
+      {
+       "type": "H",
+       "start": 1138.5,
+       "dur": 37.5
+      },
+      {
+       "type": "H",
+       "start": 1193.5,
+       "dur": 66.5
+      },
+      {
+       "type": "H",
+       "start": 1298.0,
+       "dur": 28.5
+      },
+      {
+       "type": "MA",
+       "start": 1355.5,
+       "dur": 34.5
+      },
+      {
+       "type": "H",
+       "start": 1413.5,
+       "dur": 50.0
+      },
+      {
+       "type": "OA",
+       "start": 1490.5,
+       "dur": 47.0
+      },
+      {
+       "type": "OA",
+       "start": 1564.5,
+       "dur": 31.5
+      },
+      {
+       "type": "MA",
+       "start": 1625.0,
+       "dur": 32.0
+      },
+      {
+       "type": "H",
+       "start": 1673.0,
+       "dur": 39.0
+      },
+      {
+       "type": "H",
+       "start": 1734.0,
+       "dur": 48.0
+      },
+      {
+       "type": "H",
+       "start": 1806.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 1852.5,
+       "dur": 34.0
+      },
+      {
+       "type": "H",
+       "start": 1908.0,
+       "dur": 39.0
+      },
+      {
+       "type": "MA",
+       "start": 1966.0,
+       "dur": 42.0
+      },
+      {
+       "type": "OA",
+       "start": 2027.0,
+       "dur": 44.5
+      },
+      {
+       "type": "H",
+       "start": 2095.5,
+       "dur": 36.0
+      },
+      {
+       "type": "OA",
+       "start": 2152.0,
+       "dur": 31.5
+      },
+      {
+       "type": "OA",
+       "start": 2206.5,
+       "dur": 32.0
+      },
+      {
+       "type": "H",
+       "start": 2288.0,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 2335.0,
+       "dur": 40.0
+      },
+      {
+       "type": "OA",
+       "start": 2398.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 2442.0,
+       "dur": 13.5
+      },
+      {
+       "type": "MA",
+       "start": 2498.5,
+       "dur": 33.0
+      }
+     ]
+    }
+   ],
+   "recorded": 13363.0,
+   "events": 193,
+   "sleep": 12750.0
+  },
+  {
+   "pid": "00001041-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 1590.0,
+     "wav": {
+      "trach": "00001041-100507/h1_trach.wav",
+      "mic": "00001041-100507/h1_mic.wav"
+     },
+     "events": []
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 3300.0,
+     "wav": {
+      "trach": "00001041-100507/h2_trach.wav",
+      "mic": "00001041-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 120.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 332.5,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 406.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 433.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 540.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 561.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 602.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 626.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 656.5,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 726.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 759.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 787.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 810.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 860.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 899.0,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 971.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1014.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1041.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 1068.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1096.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1136.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1191.5,
+       "dur": 17.5
+      },
+      {
+       "type": "OA",
+       "start": 1219.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1256.5,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1302.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1386.5,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 1445.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1489.5,
+       "dur": 16.5
+      },
+      {
+       "type": "H",
+       "start": 1531.5,
+       "dur": 19.0
+      },
+      {
+       "type": "H",
+       "start": 1571.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 1605.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 1653.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1702.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1742.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 1800.5,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1855.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 1899.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1935.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 1965.5,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2117.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 2164.0,
+       "dur": 13.0
+      },
+      {
+       "type": "OA",
+       "start": 2211.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 2245.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 2296.0,
+       "dur": 18.5
+      },
+      {
+       "type": "H",
+       "start": 2356.5,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2400.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 2447.0,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 2477.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2523.0,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 2574.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 2637.5,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 2679.0,
+       "dur": 23.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3030.0,
+     "wav": {
+      "trach": "00001041-100507/h3_trach.wav",
+      "mic": "00001041-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 505.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 536.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 577.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 601.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 644.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 674.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 700.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 785.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 822.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 846.0,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 880.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 946.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 966.5,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 1011.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 1056.5,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 1093.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1128.5,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 1174.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 1218.5,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 1290.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1330.0,
+       "dur": 16.0
+      },
+      {
+       "type": "OA",
+       "start": 1380.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 1418.0,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 1456.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1481.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1500.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1541.5,
+       "dur": 31.0
+      },
+      {
+       "type": "OA",
+       "start": 1588.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1627.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1673.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1695.5,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 1739.0,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 1786.0,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 1836.0,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 1884.0,
+       "dur": 22.0
+      },
+      {
+       "type": "OA",
+       "start": 1927.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 1970.5,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 2023.0,
+       "dur": 30.0
+      },
+      {
+       "type": "OA",
+       "start": 2070.0,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 2104.5,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 2162.5,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 2208.5,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 2260.0,
+       "dur": 47.0
+      },
+      {
+       "type": "OA",
+       "start": 2322.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 2379.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 2421.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2461.0,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 2525.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 2571.0,
+       "dur": 34.0
+      },
+      {
+       "type": "OA",
+       "start": 2626.5,
+       "dur": 32.5
+      },
+      {
+       "type": "OA",
+       "start": 2681.0,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 2733.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 2794.0,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 2846.0,
+       "dur": 29.0
+      },
+      {
+       "type": "OA",
+       "start": 2900.0,
+       "dur": 37.0
+      },
+      {
+       "type": "OA",
+       "start": 2960.5,
+       "dur": 35.5
+      },
+      {
+       "type": "OA",
+       "start": 3017.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 3074.0,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 3143.0,
+       "dur": 23.5
+      },
+      {
+       "type": "H",
+       "start": 3191.5,
+       "dur": 13.5
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3600.0,
+     "sleep": 3570.0,
+     "wav": {
+      "trach": "00001041-100507/h4_trach.wav",
+      "mic": "00001041-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "OA",
+       "start": 44.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 184.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 223.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 292.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 335.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 407.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 429.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 461.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 493.5,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 543.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 588.0,
+       "dur": 23.0
+      },
+      {
+       "type": "OA",
+       "start": 629.0,
+       "dur": 24.0
+      },
+      {
+       "type": "OA",
+       "start": 671.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 704.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 743.5,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 785.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 839.0,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 869.5,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 916.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 949.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 981.0,
+       "dur": 25.0
+      },
+      {
+       "type": "OA",
+       "start": 1026.5,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1071.0,
+       "dur": 23.5
+      },
+      {
+       "type": "OA",
+       "start": 1113.0,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 1152.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1188.0,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1231.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1277.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 1316.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 1354.5,
+       "dur": 32.0
+      },
+      {
+       "type": "OA",
+       "start": 1412.5,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 1465.0,
+       "dur": 33.5
+      },
+      {
+       "type": "OA",
+       "start": 1520.5,
+       "dur": 39.0
+      },
+      {
+       "type": "OA",
+       "start": 1587.0,
+       "dur": 29.5
+      },
+      {
+       "type": "OA",
+       "start": 1640.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 1695.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 1742.5,
+       "dur": 41.5
+      },
+      {
+       "type": "OA",
+       "start": 1812.5,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 1878.5,
+       "dur": 24.5
+      },
+      {
+       "type": "OA",
+       "start": 1923.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 1972.0,
+       "dur": 31.5
+      },
+      {
+       "type": "H",
+       "start": 2048.5,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 2121.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 2166.0,
+       "dur": 27.0
+      },
+      {
+       "type": "OA",
+       "start": 2214.0,
+       "dur": 21.5
+      },
+      {
+       "type": "OA",
+       "start": 2263.0,
+       "dur": 27.5
+      },
+      {
+       "type": "OA",
+       "start": 2305.5,
+       "dur": 29.5
+      },
+      {
+       "type": "H",
+       "start": 2359.0,
+       "dur": 40.5
+      },
+      {
+       "type": "OA",
+       "start": 2428.5,
+       "dur": 40.5
+      },
+      {
+       "type": "OA",
+       "start": 2487.5,
+       "dur": 26.0
+      },
+      {
+       "type": "OA",
+       "start": 2547.5,
+       "dur": 21.0
+      },
+      {
+       "type": "OA",
+       "start": 2594.5,
+       "dur": 35.0
+      },
+      {
+       "type": "OA",
+       "start": 2662.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 2714.0,
+       "dur": 26.5
+      },
+      {
+       "type": "OA",
+       "start": 2763.0,
+       "dur": 34.5
+      },
+      {
+       "type": "OA",
+       "start": 2822.5,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 2886.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2929.0,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 2974.0,
+       "dur": 28.0
+      },
+      {
+       "type": "OA",
+       "start": 3026.0,
+       "dur": 30.5
+      },
+      {
+       "type": "OA",
+       "start": 3081.5,
+       "dur": 33.0
+      },
+      {
+       "type": "H",
+       "start": 3140.5,
+       "dur": 47.0
+      },
+      {
+       "type": "OA",
+       "start": 3210.0,
+       "dur": 19.0
+      },
+      {
+       "type": "OA",
+       "start": 3241.5,
+       "dur": 28.5
+      },
+      {
+       "type": "OA",
+       "start": 3292.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 3348.0,
+       "dur": 22.5
+      },
+      {
+       "type": "OA",
+       "start": 3390.5,
+       "dur": 19.5
+      },
+      {
+       "type": "OA",
+       "start": 3424.5,
+       "dur": 25.5
+      },
+      {
+       "type": "OA",
+       "start": 3471.0,
+       "dur": 39.5
+      },
+      {
+       "type": "OA",
+       "start": 3533.5,
+       "dur": 38.5
+      },
+      {
+       "type": "OA",
+       "start": 3584.5,
+       "dur": 33.5
+      }
+     ]
+    },
+    {
+     "k": 5,
+     "start": 14400.0,
+     "dur": 600.0,
+     "sleep": 570.0,
+     "wav": {
+      "trach": "00001041-100507/h5_trach.wav",
+      "mic": "00001041-100507/h5_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 59.5,
+       "dur": 20.5
+      },
+      {
+       "type": "OA",
+       "start": 100.5,
+       "dur": 34.5
+      },
+      {
+       "type": "H",
+       "start": 320.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 352.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 444.0,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 477.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 500.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 525.0,
+       "dur": 16.0
+      }
+     ]
+    }
+   ],
+   "recorded": 15000.0,
+   "events": 191,
+   "sleep": 12060.0
+  },
+  {
+   "pid": "00001045-100507",
+   "sex": "Male",
+   "hours": [
+    {
+     "k": 1,
+     "start": 0.0,
+     "dur": 3600.0,
+     "sleep": 990.0,
+     "wav": {
+      "trach": "00001045-100507/h1_trach.wav",
+      "mic": "00001045-100507/h1_mic.wav"
+     },
+     "events": [
+      {
+       "type": "CA",
+       "start": 602.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 809.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 837.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 1043.0,
+       "dur": 20.0
+      },
+      {
+       "type": "H",
+       "start": 2677.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2791.0,
+       "dur": 17.0
+      },
+      {
+       "type": "OA",
+       "start": 2928.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2950.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 2981.5,
+       "dur": 18.0
+      },
+      {
+       "type": "OA",
+       "start": 3014.5,
+       "dur": 15.0
+      },
+      {
+       "type": "OA",
+       "start": 3044.5,
+       "dur": 36.5
+      },
+      {
+       "type": "OA",
+       "start": 3138.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3351.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3409.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 3462.5,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3578.0,
+       "dur": 13.0
+      }
+     ]
+    },
+    {
+     "k": 2,
+     "start": 3600.0,
+     "dur": 3600.0,
+     "sleep": 2970.0,
+     "wav": {
+      "trach": "00001045-100507/h2_trach.wav",
+      "mic": "00001045-100507/h2_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 5.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 51.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 93.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 130.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 151.5,
+       "dur": 13.5
+      },
+      {
+       "type": "MA",
+       "start": 179.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 215.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 240.0,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 271.0,
+       "dur": 12.5
+      },
+      {
+       "type": "MA",
+       "start": 296.5,
+       "dur": 12.5
+      },
+      {
+       "type": "MA",
+       "start": 347.0,
+       "dur": 16.0
+      },
+      {
+       "type": "H",
+       "start": 383.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 425.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 447.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 472.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 492.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 518.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 561.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 592.5,
+       "dur": 12.0
+      },
+      {
+       "type": "MA",
+       "start": 648.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 675.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 695.0,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 722.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 833.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1302.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1408.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1436.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1458.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 1568.0,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 1588.5,
+       "dur": 12.0
+      },
+      {
+       "type": "OA",
+       "start": 1665.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1688.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1726.5,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 1826.5,
+       "dur": 10.0
+      },
+      {
+       "type": "CA",
+       "start": 1875.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 1901.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1922.0,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1942.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 1965.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2020.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2057.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 2083.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 2226.5,
+       "dur": 11.0
+      },
+      {
+       "type": "CA",
+       "start": 2245.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 2299.0,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 2378.5,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 2731.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 2801.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3407.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3429.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 3595.5,
+       "dur": 14.5
+      }
+     ]
+    },
+    {
+     "k": 3,
+     "start": 7200.0,
+     "dur": 3600.0,
+     "sleep": 3540.0,
+     "wav": {
+      "trach": "00001045-100507/h3_trach.wav",
+      "mic": "00001045-100507/h3_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 58.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 85.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 106.0,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 136.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 177.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 197.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 224.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 248.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 270.5,
+       "dur": 14.5
+      },
+      {
+       "type": "MA",
+       "start": 359.5,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 384.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 414.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 442.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 464.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 495.0,
+       "dur": 14.5
+      },
+      {
+       "type": "MA",
+       "start": 526.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 559.5,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 592.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 616.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 686.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 729.5,
+       "dur": 11.0
+      },
+      {
+       "type": "MA",
+       "start": 759.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 787.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 822.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 850.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 884.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 910.0,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 940.0,
+       "dur": 10.0
+      },
+      {
+       "type": "MA",
+       "start": 1043.5,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 3297.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 3326.5,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3351.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3409.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3500.5,
+       "dur": 11.0
+      }
+     ]
+    },
+    {
+     "k": 4,
+     "start": 10800.0,
+     "dur": 3600.0,
+     "sleep": 3570.0,
+     "wav": {
+      "trach": "00001045-100507/h4_trach.wav",
+      "mic": "00001045-100507/h4_mic.wav"
+     },
+     "events": [
+      {
+       "type": "H",
+       "start": 253.5,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 306.0,
+       "dur": 11.5
+      },
+      {
+       "type": "MA",
+       "start": 348.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 410.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 442.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 473.0,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 512.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 546.0,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 576.0,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 614.5,
+       "dur": 13.0
+      },
+      {
+       "type": "H",
+       "start": 646.0,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 813.5,
+       "dur": 14.0
+      },
+      {
+       "type": "H",
+       "start": 842.0,
+       "dur": 10.0
+      },
+      {
+       "type": "H",
+       "start": 924.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 992.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1038.5,
+       "dur": 10.5
+      },
+      {
+       "type": "H",
+       "start": 1071.0,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1121.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1198.5,
+       "dur": 12.0
+      },
+      {
+       "type": "H",
+       "start": 1249.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 1290.5,
+       "dur": 11.5
+      },
+      {
+       "type": "H",
+       "start": 1347.0,
+       "dur": 11.5
+      },
+      {
+       "type": "MA",
+       "start": 1601.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 1638.5,
+       "dur": 10.0
+      },
+      {
+       "type": "OA",
+       "start": 1670.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1700.5,
+       "dur": 12.0
+      },
+      {
+       "type": "MA",
+       "start": 1730.5,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1763.5,
+       "dur": 11.5
+      },
+      {
+       "type": "OA",
+       "start": 1794.0,
+       "dur": 11.0
+      },
+      {
+       "type": "OA",
+       "start": 1821.5,
+       "dur": 14.0
+      },
+      {
+       "type": "OA",
+       "start": 1852.0,
+       "dur": 18.5
+      },
+      {
+       "type": "OA",
+       "start": 1889.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 1922.5,
+       "dur": 14.5
+      },
+      {
+       "type": "OA",
+       "start": 1956.0,
+       "dur": 13.5
+      },
+      {
+       "type": "OA",
+       "start": 1991.0,
+       "dur": 12.5
+      },
+      {
+       "type": "OA",
+       "start": 2020.5,
+       "dur": 19.0
+      },
+      {
+       "type": "H",
+       "start": 2058.0,
+       "dur": 15.0
+      },
+      {
+       "type": "H",
+       "start": 2682.5,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2713.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 2775.0,
+       "dur": 14.5
+      },
+      {
+       "type": "H",
+       "start": 2803.5,
+       "dur": 19.5
+      },
+      {
+       "type": "H",
+       "start": 2845.5,
+       "dur": 18.0
+      },
+      {
+       "type": "H",
+       "start": 2886.0,
+       "dur": 15.5
+      },
+      {
+       "type": "H",
+       "start": 2920.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 2974.0,
+       "dur": 13.0
+      },
+      {
+       "type": "MA",
+       "start": 3004.5,
+       "dur": 16.5
+      },
+      {
+       "type": "OA",
+       "start": 3036.5,
+       "dur": 15.5
+      },
+      {
+       "type": "OA",
+       "start": 3071.0,
+       "dur": 13.5
+      },
+      {
+       "type": "H",
+       "start": 3115.0,
+       "dur": 10.5
+      },
+      {
+       "type": "OA",
+       "start": 3150.5,
+       "dur": 17.0
+      },
+      {
+       "type": "MA",
+       "start": 3208.5,
+       "dur": 11.0
+      },
+      {
+       "type": "H",
+       "start": 3242.0,
+       "dur": 12.5
+      },
+      {
+       "type": "H",
+       "start": 3269.5,
+       "dur": 17.0
+      },
+      {
+       "type": "H",
+       "start": 3308.0,
+       "dur": 17.5
+      },
+      {
+       "type": "H",
+       "start": 3344.5,
+       "dur": 12.0
+      }
+     ]
+    },
+    {
+     "k": 5,
+     "start": 14400.0,
+     "dur": 1463.0,
+     "sleep": 1320.0,
+     "wav": {
+      "trach": "00001045-100507/h5_trach.wav",
+      "mic": "00001045-100507/h5_mic.wav"
+     },
+     "events": []
+    }
+   ],
+   "recorded": 15863.0,
+   "events": 156,
+   "sleep": 12390.0
+  }
+ ]
+}

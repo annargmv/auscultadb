@@ -142,12 +142,21 @@ textarea.f{min-height:60px;resize:vertical}
 .lane.ghost{background:#fafbfc}
 .lane .lhead{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:4px}
 .lane .lhead b{font-size:13px}.lane.driving{box-shadow:0 0 0 2px #bcd5f6}
-.livegrid{display:grid;grid-template-columns:1fr 1fr 1.15fr;gap:12px}
+.livegrid{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:12px}
 @media(max-width:1000px){.livegrid{grid-template-columns:1fr}}
 .livebox{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff}
 .livebox h3{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);margin:0 0 6px}
-.livebox canvas{width:100%;display:block;border-radius:6px}
-.ind{display:grid;grid-template-columns:100px 1fr;gap:5px 8px;font-size:12.5px;align-items:center}
+.livebox canvas{width:100%;height:150px;display:block;border-radius:6px}
+/* The live readouts rewrite their text every frame. Fixed canvas heights and a reserved, clamped
+   height for each readout keep the three boxes from resizing (and the page from bouncing) during play. */
+.livegrid{align-items:start}
+.ind dd{font-variant-numeric:tabular-nums}
+.ind dd,.ind dd .hint{overflow:hidden;text-overflow:ellipsis}
+#iTime,#iPhase,#iFind,#iCrkTxt,#iExp{white-space:nowrap;display:block}
+#iTonTxt,#iDiffTxt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;min-height:2.9em;line-height:1.45}
+.ind dd:has(> .lamp){display:flex;align-items:center;min-width:0}
+.ind dd:has(> .lamp) .hint{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ind{display:grid;grid-template-columns:86px minmax(0,1fr);gap:5px 8px;font-size:12.5px;align-items:center}
 .ind dt{color:var(--soft)}.ind dd{margin:0;min-width:0}
 .meter{height:9px;border-radius:5px;background:#eef1f5;position:relative;overflow:hidden}
 .meter i{position:absolute;left:0;top:0;bottom:0;border-radius:5px;transition:width .08s linear}
@@ -1508,7 +1517,7 @@ function drawLivePanel(t,active){
   }
   if(!active&&!player.playing)return;
   // --- indicators
-  const set=(id,v)=>{const el=$('#'+id);if(el)el.textContent=v};
+  const set=(id,v)=>{const el=$('#'+id);if(el&&el.textContent!==v){el.textContent=v;el.title=v}};
   set('iTime',`${t.toFixed(2)} s · ghost ${clamp(tg,0,B.dur).toFixed(2)} s`);
   const ph=phaseOf(A.cycles,t); set('iPhase',ph.phase==='unassigned'?'between breaths':`${ph.phase}${ph.pos?' · '+ph.pos:''}${ph.cycle&&ph.cycle.estimated?' (est.)':''}`);
   const fr=clamp(Math.round(t/(FR.HOP/SR)),0,A.F.nF-1); let tmax=0,fq=0; for(let f=Math.max(0,fr-3);f<=Math.min(A.F.nF-1,fr+3);f++)if(A.F.tonal[f].ratio>tmax){tmax=A.F.tonal[f].ratio;fq=A.F.tonal[f].freq}
@@ -1679,6 +1688,38 @@ const DISCOVER_MAP=[
   {id:'age',q:'Does auscultation carry a biological-age signal — the precondition for a longevity marker?',m:'Age clock: ridge regression on detector features, fit on 60 % of patients and scored on the held-out 40 % against a predict-the-mean null (bootstrap CI, permutation p); heart rate against CirCor age bands; heart-rate-for-age deviation against clinical outcome',d:'KAUH adults · SPRSound per release · CirCor',nov:'New question here — age-gap clocks exist for ECG, not for auscultation; no survival data, so longevity itself is not measured',st:'result'}];
 const ST={result:['pill ok','result below'],adults:['pill warn','needs adult data — waiting for site access'],sleep:['pill warn','needs overnight data — waiting for site access'],hear:['pill warn','needs Hugging Face access (HAI-DEF terms + token)'],physio:['pill warn','needs PhysioNet data — run the download on your computer and attach']};
 function dChart(id,cfg){const el=$('#'+id);if(!el||!window.Chart)return;discoverCharts.push(new Chart(el,{...cfg,options:{animation:false,responsive:true,maintainAspectRatio:false,...cfg.options}}))}
+// ---- 12 · apnea / AHI on real nights (PSG-Audio). Text chosen by the numbers in discover.json['apnea'].
+function apneaCard(A){
+  const n=DISCOVER_MAP.findIndex(x=>x.id==='apnea')+1; if(!A||!A.channels||!A.channels.trach)return '';
+  const C=A.channels, T=C.trach, M=C.mic, lab={trach:'Tracheal contact mic',mic:'Ambient mic (~1 m)'};
+  const pc=v=>v==null?'—':v+' %', ah=T.ahi||{}, sv=T.severity||{};
+  const evRow=(k,c)=>`<tr><td>${lab[k]}</td><td class="mono">${c.patients} · ${c.hours} h</td><td class="mono">${pc(c.events.sens)} <span class="hint">(${c.events.found}/${c.events.expert})</span></td><td class="mono">${pc(c.events.ppv)} <span class="hint">(${c.events.matched}/${c.events.acoustic})</span></td><td class="mono">${c.ahi?c.ahi.rho.toFixed(2)+' · '+fmtP(c.ahi.p):'—'}</td><td class="mono">${c.ahi?(c.ahi.bias>0?'+':'')+c.ahi.bias+' /h':'—'}</td><td class="mono">${c.severity?c.severity.agree+'/'+c.severity.n:'—'}</td></tr>`;
+  const BT=T.events.byType, tn={OA:'Obstructive apnea',CA:'Central apnea',MA:'Mixed apnea',H:'Hypopnea'};
+  const good=ah.rho!=null&&ah.p<0.05&&ah.rho>=0.6, under=ah.bias!=null&&ah.bias<0;
+  return `<div class="card" id="d-apnea"><h2>${n} · Apnea and AHI on real nights — the page’s scoring against a sleep lab</h2>
+    <p class="hint" style="margin-top:0">PSG-Audio (${esc(A.source.hospital)}; CC BY 4.0, <a href="https://doi.org/${esc(A.source.paper)}" target="_blank" rel="noopener">Korompili et al., Sci Data 2021</a>): overnight polysomnograms scored by a sleep technician and a certified physician, with a tracheal contact microphone and an ambient microphone recorded in sync. ${esc(A.source.selection)}. Each hour of sound goes through <b>the same code as an upload on the patient page</b> — <span class="mono">computeFlow</span> and <span class="mono">scoreFlow</span>, adult AASM rules, shipped thresholds, nothing refit. Audio stays off this site.</p>
+    <div style="overflow-x:auto"><table><thead><tr><th>Microphone</th><th>Patients · hours</th><th>Expert events found</th><th>Acoustic events that were real</th><th>AHI rank correlation vs PSG</th><th>AHI bias</th><th>Severity class agrees</th></tr></thead><tbody>${evRow('trach',T)}${M?evRow('mic',M):''}</tbody></table></div>
+    <div class="grid g2" style="margin-top:10px">
+      <div><h3>Per patient: acoustic AHI vs PSG AHI (tracheal)</h3><div style="position:relative;height:250px"><canvas id="c-apnea"></canvas></div>
+        <p class="hint">Each dot is one patient. PSG AHI = expert events per hour of scored sleep; acoustic AHI = events per hour of recording, because sound alone cannot tell sleep from wake. Dashed: perfect agreement; dotted lines: severity cut-offs 5 / 15 / 30.</p></div>
+      <div><h3>Which expert events the sound finds</h3><table><thead><tr><th>Expert type</th><th>Events</th><th>Found</th></tr></thead><tbody>${['OA','CA','MA','H'].filter(k=>BT[k]&&BT[k].n).map(k=>`<tr><td>${tn[k]}</td><td class="mono">${BT[k].n}</td><td class="mono">${pc(BT[k].sens)}</td></tr>`).join('')}</tbody></table>
+        <h3 style="margin-top:12px">Severity class (adult 5 / 15 / 30 per h)</h3>
+        <table class="cm"><thead><tr><th>PSG ↓ · sound →</th>${['normal','mild','moderate','severe'].map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${['normal','mild','moderate','severe'].map(a=>`<tr><th>${a}</th>${['normal','mild','moderate','severe'].map(b=>`<td class="${a===b?'diag':''}">${(sv.confusion&&sv.confusion[a][b])||''}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>
+    <div class="notice" style="margin-top:10px"><b>What this shows.</b> ${ah.rho==null?'Too few patients for an AHI comparison yet.':good?`The tracheal acoustic AHI tracks the sleep-lab AHI across patients (ρ = ${ah.rho.toFixed(2)}, ${fmtP(ah.p)}), `:`Across patients the tracheal acoustic AHI ${ah.p<0.05?'only loosely tracks':'does not significantly track'} the sleep-lab AHI (ρ = ${ah.rho.toFixed(2)}, ${fmtP(ah.p)}, ${T.patients} patients)${M&&M.ahi&&M.ahi.p<0.05?`; the ambient microphone ranks patients better (ρ = ${M.ahi.rho.toFixed(2)}, ${fmtP(M.ahi.p)})`:''}. `}${ah.bias!=null?`It <b>${under?'under':'over'}-counts</b>: mean bias ${ah.bias>0?'+':''}${ah.bias} events/h (95 % limits ${ah.loa[0]} to ${ah.loa[1]})${(()=>{const P=T.perPatient,u=P.filter(q=>q.ahiAcousticPerSleepH<q.ahiPsg).length;return under?`, and ${u} of ${P.length} patients stay under even per hour of PSG sleep — so it is missed events, not the missing sleep time`:''})()}. `:''}${T.events.sens!=null?`At event level the tracheal channel finds ${T.events.sens} % of scored events${M?` (ambient ${M.events.sens} %)`:''}, and ${T.events.ppv} % of what it scores is a real event${M?` (ambient ${M.events.ppv} %)`:''}.`:''}
+      ${T.headroom&&T.headroom.p<0.05?`<br><b>Why it misses.</b> Detection depends on how far quiet breathing sits above the microphone’s noise floor: in tracheal hours below the median headroom it finds ${T.headroom.sensLow} % of events, above it ${T.headroom.sensHigh} % (ρ = ${T.headroom.rho.toFixed(2)}, ${fmtP(T.headroom.p)}, ${T.headroom.hours} hours). When normal breathing is barely above the hiss, a 30 % drop cannot be seen — the flow proxy was built for stethoscope clips, where breath sound is loud. A noise-floor correction is the obvious next step, and must be fitted on other PSG-Audio patients than these.`:''}
+      <br><b>Limits.</b> A pilot of ${T.patients} patients; PSG-Audio is ~89 % severe obstructive apnea, so specificity on healthy sleepers is barely tested. Adults only — the paediatric rule (≥ 2 breaths) is untested. Sound cannot separate obstructive from central events and has no SpO₂, so neither is attempted. Only the diagnostic part of each night is in the dataset (the rest was CPAP titration).</div>
+  </div>`;
+}
+function apneaChart(A){
+  const T=A&&A.channels&&A.channels.trach; if(!T||!T.perPatient.length)return;
+  const P=T.perPatient, mx=Math.ceil(Math.max(35,...P.map(q=>Math.max(q.ahiPsg,q.ahiAcoustic)))*1.08/10)*10;
+  const ref=v=>({type:'line',data:[{x:v,y:0},{x:v,y:mx}],borderColor:'#c9d1dc',borderDash:[2,3],borderWidth:1,pointRadius:0});
+  dChart('c-apnea',{type:'scatter',data:{datasets:[{label:'patient',data:P.map(q=>({x:q.ahiPsg,y:q.ahiAcoustic,pid:q.pid})),backgroundColor:'rgba(15,111,222,.7)',pointRadius:5},
+    {label:'perfect agreement',type:'line',data:[{x:0,y:0},{x:mx,y:mx}],borderColor:'#8592a6',borderDash:[5,4],borderWidth:1.2,pointRadius:0},
+    ...[5,15,30].map(v=>({...ref(v),label:'_cut'+v}))]},
+    options:{scales:{x:{type:'linear',min:0,max:mx,title:{display:true,text:'PSG AHI (events / h sleep)'}},y:{min:0,max:mx,title:{display:true,text:'acoustic AHI (events / h)'}}},
+      plugins:{legend:{labels:{boxWidth:10,filter:i=>!i.text.startsWith('_')}},tooltip:{callbacks:{label:c=>c.raw.pid?`${c.raw.pid}: PSG ${c.raw.x} · sound ${c.raw.y}`:''}}}}});
+}
 // ---- 16 · age signal. Every sentence below is chosen by the numbers in discover.json['age'].
 const ageVerdict=c=>c.significant?'<span class="pill ok">signal on held-out data</span>':c.pPerm<0.05?'<span class="pill warn">weak — CI includes zero</span>':'<span class="pill">no signal</span>';
 function ageCard(A){
@@ -1736,6 +1777,9 @@ async function renderDiscover(){
   if(D.cbemph&&D.cbemph.n){const c=D.cbemph.n;MP('cbemph').m=`${c.recordings} recordings (${c.cb} CB, ${c.emphysema} emphysema) on the same Littmann 3200 as KAUH, against KAUH’s ${c.kauhHealthy.D} healthy adults in all three filter modes; plus a CB-vs-emphysema probe`}
   const KH=patients.filter(p=>p.source==='kauh'&&p.control&&p.age!=null).map(p=>p.age);
   if(KH.length)MP('life').m=`Same spectral-centroid reference on healthy children (SPRSound) and healthy adolescents/adults ${Math.min(...KH)}–${Math.max(...KH)} y (KAUH), per age group`;
+  if(D.apnea&&D.apnea.channels&&D.apnea.channels.trach){const c=D.apnea.channels.trach;Object.assign(MP('apnea'),{st:'result',
+    m:'The page’s own acoustic flow proxy and AASM scoring, run unchanged on each hour of tracheal and ambient sound; events and AHI compared with the expert-scored polysomnogram',
+    d:`PSG-Audio pilot · ${c.patients} adults, ${c.hours} h of sleep-lab recording`})}
   const HRT=DISCOVER_MAP.find(x=>x.id==='heart');   // CirCor is in: flip the row from "waiting for data" to a result
   if(HRT){const CV=INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full; HRT.st=CV?'result':'physio';
     if(CV)HRT.d=`CirCor DigiScope \u00b7 ${CV.nPatients.toLocaleString()} patients, ${CV.nRecordings.toLocaleString()} recordings`;}
@@ -1821,6 +1865,7 @@ async function renderDiscover(){
         <tr><td>Same features from all three filter modes</td><td class="mono">${K.hfAsthma.sound3[0].toFixed(2)}</td></tr>
         <tr><td>All three modes + age</td><td class="mono">${K.hfAsthma.sound3age[0].toFixed(2)}</td></tr></tbody></table>
       <p class="hint">5-fold cross-validation, repeated 30×. In KAUH the expert sound label separates the two perfectly (every heart-failure recording crackles, every asthma recording wheezes), but the hand-made features reach only AUC ${K.hfAsthma.sound[0].toFixed(2)} — barely above age alone — and adding the other filter modes doesn't help. Another sign that crackle detection, not wheeze detection, is the weak link.</p></div>
+    ${apneaCard(D.apnea)}
     ${(()=>{const CV=INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full; if(!CV)return '';
       const q=([a,b])=>b?`${a}/${b} <span class="hint">(${Math.round(100*a/b)} %)</span>`:'—';
       const r=([a,b])=>b?100*a/b:null;
@@ -1909,7 +1954,7 @@ async function renderDiscover(){
       <h3>What each of these holds up</h3>
       <table style="max-width:900px"><thead><tr><th>#</th><th>Analysis</th><th>State</th><th>What it needs</th></tr></thead><tbody>
         <tr><td class="mono">9</td><td>HeAR embeddings vs hand-made features</td><td><span class="pill warn">blocked</span></td><td>Hugging Face token + network access</td></tr>
-        <tr><td class="mono">12</td><td>Overnight apnea / AHI against PSG</td><td><span class="pill warn">blocked</span></td><td>PhysioNet overnight sleep data</td></tr>
+        <tr><td class="mono">12</td><td>Overnight apnea / AHI against PSG</td><td>${D.apnea?'<span class="pill ok">pilot result below</span>':'<span class="pill warn">blocked</span>'}</td><td>${D.apnea?'More PSG-Audio patients would tighten the estimate; the pilot already answers the question':'PhysioNet overnight sleep data'}</td></tr>
         <tr><td class="mono">10</td><td>Breath sounds across the lifespan</td><td><span class="pill ok">result below</span></td><td>Has a result, but the child/adult step is the stethoscope, not age — a true curve needs ICBHI (children to elderly on one device)</td></tr>
         <tr><td class="mono">11</td><td>Adult diseases</td><td><span class="pill ok">result below</span></td><td>Answered on KAUH; more adult data would strengthen it</td></tr>
         <tr><td class="mono">14</td><td>Generalisation across stethoscopes</td><td><span class="pill ok">result below</span></td><td>Answered across SPRSound and KAUH; per-device recalibration is open work, not missing access</td></tr>
@@ -1952,7 +1997,7 @@ async function renderDiscover(){
     dChart('c-life',{type:'line',data:{labels:labs,datasets:[{label:'SPRSound healthy children (Yunting)',data:[...G.ctrlCurve.map(x=>x.p50),...ab.map(()=>null)],borderColor:'#1f9d55',backgroundColor:'#1f9d55'},
       {label:'KAUH healthy adolescents/adults (Littmann, diaphragm)',data:[...cb.map(()=>null),...L.curve.map(x=>x.p50)],borderColor:'#0f6fde',backgroundColor:'#0f6fde'}]},
       options:{plugins:{tooltip:{callbacks:{afterLabel:c=>{const arr=c.datasetIndex?L.curve:G.ctrlCurve,x=arr.find(z=>z.bin===c.label);return x?'n = '+x.n:''}}}},scales:{y:{title:{display:true,text:'median centroid (Hz)'}}}}})}
-  ageCharts(D.age);
+  ageCharts(D.age); apneaChart(D.apnea);
   const sp=D.spatial;
   (()=>{const CV=INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full; if(!CV)return;
     const GR=['I/VI','II/VI','III/VI'], pr=g=>{const v=CV.byGrade[g];return v&&v[1]?100*v[0]/v[1]:0};
@@ -2051,6 +2096,18 @@ async function renderDatasets(){
         <dt>Not browsable</dt><dd>Findings need a baseline recording to compare against, and this set has no controls. It therefore feeds <b>Discoveries only</b>; no patient pages and no audio are published from it.</dd>
         <dt>Source</dt><dd><a href="https://data.mendeley.com/datasets/9hdrddjpny/1" target="_blank" rel="noopener">data.mendeley.com/datasets/9hdrddjpny/1</a> · doi 10.17632/9hdrddjpny.1</dd>
         <dt>Cite</dt><dd>M. Fraiwan, N. S. Haider, B. Khassawneh, "Respiratory Sound Dataset of Chronic Bronchitis and Emphysema Patients," <i>Mendeley Data</i>, v1, 2026.</dd>
+      </dl></div>`})()}
+    ${(()=>{const A=window.__DISC&&window.__DISC.apnea; if(!A||!A.channels||!A.channels.trach)return ''; const T=A.channels.trach;
+      return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">PSG-Audio — polysomnography with tracheal &amp; ambient sound (Korompili et al.)</h2><span class="pill ok">pilot downloaded · analysed</span></div>
+      <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr">
+        <dt>Licence</dt><dd><b>${esc(A.source.licence)}</b> (Science Data Bank <span class="mono">${esc(A.source.doi)}</span>; read here from the public Hugging Face mirror <span class="mono">dust-systems/psg-audio</span>, a partial copy). Redistribution allowed with attribution.</dd>
+        <dt>Population</dt><dd>212 adults referred for suspected sleep apnea, 23–85 y, 76 % men, ~89 % severe apnea — ${esc(A.source.hospital)}, 2019–2020. Pilot here: <b>${T.patients} patients, ${T.hours} h</b> (${esc(A.source.selection)}).</dd>
+        <dt>Recording</dt><dd>Full diagnostic polysomnogram (Philips Alice 6, Sleepware G3) plus ${esc(A.source.channels.trach)} and ${esc(A.source.channels.mic)}, both 48 kHz, stored in hourly EDF files; decimated to 8 kHz for this platform. Only the diagnostic part of each night is included (the rest was CPAP titration).</dd>
+        <dt>Annotation</dt><dd>Sleep stages and respiratory events (obstructive, central, mixed apnea; hypopnea) scored by a sleep technician and finalised by a certified physician, AASM rules; audio was not used for scoring.</dd>
+        <dt>Why it is here</dt><dd>The only open dataset found with breath sound recorded in sync with a scored sleep study — it turns the apnea / AHI feature from “tested on a synthetic file” into “measured on real nights” (Discoveries 12).</dd>
+        <dt>Not browsable</dt><dd>Overnight bedroom audio can contain speech. The audio stays in the pipeline; <b>no recordings from this set are published on this site</b>, only the validation statistics.</dd>
+        <dt>Source</dt><dd><a href="https://www.scidb.cn/en/detail?dataSetId=778740145531650048" target="_blank" rel="noopener">scidb.cn</a> · <a href="https://huggingface.co/datasets/dust-systems/psg-audio" target="_blank" rel="noopener">Hugging Face mirror</a></dd>
+        <dt>Cite</dt><dd>G. Korompili et al., "PSG-Audio, a scored polysomnography dataset with simultaneous audio recordings for sleep apnea studies," <i>Scientific Data</i>, vol. 8, 2021. <a href="https://doi.org/${esc(A.source.paper)}" target="_blank" rel="noopener">doi ${esc(A.source.paper)}</a></dd>
       </dl></div>`})()}
     <div class="card"><h2>Other databases reviewed</h2>
       <table><thead><tr><th>Database</th><th>Population</th><th>Conditions</th><th>Licence</th><th>Status</th></tr></thead><tbody>

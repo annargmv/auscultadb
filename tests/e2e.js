@@ -16,7 +16,10 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     const child = await pg.evaluate(() => (__app.patients.find(p => p.severe && p.ref) || __app.patients.find(p => p.source === 'sprsound')).id);
     t0 = Date.now(); await pg.goto(url('#patient-' + child)); await liveReady(pg);
     check(true, `child ${child} playable in ${Date.now() - t0} ms`);
-    await pg.click('#playPath'); await pg.waitForTimeout(1000);
+    const gh = () => pg.evaluate(() => document.querySelector('.livegrid').offsetHeight);
+    const hs = new Set([await gh()]); await pg.click('#playPath');
+    for (let i = 0; i < 12; i++) { await pg.waitForTimeout(80); hs.add(await gh()); }
+    check(hs.size === 1, `live panels keep their height while playing (${[...hs].join(', ')} px)`);
     await pg.screenshot({ path: path.join(OUT, 'child.png'), fullPage: true });
     const other = await pg.evaluate(id => { const p = __app.patients.find(x => x.id === id); return (p.sites.find(s => s.loc !== p.curLoc) || p.sites[0]).loc }, child);
     t0 = Date.now(); await pg.click(`g.site[data-loc="${other}"]`); await liveReady(pg); check(true, `site switch in ${Date.now() - t0} ms`);
@@ -72,6 +75,7 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(await pg.evaluate(() => /KAUH/.test(document.body.innerText) && /SPRSound/.test(document.body.innerText)), 'datasets page lists SPRSound and KAUH');
     check(await pg.evaluate(() => /CirCor DigiScope/.test(document.body.innerText) && /ODC-By/.test(document.body.innerText)), 'datasets page lists CirCor with its licence');
     check(await pg.evaluate(() => /Chronic bronchitis/.test(document.body.innerText) && /9hdrddjpny/.test(document.body.innerText)), 'datasets page lists the CB/emphysema set with its DOI');
+    check(await pg.evaluate(() => /PSG-Audio/.test(document.body.innerText) && /10\.11922\/sciencedb\.00345/.test(document.body.innerText) && /no recordings from this set are published/.test(document.body.innerText)), 'datasets page lists PSG-Audio with licence, DOI and the no-audio rule');
     await pg.goto(url('#discover')); await pg.waitForFunction(() => document.querySelector('#d-device'), null, { timeout: 30000 }); await pg.waitForTimeout(500);
     await pg.screenshot({ path: path.join(OUT, 'discover.png'), fullPage: true });
     check(await pg.evaluate(() => document.querySelectorAll('canvas').length) >= 4, 'discoveries charts rendered');
@@ -86,6 +90,10 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       `contents rail: ${toc ? toc.n : 0} links, ${toc ? toc.live : 0} live, blocked ones disabled`);
     const cb = await pg.evaluate(() => { const c = document.querySelector('#d-cbemph'); return c && { rows: c.querySelectorAll('table tr').length, device: /no stethoscope confound/.test(c.innerText), caveat: /does not say which mode/.test(c.innerText) } });
     check(cb && cb.rows > 8 && cb.device && cb.caveat, `CB/emphysema section rendered (${cb ? cb.rows : 0} rows, device + filter-mode caveats present)`);
+    // 12 · apnea / AHI on real nights (PSG-Audio): scored by the page's own code, audio never published
+    const ap = await pg.evaluate(() => { const c = document.querySelector('#d-apnea'); return c && { chart: !!c.querySelector('#c-apnea'), rows: c.querySelectorAll('table tr').length,
+      same: /same code as an upload/.test(c.innerText), off: /Audio stays off this site/.test(c.innerText), live: !document.querySelector('#dToc a[data-jump="d-apnea"]').classList.contains('pending') } });
+    check(ap && ap.chart && ap.rows > 8 && ap.same && ap.off && ap.live, `apnea validation section rendered (${ap ? ap.rows : 0} rows, PSG-Audio, page's own scoring)`);
     // 16 · age signal: data-driven, held-out, never claims longevity
     const ag = await pg.evaluate(() => { const c = document.querySelector('#d-age'); return c && { clock: !!c.querySelector('#c-ageclock'), hr: !!c.querySelector('#c-agehr'),
       rows: c.querySelectorAll('table tr').length, honest: /longevity is not measured/.test(c.innerText), pmid: /PMID 34433816/.test(c.innerText) } });
