@@ -58,6 +58,11 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(!resp.chart && !resp.stats, 'no apnea/AHI panel on a cardiac-only recording');
     check(resp.rr.every(t => /not applicable/.test(t)) && resp.explained, `respiratory rate withheld on heart sounds (${resp.rr[0] || '—'})`);
     check(await pg.evaluate(() => !document.body.innerText.includes('SPRSound physicians labelled')), 'no SPRSound event-label card on a dataset without event timings');
+    await pg.waitForFunction(() => { const c = document.querySelector('#hrAgeCard'); return c && !/loading/.test(c.innerText) }, null, { timeout: 15000 });
+    const ha = await pg.evaluate(() => { const c = document.querySelector('#hrAgeCard'); return { t: c.innerText.replace(/\s+/g, ' '), chart: !!c.querySelector('#c-hrAge') } });
+    check(/bpm/.test(ha.t) && (ha.chart || /No heart rate|No healthy reference/.test(ha.t)) && /not a risk score|No heart rate|No healthy/.test(ha.t), `heart rate for age: ${ha.t.slice(18, 90)}`);
+    const rel = await pg.evaluate(() => [...document.querySelectorAll('dt')].find(d => d.textContent === 'Release').nextElementSibling.textContent);
+    check(/CC201[45]/.test(rel), `CirCor release from the data: ${rel}`);
     await pg.screenshot({ path: path.join(OUT, 'circor.png'), fullPage: true });
     const v2 = await pg.evaluate(id => { const p = __app.patients.find(x => x.id === id); return (p.sites.find(s => s.loc !== p.curLoc) || p.sites[0]).loc }, heart.id);
     await pg.click(`g.site[data-loc="${v2}"]`); await liveReady(pg);
@@ -81,6 +86,20 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       `contents rail: ${toc ? toc.n : 0} links, ${toc ? toc.live : 0} live, blocked ones disabled`);
     const cb = await pg.evaluate(() => { const c = document.querySelector('#d-cbemph'); return c && { rows: c.querySelectorAll('table tr').length, device: /no stethoscope confound/.test(c.innerText), caveat: /does not say which mode/.test(c.innerText) } });
     check(cb && cb.rows > 8 && cb.device && cb.caveat, `CB/emphysema section rendered (${cb ? cb.rows : 0} rows, device + filter-mode caveats present)`);
+    // 16 · age signal: data-driven, held-out, never claims longevity
+    const ag = await pg.evaluate(() => { const c = document.querySelector('#d-age'); return c && { clock: !!c.querySelector('#c-ageclock'), hr: !!c.querySelector('#c-agehr'),
+      rows: c.querySelectorAll('table tr').length, honest: /longevity is not measured/.test(c.innerText), pmid: /PMID 34433816/.test(c.innerText) } });
+    check(ag && ag.clock && ag.hr && ag.rows > 5 && ag.honest && ag.pmid, `age-signal section rendered (${ag ? ag.rows : 0} rows, longevity caveat ${ag && ag.honest}, refs ${ag && ag.pmid})`);
+    await (await pg.$('#d-age')).screenshot({ path: path.join(OUT, 'discover-age.png') });
+
+    // no invented people: recording sites come from the datasets, with live counts
+    await pg.goto(url('#doctors')); await pg.waitForTimeout(500);
+    const rs = await pg.evaluate(() => ({ dr: /\bDr\.|555-01/.test(document.body.innerText), cards: document.querySelectorAll('#view .card').length,
+      sum: [...document.querySelectorAll('#view .kpi b')].filter((_, i) => i % 3 === 0).reduce((a, b) => a + +b.textContent, 0), n: __app.patients.length,
+      stamp: /data built \d{4}-\d\d-\d\d/.test(document.querySelector('#dataStamp').textContent), foot: /open datasets/.test(document.querySelector('#footer').textContent) }));
+    check(!rs.dr && rs.cards >= 3 && rs.sum === rs.n, `recording sites: ${rs.cards} institutions, ${rs.sum}/${rs.n} patients, no invented doctors`);
+    check(rs.stamp && rs.foot, 'live data stamp and generated footer shown');
+    await pg.screenshot({ path: path.join(OUT, 'sites.png'), fullPage: true });
   } catch (e) { check(false, e.message) }
   check(errors.length === 0, 'no page errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await close();

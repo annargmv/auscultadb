@@ -7,57 +7,84 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#f4f6f9;--panel:#ffffff;--line:#e3e7ee;--ink:#15202b;--muted:#5d6b7a;--soft:#8b97a5;
-  --accent:#0f6fde;--accent-ink:#0b4ea0;--ok:#1f9d55;--warn:#d9822b;--bad:#d64545;
+  /* Redesign 2026-11: neutral ink chrome so the data colours (finding types, current = blue,
+     baseline = green) are the only saturated things on screen. */
+  --bg:#f3f5f8;--panel:#ffffff;--panel-2:#f8fafc;--line:#e4e8ef;--line-2:#d5dbe5;
+  --ink:#0e1726;--muted:#55637a;--soft:#8592a6;
+  --side:#0b1220;--side-2:#131c2e;--side-ink:#c9d3e3;--side-mute:#7c8aa3;
+  --accent:#0f6fde;--accent-ink:#0b4ea0;--accent-soft:#e8f1fd;--accent-line:#bcd5f6;
+  --cur:#0f6fde;--ok:#1f9d55;--warn:#d9822b;--bad:#d64545;
   --insp:rgba(15,111,222,.10);--exp:rgba(217,130,43,.10);
-  --radius:12px;--shadow:0 1px 2px rgba(16,24,40,.06),0 1px 3px rgba(16,24,40,.08);
-  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+  --radius:14px;--radius-s:9px;--shadow:0 1px 2px rgba(14,23,38,.04),0 2px 8px rgba(14,23,38,.04);
+  --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;--side-w:236px;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,system-ui,sans-serif}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--accent);text-decoration:none}
 button{font:inherit;cursor:pointer}
-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:18px;padding:10px 22px}
-.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px}
-.brand .logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#0f6fde,#36b3ff);display:grid;place-items:center;color:#fff}
-nav{display:flex;gap:4px;margin-left:12px}
-nav a{padding:7px 12px;border-radius:8px;color:var(--muted);font-weight:500}
-nav a.active{background:#eaf2fd;color:var(--accent-ink)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+/* app shell: a fixed left rail on desktop, a compact top bar under 900 px */
+header{position:fixed;inset:0 auto 0 0;width:var(--side-w);z-index:20;background:var(--side);color:var(--side-ink);
+  display:flex;flex-direction:column;align-items:stretch;gap:14px;padding:18px 14px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:#fff;letter-spacing:-.01em;padding:2px 6px 8px}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--side-mute);letter-spacing:0}
+.brand .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#1f9d55,#0f6fde);display:grid;place-items:center;color:#fff;flex:none}
+header nav{display:flex;flex-direction:column;gap:2px}
+header nav a{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--radius-s);color:var(--side-ink);font-weight:500}
+header nav a svg{width:17px;height:17px;flex:none;opacity:.75}
+header nav a:hover{background:var(--side-2);color:#fff}
+header nav a.active{background:#fff;color:var(--ink)}header nav a.active svg{opacity:1}
+.navlabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--side-mute);padding:6px 10px 2px;font-weight:600}
 .spacer{flex:1}
-.search{display:flex;align-items:center;gap:8px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 10px;min-width:260px}
-.search input{border:0;background:transparent;outline:0;font:inherit;width:100%}
-main{max-width:1240px;margin:0 auto;padding:22px}
-h1{font-size:22px;margin:0 0 4px}
-h2{font-size:16px;margin:0 0 10px}
+.search{display:flex;align-items:center;gap:8px;background:var(--side-2);border:1px solid #223050;border-radius:var(--radius-s);padding:7px 10px;color:var(--side-mute)}
+.search svg{width:15px;height:15px;flex:none}
+.search input{border:0;background:transparent;outline:0;font:inherit;width:100%;color:#fff}
+.search input::placeholder{color:var(--side-mute)}
+header .btn.primary{justify-content:center;background:var(--cur);border-color:var(--cur)}
+.stamp{color:#9fb0c9;margin-bottom:8px;font-family:var(--mono);font-size:10.5px}
+.stamp::before{content:'●';color:#1f9d55;margin-right:5px}
+.sidefoot{font-size:11px;color:var(--side-mute);line-height:1.45;padding:0 6px}
+main{margin-left:var(--side-w);max-width:1320px;padding:28px 34px}
+footer{margin-left:var(--side-w)}
+@media(max-width:900px){
+  header{position:sticky;inset:auto;width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px 14px;gap:8px}
+  .brand{padding:0}.brand small,.navlabel,.sidefoot,header .spacer{display:none}
+  header nav{flex-direction:row;overflow-x:auto;order:3;width:100%}header nav a{white-space:nowrap;padding:6px 10px}
+  .search{flex:1;min-width:140px}
+  main,footer{margin-left:0}main{padding:18px 16px}
+}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
+h2{font-size:15.5px;margin:0 0 10px;letter-spacing:-.01em}
 h3{font-size:14px;margin:0 0 6px}
-.sub{color:var(--muted);margin:0 0 18px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.sub{color:var(--muted);margin:0 0 20px;max-width:900px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px}
+.card>h2:first-child,.card>.row:first-child h2{font-size:15px}
 .grid{display:grid;gap:16px}
 .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
 @media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:7px 12px;font-weight:500;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
-.btn:hover{background:#f7f9fc}
+.btn{border:1px solid var(--line-2);background:#fff;border-radius:var(--radius-s);padding:7px 12px;font-weight:500;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--panel-2);border-color:#c3cbd8}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-ink)}
 .btn.small{padding:4px 9px;font-size:12px}
 .btn[disabled]{opacity:.5;cursor:default}
-.btn.active{background:#eaf2fd;border-color:#bcd5f6;color:var(--accent-ink)}
+.btn.active{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent-ink)}
 .btn.primary.active{background:var(--accent-ink);border-color:var(--accent-ink);color:#fff}
-.btn.active:not(.primary){box-shadow:inset 0 0 0 1px #bcd5f6}
+.btn.active:not(.primary){box-shadow:inset 0 0 0 1px var(--accent-line)}
 .pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;background:#eef1f5;color:var(--muted)}
 .pill.ok{background:#e4f6ec;color:#176b3c}.pill.bad{background:#fde8e8;color:#9f2b2b}.pill.warn{background:#fdf0e3;color:#8a4e12}.pill.info{background:#eaf2fd;color:var(--accent-ink)}
 table{width:100%;border-collapse:collapse}
-th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--soft);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-weight:600}
-td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
-tr.click{cursor:pointer}tr.click:hover td{background:#f7f9fc}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--soft);text-align:left;padding:10px 12px;background:var(--panel-2);border-bottom:1px solid var(--line);font-weight:600}
+td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--panel-2)}
 .mono{font-family:var(--mono);font-size:12.5px}
 .kv{display:grid;grid-template-columns:140px 1fr;gap:6px 12px;font-size:13.5px}
 .kv dt{color:var(--soft)}.kv dd{margin:0;min-width:0;overflow-wrap:anywhere}
 .grid>*{min-width:0}
-.avatar{width:38px;height:38px;border-radius:50%;background:#dfe8f5;color:var(--accent-ink);display:grid;place-items:center;font-weight:700;flex:none}
+.avatar{width:36px;height:36px;border-radius:10px;background:#dfe8f5;font-size:13px;color:var(--accent-ink);display:grid;place-items:center;font-weight:700;flex:none}
 .avatar.doc{background:#e5f3ea;color:#176b3c}
 .list-item{display:flex;align-items:center;gap:12px;padding:10px 6px;border-bottom:1px solid var(--line);cursor:pointer;border-radius:8px}
-.list-item:hover{background:#f7f9fc}
+.list-item:hover{background:var(--panel-2)}
 .list-item .meta{color:var(--muted);font-size:12.5px}
 .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 /* expert label = filled square · detector output = hollow ring. Same hue, different mark, so a
@@ -67,12 +94,12 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f7f9fc}
 .markkey{display:inline-flex;gap:12px;align-items:center;font-size:11px;color:#8b97a5;margin-left:auto}
 /* Discoveries is 15 long sections; the analysis map promised navigation it never delivered.
    This rail stays put while you scroll and marks where you are. */
-.toc{position:sticky;top:0;z-index:5;background:#fbfcfdee;backdrop-filter:blur(6px);border-bottom:1px solid #e1e6ed;
+.toc{position:sticky;top:0;border-radius:0 0 var(--radius-s) var(--radius-s);z-index:5;background:#fbfcfdee;backdrop-filter:blur(6px);border-bottom:1px solid #e1e6ed;
      margin:0 0 14px;padding:8px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
 .toc a{flex:0 0 auto;font-size:11.5px;padding:4px 9px;border-radius:999px;text-decoration:none;color:#5d6b7a;
        background:#eef1f5;white-space:nowrap;border:1px solid transparent}
 .toc a:hover{background:#e3e9f1;color:#15202b}
-.toc a.on{background:#0f6fde;color:#fff;border-color:#0f6fde}
+.toc a.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .toc a.pending{opacity:.55;font-style:italic}
 .markkey i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
 .player{display:flex;flex-direction:column;gap:10px}
@@ -81,7 +108,7 @@ canvas.graph{width:100%;height:auto;display:block;border-radius:8px;border:1px s
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
 .legend span{display:inline-flex;align-items:center;gap:5px}
 .ghostline{display:inline-block;width:22px;height:0;border-top:2px dashed #7c8a99}
-.solidline{display:inline-block;width:22px;height:0;border-top:3px solid var(--accent)}
+.solidline{display:inline-block;width:22px;height:0;border-top:3px solid var(--cur)}
 .time{font-family:var(--mono);font-size:12px;color:var(--muted);min-width:110px}
 .finding{border-left:4px solid var(--line);padding:8px 12px;margin-bottom:8px;background:#fbfcfd;border-radius:0 8px 8px 0;cursor:pointer}
 .finding:hover{background:#f3f6fa}
@@ -100,13 +127,13 @@ textarea.f{min-height:60px;resize:vertical}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#15202b;color:#fff;padding:9px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:60}
 .toast.show{opacity:1}
 .stat{display:flex;flex-direction:column;gap:2px}
-.stat b{font-size:20px}.stat span{font-size:12px;color:var(--soft)}
+.stat b{font-size:22px;letter-spacing:-.02em}.stat span{font-size:12px;color:var(--soft)}
 .rec-card{border:1px solid var(--line);border-radius:10px;padding:12px;background:#fbfcfd}
 .rec-card h3{display:flex;align-items:center;gap:8px}
 .tag{font-size:11px;padding:1px 7px;border-radius:6px;background:#eef1f5;color:var(--muted);font-weight:600}
 .hint{font-size:12px;color:var(--soft)}
 .tabs{display:flex;gap:4px;margin-bottom:12px}.tabs button{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 12px;font-size:12.5px;color:var(--muted)}
-.tabs button.on{background:#15202b;color:#fff;border-color:#15202b}
+.tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .src{font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px;white-space:nowrap}
 .src.real{background:#e4f6ec;color:#176b3c}.src.syn{background:#f1eefc;color:#5b3fb0}
 .ok-t{color:var(--ok);font-weight:700}.bad-t{color:var(--bad);font-weight:700}
@@ -130,24 +157,44 @@ textarea.f{min-height:60px;resize:vertical}
 .notice{background:#fff8e6;border:1px solid #f3dca4;border-radius:10px;padding:10px 12px;font-size:13px;color:#6b4e0e}
 .sr-only{position:absolute;left:-9999px}
 .phase-key{display:inline-block;width:14px;height:10px;border-radius:2px;vertical-align:-1px}
-footer{color:var(--soft);font-size:12px;text-align:center;padding:30px 0 10px}
+footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px;max-width:1320px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:18px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi b{display:block;font-size:clamp(20px,2.2vw,28px);letter-spacing:-.03em;line-height:1.1}
+.kpi span{font-size:12.5px;color:var(--muted)}
+.kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:4px;background:var(--k,var(--ink))}
+.avatar.s-sprsound{background:#e3eefc;color:#0b4ea0}.avatar.s-kauh{background:#e6f5ec;color:#176b3c}.avatar.s-circor{background:#fde8f1;color:#a3245c}
+.who{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}
+.tablecard{padding:0;overflow:hidden}.tablecard table{margin:0}.tablecard tr:last-child td{border-bottom:0}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filters select{border:1px solid var(--line-2);border-radius:var(--radius-s);padding:7px 10px;background:#fff;font:inherit}
+.ptgrid{grid-template-columns:320px minmax(0,1fr)}
+@media(max-width:1180px){.ptgrid{grid-template-columns:1fr}}
+.crumb{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);font-weight:500}
+.crumb:hover{color:var(--ink)}
+.ptgrid>div:first-child .kv{grid-template-columns:1fr;gap:0}
+.ptgrid>div:first-child .kv dt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-top:10px}
+.ptgrid>div:first-child .kv dt:first-child{margin-top:0}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand"><div class="logo">∿</div>AuscultaDB</div>
+  <div class="brand"><div class="logo">∿</div><div>AuscultaDB<small>open auscultation research</small></div></div>
+  <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search patients…" aria-label="Search patients (name, MRN, diagnosis)"></div>
   <nav>
-    <a href="#patients" id="nav-patients">Patients</a>
-    <a href="#doctors" id="nav-doctors">Doctors</a>
-    <a href="#discover" id="nav-discover">Discoveries</a>
-    <a href="#datasets" id="nav-datasets">Datasets &amp; licences</a>
+    <div class="navlabel">Clinical</div>
+    <a href="#patients" id="nav-patients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1a4 4 0 0 0-3-3.9M15.5 4.1a3.5 3.5 0 0 1 0 6.8"/></svg>Patients</a>
+    <a href="#doctors" id="nav-doctors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-5h4v5"/><path d="M12 8v4M10 10h4"/></svg>Recording sites</a>
+    <div class="navlabel">Research</div>
+    <a href="#discover" id="nav-discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>Discoveries</a>
+    <a href="#datasets" id="nav-datasets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Datasets &amp; licences</a>
   </nav>
-  <div class="spacer"></div>
-  <div class="search">🔍<input id="q" placeholder="Search patients (name, MRN, diagnosis)…"></div>
   <button class="btn primary" id="btnAdd">+ New patient (upload)</button>
+  <div class="spacer"></div>
+  <div class="sidefoot"><div id="dataStamp" class="stamp">loading data…</div>Decision support for research and teaching — not a diagnostic device.</div>
 </header>
 <main id="view"></main>
-<footer>AuscultaDB · demo platform · real recordings: SPRSound (Zhang et al., 2022) and KAUH (Fraiwan et al., 2021), both CC BY 4.0, and CirCor DigiScope (Oliveira et al., 2022), ODC-By 1.0 · analysis precomputed from the original WAV files · decision support, not a diagnosis</footer>
+<footer id="footer"></footer>
 
 <div class="modal-bg" id="modal"><div class="modal" id="modalBody"></div></div>
 <div class="toast" id="toast"></div>
@@ -188,12 +235,15 @@ function median(arr){if(!arr.length)return 0;const a=Array.from(arr).sort((x,y)=
 function mean(arr){let s=0;for(const v of arr)s+=v;return arr.length?s/arr.length:0}
 
 /* =====================================================================
-   1. Seed data — doctors and patients
+   1. Recording sites — where each open dataset was recorded (from the dataset papers, not invented)
+   There are no treating doctors in the open data, so none are shown: every patient is filed under
+   the institution and device that actually recorded it. Counts, ages and releases are computed live.
    ===================================================================== */
 const DOCTORS = [
-  {id:'d1', name:'Dr. Noa Levi',       specialty:'Pulmonology', dept:'Internal Medicine B', phone:'02-555-0101'},
-  {id:'d2', name:'Dr. Yoav Ben-David', specialty:'Cardiology',  dept:'Cardiology Unit',     phone:'02-555-0102'},
-  {id:'d3', name:'Dr. Maya Cohen',     specialty:'Pediatrics',  dept:'Pediatric ED',        phone:'02-555-0103'},
+  {id:'sprsound', name:'Shanghai Children’s Medical Center', specialty:'SPRSound · paediatric lungs', dept:'Shanghai, China · Yunting model II stethoscope'},
+  {id:'kauh',     name:'King Abdullah University Hospital',  specialty:'KAUH · adult lungs',          dept:'Irbid, Jordan · 3M Littmann 3200'},
+  {id:'circor',   name:'CirCor screening campaigns',          specialty:'CirCor DigiScope · paediatric heart', dept:'Paraíba, Brazil · DigiScope stethoscope'},
+  {id:'upload',   name:'Your uploads',                         specialty:'this browser session',         dept:'recordings you added'},
 ];
 
 // Patients come from the public SPRSound database (loaded at start) or from uploads in this session.
@@ -719,7 +769,7 @@ function trackRecord(p,type){
     if(!V)return null;
     const pc=a=>a&&a[1]?Math.round(100*a[0]/a[1]):null;
     if(type==='murmur'){const g=V.byGrade||{},q=k=>pc(g[k]);
-      return {txt:`measured on 941 patients: finds ${pc(V.murmurPatient.sens)} % of annotated murmurs overall — ${q('I/VI')} % of grade I/VI, ${q('III/VI')} % of grade III/VI`,tone:'warn'};}
+      return {txt:`measured on ${V.nPatients||'the'} patients: finds ${pc(V.murmurPatient.sens)} % of annotated murmurs overall — ${q('I/VI')} % of grade I/VI, ${q('III/VI')} % of grade III/VI`,tone:'warn'};}
     return {txt:`diastolic murmur · ${pc(V.diastolic.detected)} % of the ${V.diastolic.truthN} labelled cases found`,tone:'warn'};
   }
   if(cardiac)return {txt:`cardiac finding · ${esc(SRC_META[p.source]?SRC_META[p.source].tag:'this dataset')} has no heart-sound labels, so this is not validated here`,tone:'warn'};
@@ -791,7 +841,6 @@ async function decodeFile(url){
   const pr=fetchAudioBytes(url).then(async ab=>{const ctx=new OfflineAudioContext(1,SR,SR);const buf=await ctx.decodeAudioData(ab.slice(0));return normalisePeak(buf.getChannelData(0))});
   decodedCache.set(url,pr); pr.catch(()=>decodedCache.delete(url)); return pr;
 }
-const DOC_FOR=d=>/Kawasaki|Heart failure/.test(d)?'d2':/Asthma|Bronchiect|Chronic cough|Hemoptysis|hemosiderosis|bacterial bronchitis|foreign body|Bronchiolitis/i.test(d)?'d1':'d3';
 async function loadRealDataset(){
   REAL.status='loading';
   try{
@@ -799,23 +848,23 @@ async function loadRealDataset(){
     for(const m of INDEX.patients){
       const src=m.src||'sprsound', K=src==='kauh', C=src==='circor', id=(C?'circor-':K?'kauh-':'spr-')+m.key; if(patients.some(p=>p.id===id))continue;
       const sites=m.sites.map(x=>({...x}));
-      const p={id,key:m.key,source:src,name:(C?'CIRCOR-':K?'KAUH-':'SPR-')+m.pid,mrn:(C?'CirCor ':K?'KAUH ':'SPRSound ')+m.pid,age:m.age,ageLabel:m.age==null?'age not given':fmtAge(m.age),sex:m.sex,doctorId:DOC_FOR(m.disease),recorded:'—',
+      const p={id,key:m.key,source:src,name:(C?'CIRCOR-':K?'KAUH-':'SPR-')+m.pid,mrn:(C?'CirCor ':K?'KAUH ':'SPRSound ')+m.pid,age:m.age,ageLabel:m.age==null?'age not given':fmtAge(m.age),sex:m.sex,doctorId:src,recorded:(m.rel||[]).join(' + ')||'—',
         diagnosis:m.disease,severe:/\(severe\)/i.test(m.disease),control:/Control/i.test(m.disease),sites,ref:m.ref,summary:m.summary,detail:null,shard:m.shard,sound:m.sound,locRaw:m.locRaw,
         notes:`Real recordings from the SPRSound open paediatric database (Shanghai Children's Medical Center, Yunting model II stethoscope), ${sites.length} chest sites. Baseline = an expert-labelled Normal site of the same child${m.ref?', or — when the child has none — the same site of an age-matched healthy control':''}.`};
-      if(K){const d=sites.find(x=>x.mode==='D')||sites[0];p.curLoc=d.loc;p.summary={n:d.nFind,types:d.types};p.doctorId=/Heart failure/.test(m.disease)?'d2':'d1';
+      if(K){const d=sites.find(x=>x.mode==='D')||sites[0];p.curLoc=d.loc;p.summary={n:d.nFind,types:d.types};
         p.notes=`Real recording from the KAUH lung-sound database (King Abdullah University Hospital, Jordan; 3M Littmann 3200 electronic stethoscope, 4 kHz). One chest site (${m.locRaw}), recorded through the stethoscope's three filter modes — bell (low frequencies), diaphragm (mid) and extended (wide); pick a mode to compare. Expert label is for the whole recording (${m.sound}), without event timings. Baseline = the same filter mode of an age-matched healthy adult from the same database.`}
       else if(C){
         // the 4 valve sites are one heart at one moment; open at the most audible valve the experts named
         const first=sites.find(x=>x.audible)||sites.find(x=>x.record==='Murmur')||sites[0];
-        p.curLoc=first.loc; p.summary={n:first.nFind,types:first.types}; p.doctorId='d2';
+        p.curLoc=first.loc; p.summary={n:first.nFind,types:first.types};
         p.murmur=m.murmur; p.murLoc=m.murLoc||[]; p.audible=m.audible; p.sys=m.sys||{}; p.dia=m.dia||{}; p.outcome=m.outcome; p.ageBand=m.ageBand;
         p.ageLo=m.ageLo; p.ageHi=m.ageHi;   // the band's real span — the cardiac HR gate takes its union
-        p.notes=`Real heart-sound recording from the CirCor DigiScope database (two mass screening campaigns in Para\u00edba, Brazil; 4 kHz, resampled to 8 kHz). Up to four valve sites per patient \u2014 aortic, pulmonary, tricuspid and mitral. Expert annotation: murmur <b>${esc(m.murmur||'?')}</b>${(m.murLoc||[]).length?` at ${esc((m.murLoc||[]).join(', '))}`:''}${m.audible?`, most audible at ${esc(m.audible)}`:''}${m.sys&&m.sys.timing?`; ${esc(m.sys.timing.toLowerCase())}, ${esc(m.sys.shape||'shape n/a')}, grade ${esc(m.sys.grading||'n/a')}, ${esc(m.sys.pitch||'pitch n/a')} pitch, ${esc(m.sys.quality||'quality n/a')}`:''}${m.dia&&m.dia.timing?`; diastolic: ${esc(m.dia.timing.toLowerCase())}, grade ${esc(m.dia.grading||'n/a')}`:''}. Baseline = a murmur-free patient of the same age band, same valve. <b>Respiratory</b> findings are not validated on this set \u2014 it is a cardiac database.`;
+        p.notes=`Real heart-sound recording from the CirCor DigiScope database (two mass screening campaigns in Para\u00edba, Brazil; 4 kHz, resampled to 8 kHz). Up to four valve sites per patient \u2014 aortic, pulmonary, tricuspid and mitral. Expert annotation: murmur ${esc(m.murmur||'?')}${(m.murLoc||[]).length?` at ${esc((m.murLoc||[]).join(', '))}`:''}${m.audible?`, most audible at ${esc(m.audible)}`:''}${m.sys&&m.sys.timing?`; ${esc(m.sys.timing.toLowerCase())}, ${esc(m.sys.shape||'shape n/a')}, grade ${esc(m.sys.grading||'n/a')}, ${esc(m.sys.pitch||'pitch n/a')} pitch, ${esc(m.sys.quality||'quality n/a')}`:''}${m.dia&&m.dia.timing?`; diastolic: ${esc(m.dia.timing.toLowerCase())}, grade ${esc(m.dia.grading||'n/a')}`:''}. Baseline = a murmur-free patient of the same age band, same valve. Respiratory findings are not validated on this set \u2014 it is a cardiac database.`;
       }
       else p.curLoc=sites.slice().sort((a,b)=>siteScore(b)-siteScore(a))[0].loc; site0(p);
       patients.push(p); REAL.count+=sites.length;
     }
-    REAL.status='ready';
+    REAL.status='ready'; paintStamp();
   }catch(e){REAL.status='error';REAL.error=e.message}
   route(false);
 }
@@ -890,6 +939,14 @@ const siteChips=p=>p.source==='kauh'?`<div class="row" style="gap:4px;margin-top
 const SRC_META={sprsound:{tag:'SPRSound',credit:'© Zhang et al., SPRSound',lic:'CC BY 4.0',licUrl:'https://creativecommons.org/licenses/by/4.0/',cite:'SPRSound open paediatric respiratory sound database (Zhang et al., IEEE TBioCAS 2022), CC BY 4.0'},
   kauh:{tag:'KAUH',credit:'© Fraiwan et al., KAUH lung sounds',lic:'CC BY 4.0',licUrl:'https://creativecommons.org/licenses/by/4.0/',cite:'KAUH lung sounds dataset (Fraiwan et al., Data in Brief 35:106913, 2021; Mendeley Data jwyy9np4gv v3), CC BY 4.0'},
   circor:{tag:'CirCor',credit:'© Oliveira et al., CirCor DigiScope',lic:'ODC-By 1.0',licUrl:'https://opendatacommons.org/licenses/by/1-0/',cite:'CirCor DigiScope phonocardiogram dataset (Oliveira et al., IEEE JBHI 26(6):2524–2535, 2022; PhysioNet 1.0.3), ODC-By 1.0'}};
+// Live data stamp: the index.json `version` is the UTC time merge.py last wrote the data.
+function dataStamp(rel){const v=INDEX&&INDEX.version;if(!v)return 'data not loaded';const t=new Date(v);if(isNaN(t))return 'data version '+v;
+  const m=Math.round((Date.now()-t)/60000),ago=m<1?'just now':m<60?m+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago';
+  return `data built ${t.toISOString().slice(0,16).replace('T',' ')} UTC${rel===false?'':' · '+ago}`}
+function paintStamp(){const el=$('#dataStamp');if(el)el.textContent=dataStamp();
+  const f=$('#footer');if(f){const used=[...new Set(patients.map(p=>p.source))].filter(k=>SRC_META[k]);
+    f.innerHTML=`AuscultaDB · ${patients.length} patients from ${used.length} open datasets: ${used.map(k=>esc(SRC_META[k].cite)).join(' · ')} · ${esc(dataStamp(false))} · analysis precomputed from the original WAV files · decision support, not a diagnosis`}}
+setInterval(paintStamp,60000);
 const srcPill=p=>SRC_META[p.source]?`<span class="src real">real · ${SRC_META[p.source].tag}</span>`:'<span class="src syn">your upload</span>';
 const LF={dx:'',age:'',abn:'',src:'',sort:'severity'};
 const AGE_GROUPS=[['','All ages'],['0-1','< 1 year'],['1-3','1–3 y'],['3-6','3–6 y'],['6-12','6–12 y'],['12-18','12–18 y'],['18-40','18–40 y'],['40-65','40–65 y'],['65-200','65+ y']];
@@ -902,45 +959,58 @@ function renderPatients(){
     .sort((a,b)=>LF.sort==='age'?a.age-b.age:LF.sort==='dx'?a.diagnosis.localeCompare(b.diagnosis)||a.age-b.age:dxRank(a)-dxRank(b)||a.diagnosis.localeCompare(b.diagnosis)||a.age-b.age);
   const dxCount={}; patients.forEach(p=>dxCount[p.diagnosis]=(dxCount[p.diagnosis]||0)+1);
   const rows=list.map(p=>{const s=findingSummary(p);const d=docOf(p.doctorId);
-    return `<tr class="click" data-id="${p.id}"><td><div class="row"><div class="avatar">${esc(p.name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><div style="font-weight:600">${esc(p.name)} ${srcPill(p)}${p.severe?' <span class="pill bad">severe</span>':''}</div><div class="hint mono">${esc(p.mrn)}</div></div></div></td>
-      <td>${ageLabel(p)} · ${p.sex}</td><td>${esc(p.diagnosis)}${p.sites?siteChips(p):`<div class="hint">${esc(p.site)}</div>`}</td><td>${esc(d.name)}<div class="hint">${esc(d.specialty)}</div></td><td class="mono">${esc(p.recorded)}</td>
+    return `<tr class="click" data-id="${p.id}"><td><div class="who"><div class="avatar s-${p.source||'upload'}">${esc(p.name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div><div style="font-weight:600">${esc(p.name)} ${srcPill(p)}${p.severe?' <span class="pill bad">severe</span>':''}</div><div class="hint mono">${esc(p.mrn)}</div></div></div></td>
+      <td>${ageLabel(p)} · ${p.sex}</td><td>${esc(p.diagnosis)}${p.sites?siteChips(p):`<div class="hint">${esc(p.site)}</div>`}</td><td>${esc(d.name)}<div class="hint">${esc(d.dept.split(' · ')[0])}</div></td><td class="mono">${esc(p.recorded)}</td>
       <td>${s.n?`<span class="pill bad">${s.n} finding${s.n>1?'s':''}</span><div class="hint" style="margin-top:4px">${s.types.map(t=>`<span class="swatch" style="background:${TYPES[t].color}"></span>${TYPES[t].label}`).join('<br>')}</div>`:'<span class="pill ok">no anomalies</span>'}</td></tr>`}).join('');
   const total=patients.reduce((a,p)=>a+findingSummary(p).n,0), nReal=patients.filter(p=>p.source==='sprsound').length, nKauh=patients.filter(p=>p.source==='kauh').length, nRec=patients.reduce((a,p)=>a+(p.sites?p.sites.length:2),0);
-  const loading=REAL.status==='loading'?'<div class="notice" style="margin-bottom:12px">Loading real recordings (SPRSound, KAUH)…</div>':REAL.status==='error'?`<div class="notice" style="margin-bottom:12px">Real recordings could not be loaded (${esc(REAL.error)}). Synthetic demo patients are shown.</div>`:'';
-  $('#view').innerHTML=`<h1>Patients</h1><p class="sub">Real auscultation recordings from two open databases: SPRSound children (up to four chest sites each, analysed against the child's own normal site) and KAUH adolescents and adults 12–90 y (one chest site, three stethoscope filter modes, analysed against an age-matched healthy adult).</p>${loading}
-    <div class="grid g3" style="margin-bottom:16px">
-      <div class="card stat"><b>${patients.length}</b><span>patients · ${nReal} children (SPRSound) · ${nKauh} adolescents/adults (KAUH) · ${patients.filter(p=>p.source==='circor').length} heart sounds (CirCor)${patients.filter(p=>!isPre(p)).length?` · ${patients.filter(p=>!isPre(p)).length} uploaded`:''}</span></div>
-      <div class="card stat"><b>${nRec}</b><span>recordings (chest sites)</span></div>
-      <div class="card stat"><b>${total}</b><span>anomalies detected across the database</span></div>
+  const loading=REAL.status==='loading'?'<div class="notice" style="margin-bottom:12px">Loading real recordings (SPRSound, KAUH)…</div>':REAL.status==='error'?`<div class="notice" style="margin-bottom:12px">Real recordings could not be loaded (${esc(REAL.error)}). No patients can be shown until the data loads.</div>`:'';
+  $('#view').innerHTML=`<h1>Patients</h1><p class="sub">${(()=>{const rng=k=>{const a=patients.filter(p=>p.source===k&&p.age!=null).map(p=>p.age);return a.length?`${fmtAge(Math.min(...a))}–${fmtAge(Math.max(...a))}`:''};
+      const part={sprsound:n=>`SPRSound children ${rng('sprsound')} (${n}; up to four chest sites, against the child's own normal site)`,kauh:n=>`KAUH adolescents and adults ${rng('kauh')} (${n}; three stethoscope filter modes, against an age-matched healthy adult)`,circor:n=>`CirCor heart sounds ${rng('circor')} (${n}; four valve sites)`};
+      const used=Object.keys(part).filter(k=>patients.some(p=>p.source===k));
+      return `Real auscultation recordings from ${used.length} open database${used.length===1?'':'s'}: ${used.map(k=>part[k](patients.filter(p=>p.source===k).length)).join(', ')}. <span class="hint mono">${esc(dataStamp())}</span>`})()}</p>${loading}
+    <div class="kpis">
+      <div class="kpi" style="--k:var(--ink)"><b>${patients.length}</b><span>patients${patients.filter(p=>!isPre(p)).length?` · ${patients.filter(p=>!isPre(p)).length} uploaded`:''}</span></div>
+      <div class="kpi" style="--k:#0f6fde"><b>${nReal}</b><span>children · lungs (SPRSound)</span></div>
+      <div class="kpi" style="--k:#1f9d55"><b>${nKauh}</b><span>adolescents/adults · lungs (KAUH)</span></div>
+      <div class="kpi" style="--k:#d6336c"><b>${patients.filter(p=>p.source==='circor').length}</b><span>children · heart (CirCor)</span></div>
+      <div class="kpi" style="--k:var(--soft)"><b>${nRec}</b><span>recordings · ${total} anomalies detected</span></div>
     </div>
-    <div class="row" style="margin-bottom:10px">
+    <div class="filters">
       <select class="f" id="fDx" style="width:auto"><option value="">All diagnoses (${patients.length})</option>${Object.keys(dxCount).sort().map(d=>`<option ${LF.dx===d?'selected':''} value="${esc(d)}">${esc(d)} (${dxCount[d]})</option>`).join('')}</select>
       <select class="f" id="fAge" style="width:auto">${AGE_GROUPS.map(([v,l])=>`<option value="${v}" ${LF.age===v?'selected':''}>${l}</option>`).join('')}</select>
       ${(()=>{const SRCS=[['','All datasets'],['sprsound','SPRSound · children · lungs'],['kauh','KAUH · adults · lungs'],['circor','CirCor · children · heart'],['upload','Your uploads']];
         const c=o=>o?patients.filter(p=>(p.source||'upload')===o).length:patients.length;
         return `<select class="f" id="fSrc" style="width:auto">${SRCS.filter(([v])=>!v||c(v)).map(([v,l])=>`<option value="${v}" ${LF.src===v?'selected':''}>${l} (${c(v)})</option>`).join('')}</select>`})()}
-      <select class="f" id="fAbn" style="width:auto"><option value="">All children</option><option value="abn" ${LF.abn==='abn'?'selected':''}>≥1 abnormal site (expert)</option><option value="norm" ${LF.abn==='norm'?'selected':''}>All sites normal</option></select>
+      <select class="f" id="fAbn" style="width:auto"><option value="">All patients</option><option value="abn" ${LF.abn==='abn'?'selected':''}>≥1 abnormal site (expert)</option><option value="norm" ${LF.abn==='norm'?'selected':''}>All sites normal</option></select>
       <select class="f" id="fSort" style="width:auto"><option value="severity" ${LF.sort==='severity'?'selected':''}>Sort: severe & rare first</option><option value="age" ${LF.sort==='age'?'selected':''}>Sort: age</option><option value="dx" ${LF.sort==='dx'?'selected':''}>Sort: diagnosis</option></select>
       <span class="hint">${list.length} shown</span></div>
-    <div class="card" style="padding:0 6px"><table><thead><tr><th>Patient</th><th>Age · Sex</th><th>Diagnosis · expert label per site</th><th>Doctor</th><th>Recorded</th><th>Analysis</th></tr></thead><tbody>${rows||`<tr><td colspan="6" class="empty">No patients match.</td></tr>`}</tbody></table></div>`;
+    <div class="card tablecard"><table><thead><tr><th>Patient</th><th>Age · Sex</th><th>Diagnosis · expert label per site</th><th>Recorded at</th><th>Release</th><th>Analysis</th></tr></thead><tbody>${rows||`<tr><td colspan="6" class="empty">No patients match.</td></tr>`}</tbody></table></div>`;
   $('#view').querySelectorAll('tr.click').forEach(tr=>{tr.onclick=()=>location.hash='#patient-'+tr.dataset.id;
     tr.onmouseenter=()=>{const p=patients.find(x=>x.id===tr.dataset.id);if(p&&isPre(p)&&!p.detail)getDetail(p).then(d=>{p.detail=p.detail||d}).catch(()=>{})}});
   for(const [id,k] of [['fDx','dx'],['fAge','age'],['fAbn','abn'],['fSrc','src'],['fSort','sort']]){const el=$('#'+id);if(el)el.onchange=e=>{LF[k]=e.target.value;renderPatients()}}
 }
 function renderDoctors(){
-  $('#view').innerHTML=`<h1>Doctors</h1><p class="sub">Treating physicians and their patient panels.</p><div class="grid g3">`+doctors.map(d=>{
-    const ps=patients.filter(p=>p.doctorId===d.id); const n=ps.reduce((a,p)=>a+findingSummary(p).n,0);
-    return `<div class="card"><div class="row" style="margin-bottom:10px"><div class="avatar doc">${esc(d.name.replace('Dr. ','').split(' ').map(w=>w[0]).join(''))}</div><div><div style="font-weight:600">${esc(d.name)}</div><div class="hint">${esc(d.specialty)} · ${esc(d.dept)}</div></div></div>
-      <div class="row" style="margin-bottom:8px"><span class="pill info">${ps.length} patients</span><span class="pill ${n?'bad':'ok'}">${n} findings</span></div>
-      ${ps.map(p=>`<div class="list-item" data-id="${p.id}"><div class="avatar" style="width:30px;height:30px;font-size:12px">${esc(p.name.split(' ').map(w=>w[0]).join('').slice(0,2))}</div><div style="flex:1"><div style="font-weight:500">${esc(p.name)}</div><div class="meta">${esc(p.diagnosis)}</div></div><span class="badge-n">${findingSummary(p).n}</span></div>`).join('')||'<div class="empty">No patients</div>'}
-      <div style="margin-top:10px"><a href="#doctor-${d.id}">Open doctor page →</a></div></div>`}).join('')+`</div>`;
-  $('#view').querySelectorAll('.list-item').forEach(el=>el.onclick=()=>location.hash='#patient-'+el.dataset.id);
+  // Every number on this page is counted from the loaded index — nothing typed in.
+  const groups=doctors.map(d=>({d,ps:patients.filter(p=>p.doctorId===d.id)})).filter(g=>g.ps.length);
+  const card=({d,ps})=>{const n=ps.reduce((a,p)=>a+findingSummary(p).n,0), ages=ps.map(p=>p.age).filter(a=>a!=null), rec=ps.reduce((a,p)=>a+(p.sites?p.sites.length:2),0);
+    const dx={};ps.forEach(p=>dx[p.diagnosis]=(dx[p.diagnosis]||0)+1); const top=Object.entries(dx).sort((a,b)=>b[1]-a[1]);
+    const rel={};ps.forEach(p=>String(p.recorded||'').split(' + ').filter(x=>x&&x!=='—').forEach(r=>rel[r]=(rel[r]||0)+1));
+    const meta=SRC_META[d.id];
+    return `<div class="card"><div class="who" style="margin-bottom:12px"><div class="avatar s-${d.id}">${esc(d.name.split(/\s+/).filter(w=>/^[A-Z]/.test(w)).map(w=>w[0]).join('').slice(0,2))}</div><div><div style="font-weight:600">${esc(d.name)}</div><div class="hint">${esc(d.dept)}</div></div></div>
+      <div class="kpis" style="grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+        <div class="kpi"><b>${ps.length}</b><span>patients</span></div><div class="kpi"><b>${rec}</b><span>recordings</span></div><div class="kpi"><b>${n}</b><span>findings</span></div></div>
+      <dl class="kv" style="grid-template-columns:84px 1fr"><dt>Dataset</dt><dd>${esc(d.specialty)}${meta?` · <a href="${meta.licUrl}" target="_blank" rel="noopener">${meta.lic}</a>`:''}</dd>
+        <dt>Ages</dt><dd>${ages.length?`${fmtAge(Math.min(...ages))} – ${fmtAge(Math.max(...ages))} · median ${fmtAge(median(ages))}`:'—'}${ages.length<ps.length?` <span class="hint">(${ps.length-ages.length} without age)</span>`:''}</dd>
+        <dt>Releases</dt><dd>${Object.entries(rel).sort().map(([r,k])=>`<span class="tag">${esc(r)} · ${k}</span>`).join(' ')||'—'}</dd>
+        <dt>Diagnoses</dt><dd>${top.slice(0,6).map(([x,k])=>`${esc(x)} <span class="hint">${k}</span>`).join('<br>')}${top.length>6?`<div class="hint">+ ${top.length-6} more</div>`:''}</dd></dl>
+      <div class="row" style="margin-top:12px"><a class="btn small" href="#doctor-${d.id}">All ${ps.length} patients →</a></div></div>`};
+  $('#view').innerHTML=`<h1>Recording sites</h1><p class="sub">The open datasets do not name treating physicians, so patients are filed under the institution and stethoscope that recorded them. Counts, ages, releases and diagnoses are computed from the data currently loaded (${dataStamp()}).</p><div class="grid g3">${groups.map(card).join('')}</div>`;
 }
 function renderDoctor(id){
   const d=doctors.find(x=>x.id===id); if(!d){location.hash='#doctors';return}
   const ps=patients.filter(p=>p.doctorId===d.id);
-  $('#view').innerHTML=`<a href="#doctors">← Doctors</a><h1 style="margin-top:8px">${esc(d.name)}</h1><p class="sub">${esc(d.specialty)} · ${esc(d.dept)} · ${esc(d.phone)}</p>
-    <div class="card" style="padding:0 6px"><table><thead><tr><th>Patient</th><th>Diagnosis</th><th>Site</th><th>Recorded</th><th>Findings</th></tr></thead><tbody>${ps.map(p=>{const r=isPre(p)?{findings:p.summary.types.map(t=>({type:t,pos:'see patient'}))}:getAnalysis(p);
+  $('#view').innerHTML=`<a class="crumb" href="#doctors">← Recording sites</a><h1 style="margin-top:8px">${esc(d.name)}</h1><p class="sub">${esc(d.specialty)} · ${esc(d.dept)} · ${ps.length} patients</p>
+    <div class="card tablecard"><table><thead><tr><th>Patient</th><th>Diagnosis</th><th>Site</th><th>Release</th><th>Findings</th></tr></thead><tbody>${ps.map(p=>{const r=isPre(p)?{findings:p.summary.types.map(t=>({type:t,pos:'see patient'}))}:getAnalysis(p);
       return `<tr class="click" data-id="${p.id}"><td style="font-weight:600">${esc(p.name)}<div class="hint mono">${esc(p.mrn)} · ${ageLabel(p)} ${p.sex}</div></td><td>${esc(p.diagnosis)}</td><td>${esc(p.site)}</td><td class="mono">${esc(p.recorded)}</td><td>${r.findings.map(f=>`<div><span class="swatch" style="background:${TYPES[f.type].color}"></span>${TYPES[f.type].label} <span class="hint">· ${esc(f.pos)}</span></div>`).join('')||'<span class="pill ok">none</span>'}</td></tr>`}).join('')||'<tr><td colspan="5" class="empty">No patients assigned.</td></tr>'}</tbody></table></div>`;
   $('#view').querySelectorAll('tr.click').forEach(tr=>tr.onclick=()=>location.hash='#patient-'+tr.dataset.id);
 }
@@ -951,7 +1021,7 @@ function renderPatient(id){
   const p=patients.find(x=>x.id===id);
   if(!p){ if(REAL.status==='loading'||REAL.status==='idle'){$('#view').innerHTML='<div class="empty">Loading recordings…</div>';return} location.hash='#patients';return}
   if(isPre(p)&&!(p.pre&&p.expert&&p.expert.path.loc===p.curLoc)){
-    $('#view').innerHTML=`<a href="#patients">← Patients</a><h1 style="margin-top:8px">${esc(p.name)}</h1><p class="sub">${ageLabel(p)} · ${esc(p.diagnosis)}</p><div class="card empty">Loading ${esc(p.site)} recording and its precomputed analysis…</div>`;
+    $('#view').innerHTML=`<a class="crumb" href="#patients">← Patients</a><h1 style="margin-top:8px">${esc(p.name)}</h1><p class="sub">${ageLabel(p)} · ${esc(p.diagnosis)}</p><div class="card empty">Loading ${esc(p.site)} recording and its precomputed analysis…</div>`;
     ensureSite(p,p.curLoc).then(()=>{if(location.hash==='#patient-'+p.id)renderPatient(p.id)}).catch(e=>{$('#view').innerHTML+=`<div class="notice" style="margin-top:10px">Could not load this patient: ${esc(e.message)}</div>`});
     return;
   }
@@ -964,13 +1034,14 @@ function renderPatient(id){
     return `<div class="rec-card"><h3>${title} <span class="tag">${tag}</span>${a.uploaded[which]?'<span class="tag" style="background:#e4f6ec;color:#176b3c">uploaded WAV</span>':''}</h3>
       <dl class="kv"><dt>Site</dt><dd>${esc(isReal&&which==='normal'?p.baseSite:p.site)}</dd>${em?`<dt>Expert label</dt><dd><b>${esc(em.record)}</b> · ${p.source==='kauh'?'whole-recording label (no event timings)':em.events.length+' annotated events'}<div class="hint mono">${esc(em.name)}</div></dd>`:''}<dt>Duration</dt><dd>${(A.dur).toFixed(1)} s · ${SR/1000} kHz mono</dd><dt>Resp. rate (est.)</dt><dd>${isCardiacOnly(p)?'<span class="hint">not applicable — heart-sound recording, not chest-wall breathing</span>':A.cycles.some(c=>c.estimated)?'<span class="hint">not reliable — phases estimated</span>':(A.rr?Math.round(A.rr)+' /min':'—')+' · '+A.cycles.filter(c=>!c.partial).length+' full cycles'}</dd><dt>Heart rate (est.)</dt><dd>${(()=>{const hr=A.heart.hr,a=p.age,n=a==null?[50,110]:a<1?[100,160]:a<3?[90,150]:a<6?[80,140]:a<12?[70,120]:a<18?[60,110]:[50,100];return !hr?'—':(hr>=0.85*n[0]&&hr<=1.15*n[1])?Math.round(hr)+' bpm':'<span class="hint">not reliable ('+Math.round(hr)+' bpm is implausible for age)</span>'})()}</dd><dt>I:E ratio</dt><dd>${A.ie&&!A.cycles.some(c=>c.estimated)&&1/A.ie>=0.4&&1/A.ie<=3?'1:'+(1/A.ie).toFixed(1):'—'}</dd></dl>
       <div class="row" style="margin-top:10px"><button class="btn small primary" data-play="${which}">▶ Play</button><label class="btn small">⬆ Replace with WAV<input type="file" accept="audio/*" class="sr-only" data-upload="${which}"></label>${a.uploaded[which]?`<button class="btn small" data-restore="${which}">Restore ${isReal?'original':'synthetic'}</button>`:''}</div></div>`};
-  $('#view').innerHTML=`<a href="#patients">← Patients</a>
+  $('#view').innerHTML=`<a class="crumb" href="#patients">← Patients</a>
     <div class="row" style="justify-content:space-between;margin-top:8px"><div><h1>${esc(p.name)} <span class="hint mono" style="font-weight:400;font-size:13px">${esc(p.mrn)}</span></h1><p class="sub">${ageLabel(p)} · ${p.sex==='M'?'Male':'Female'} · ${esc(p.diagnosis)}</p></div>
       <div class="row">${isReal?'<span class="src real" style="font-size:12px;padding:4px 9px">real recording · dataset record (read-only)</span>':''}<button class="btn" id="btnReport">⎘ Copy report</button>${isReal?'':'<button class="btn" id="btnDelete" style="color:var(--bad)">Delete</button>'}</div></div>
-    <div class="grid" style="grid-template-columns:340px 1fr">
+    <div class="grid ptgrid">
       <div class="grid" style="align-content:start">
-        <div class="card"><h2>Profile</h2><dl class="kv"><dt>Treating doctor</dt><dd><a href="#doctor-${d.id}">${esc(d.name)}</a><div class="hint">${esc(d.specialty)}</div></dd><dt>Source</dt><dd>${srcPill(p)}${isReal?'<div class="hint">'+SRC_META[p.source].credit+', <a href="'+SRC_META[p.source].licUrl+'" target="_blank" rel="noopener">'+SRC_META[p.source].lic+'</a> · <a href="#datasets">details</a></div>':''}</dd>${isReal?'':`<dt>Recorded</dt><dd class="mono">${esc(p.recorded)}</dd>`}<dt>Auscultation site</dt><dd>${esc(p.site)}${isReal&&p.baseSite!==p.site?`<div class="hint">baseline: ${esc(p.baseSite)}</div>`:''}</dd><dt>Notes</dt><dd>${esc(p.notes||'—')}</dd></dl></div>
+        <div class="card"><h2>Profile</h2><dl class="kv"><dt>Recorded at</dt><dd><a href="#doctor-${d.id}">${esc(d.name)}</a><div class="hint">${esc(d.dept)}</div></dd><dt>Release</dt><dd class="mono">${esc(p.recorded)}</dd><dt>Source</dt><dd>${srcPill(p)}${isReal?'<div class="hint">'+SRC_META[p.source].credit+', <a href="'+SRC_META[p.source].licUrl+'" target="_blank" rel="noopener">'+SRC_META[p.source].lic+'</a> · <a href="#datasets">details</a></div>':''}</dd>${isReal?'':`<dt>Recorded</dt><dd class="mono">${esc(p.recorded)}</dd>`}<dt>Auscultation site</dt><dd>${esc(p.site)}${isReal&&p.baseSite!==p.site?`<div class="hint">baseline: ${esc(p.baseSite)}</div>`:''}</dd><dt>Notes</dt><dd>${esc(p.notes||'—')}</dd></dl></div>
         ${p.sites&&isPre(p)?chestMapCard(p):''}
+        ${p.source==='circor'?'<div class="card" id="hrAgeCard"><h2>Heart rate for age</h2><div class="hint">loading the reference…</div></div>':''}
         <div class="card"><h2>Recordings</h2><div class="grid">${recCard('normal','Baseline','normal breathing')}${recCard('path','Current','respiratory / cardiac disease')}</div></div>
       </div>
       <div class="grid" style="align-content:start">
@@ -1045,12 +1116,39 @@ function renderPatient(id){
   $('#view').querySelectorAll('g.site,.siteRow').forEach(el=>el.onclick=e=>{e.stopPropagation();chooseSite(p,el.dataset.loc,true)});
   if($('#btnEdit'))$('#btnEdit').onclick=()=>openPatientForm(p);
   if($('#btnDelete'))$('#btnDelete').onclick=()=>confirmDialog(`Delete ${p.name} and both recordings?`,()=>{patients=patients.filter(x=>x.id!==p.id);invalidate(p);persist();location.hash='#patients';toast('Patient deleted')});
+  if(p.source==='circor')fillHrAge(p,r);
   $('#btnReport').onclick=()=>{const txt=reportText(p,r);navigator.clipboard?.writeText(txt).then(()=>toast('Report copied to clipboard')).catch(()=>toast('Clipboard not available here'))};
   const cv=$('#graph'); if(cv)cv.onclick=e=>{const rect=cv.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const t=clamp((x-G.padL/rect.width)/(1-(G.padL+G.padR)/rect.width),0,1)*DUR;player.pos=t;if(live&&live.ok){live.seek(current.which,t);if(player.playing)live.play(current.which,t)}else if(player.playing)play(p,player.which,t);else drawGraph()};
   if(cv){cv.onmousemove=e=>{const rect=cv.getBoundingClientRect();current.hover=((e.clientX-rect.left)/rect.width);drawGraph()}; cv.onmouseleave=()=>{current.hover=null;drawGraph()}}
   drawGraph(); updatePlayerUI();
   buildLive(p,r,a);
   buildFlow(p,r,a);
+}
+// Heart rate for age (CirCor): this recording's acoustic heart rate against the healthy reference for the
+// child's age band, fit by pipeline/age_discover.py on training-split patients. Reference only — Discoveries 16
+// shows that the deviation does not predict clinical outcome, so it is never presented as a risk.
+let hrAgeChart=null;
+async function fillHrAge(p,r){
+  const el=$('#hrAgeCard'); if(!el)return;
+  let A=null; try{A=(window.__DISC||(window.__DISC=await cachedFetch('data/discover.json','json'))).age}catch(e){}
+  if(!document.body.contains(el))return;
+  const hr=r&&r.pathA&&r.pathA.heart&&r.pathA.heart.hr, ref=A&&A.heart&&A.heart.ref, band=p.ageBand, R=ref&&ref[band];
+  if(!A){el.innerHTML='<h2>Heart rate for age</h2><div class="hint">Reference not computed yet (pipeline/age_discover.py).</div>';return}
+  if(!R||!hr){el.innerHTML=`<h2>Heart rate for age</h2><div class="hint">${!hr?'No heart rate could be measured on this recording.':`No healthy reference for the ${esc(band||'unknown')} band (too few training patients).`}</div>`;return}
+  const z=(hr-R.p50)/R.scale, where=hr<R.p10?'below the 10th percentile':hr>R.p90?'above the 90th percentile':hr<R.p25?'in the lower quartile':hr>R.p75?'in the upper quartile':'in the middle half';
+  const n=DISCOVER_MAP.findIndex(x=>x.id==='age')+1;
+  el.innerHTML=`<h2>Heart rate for age</h2>
+    <div class="row" style="align-items:baseline;gap:8px"><b style="font-size:26px;letter-spacing:-.02em">${Math.round(hr)}</b><span class="hint">bpm · ${esc(p.site)}</span></div>
+    <div class="hint" style="margin:2px 0 8px">${where} of ${R.n} healthy ${({Neonate:'neonates',Infant:'infants',Child:'children',Adolescent:'adolescents'})[band]||esc(band)} (median ${Math.round(R.p50)} bpm) · z = ${z>=0?'+':''}${z.toFixed(1)}</div>
+    <div style="position:relative;height:120px"><canvas id="c-hrAge"></canvas></div>
+    <p class="hint">Measured from this recording by the page’s own S1/S2 detector; reference from CirCor patients with no murmur and a normal outcome. A reference, not a risk score: on held-out data the deviation does not separate normal from abnormal outcome (<a href="#discover" data-jump="d-age" class="toAge">Discoveries ${n}</a>).</p>`;
+  if(hrAgeChart){try{hrAgeChart.destroy()}catch(e){}}
+  if(window.Chart)hrAgeChart=new Chart($('#c-hrAge'),{type:'bar',data:{labels:[band],datasets:[
+      {label:'healthy 10th–90th',data:[[R.p10,R.p90]],backgroundColor:'rgba(214,51,108,.15)',borderColor:'rgba(214,51,108,.45)',borderWidth:1,borderSkipped:false,barThickness:26},
+      {label:'healthy 25th–75th',data:[[R.p25,R.p75]],backgroundColor:'rgba(214,51,108,.35)',borderWidth:0,barThickness:26,grouped:false},
+      {label:'this recording',type:'scatter',data:[{x:hr,y:band}],backgroundColor:'#0e1726',pointRadius:6,pointStyle:'rectRot'}]},
+    options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,scales:{x:{suggestedMin:Math.min(R.p10,hr)-10,suggestedMax:Math.max(R.p90,hr)+10,title:{display:true,text:'bpm'}},y:{display:false}},plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}}}});
+  const a=el.querySelector('.toAge'); if(a)a.onclick=e=>{e.preventDefault();location.hash='#discover';const go=()=>{const t=document.getElementById('d-age');if(t)t.scrollIntoView();else setTimeout(go,150)};setTimeout(go,300)};
 }
 function chestMapCard(p){
   if(p.source==='kauh')return kauhMapCard(p);
@@ -1062,7 +1160,7 @@ function chestMapCard(p){
       ${sel?`<circle cx="${cx}" cy="${cy}" r="24" fill="none" stroke="#15202b" stroke-width="3"/>`:''}${isB?`<circle cx="${cx}" cy="${cy}" r="23" fill="none" stroke="#15202b" stroke-width="1.5" stroke-dasharray="4 3"/>`:''}
       <circle cx="${cx}" cy="${cy}" r="18" fill="${c}"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">${short[x.loc]||x.loc}</text></g>`}).join('');
   const rows=p.sites.map(x=>{const types=x.types||[],sel=x.loc===p.curLoc,isB=x.loc===base.loc;
-    return `<div class="list-item siteRow" data-loc="${x.loc}" style="${sel?'background:#eaf2fd':''}"><span class="lamp" style="background:${REC_COL[x.record]||'#8b97a5'}"></span>
+    return `<div class="list-item siteRow" data-loc="${x.loc}" style="${sel?'background:var(--accent-soft)':''}"><span class="lamp" style="background:${REC_COL[x.record]||'#8b97a5'}"></span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${esc(x.site)} ${sel?'<span class="tag">playing</span>':isB?'<span class="tag">baseline</span>':''}</div>
       <div class="meta">expert: <b>${esc(x.record)}</b>${x.labelSrc==='events'?' (from event labels)':''} · detected: ${types.length?types.map(t=>TYPES[t].label).join(', '):'none'}${x.base==='control'?' · vs healthy control':''}</div></div><button class="btn small" data-listen="${x.loc}">▶</button></div>`}).join('');
   return `<div class="card"><h2>Chest map · listen by site</h2>
@@ -1088,7 +1186,7 @@ function heartMapCard(p){
       ${sel?`<circle cx="${cx}" cy="${cy}" r="24" fill="none" stroke="#15202b" stroke-width="3"/>`:''}${aud&&!sel?`<circle cx="${cx}" cy="${cy}" r="23" fill="none" stroke="#e84393" stroke-width="2" stroke-dasharray="3 3"/>`:''}
       <circle cx="${cx}" cy="${cy}" r="18" fill="${c}"/><text x="${cx}" y="${cy+4}" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">${x.loc}</text></g>`}).join('');
   const rows=p.sites.map(x=>{const types=x.types||[],sel=x.loc===p.curLoc,cardiac=types.filter(t=>TYPES[t]&&TYPES[t].kind==='cardiac');
-    return `<div class="list-item siteRow" data-loc="${x.loc}" style="${sel?'background:#eaf2fd':''}"><span class="lamp" style="background:${REC_COL[x.record]||'#8b97a5'}"></span>
+    return `<div class="list-item siteRow" data-loc="${x.loc}" style="${sel?'background:var(--accent-soft)':''}"><span class="lamp" style="background:${REC_COL[x.record]||'#8b97a5'}"></span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${esc(NAME[x.loc]||x.loc)} valve ${sel?'<span class="tag">playing</span>':''}${x.audible?'<span class="tag" style="background:#fde8f1;color:#b3246b">most audible</span>':''}</div>
       <div class="meta">expert: <b>${esc(x.record)}</b> \u00b7 detected: ${cardiac.length?cardiac.map(t=>TYPES[t].label).join(', '):types.length?'<span class="hint">respiratory only (not validated here)</span>':'none'} \u00b7 vs murmur-free control</div></div><button class="btn small" data-listen="${x.loc}">\u25b6</button></div>`}).join('');
   const sys=p.sys&&p.sys.timing?`${esc(p.sys.timing)}, ${esc(p.sys.shape||'shape n/a')}, grade <b>${esc(p.sys.grading||'n/a')}</b>, ${esc(p.sys.pitch||'?')} pitch, ${esc(p.sys.quality||'?')}`:null;
@@ -1120,7 +1218,7 @@ function kauhMapCard(p){
       <text x="${ox}" y="268" text-anchor="middle" font-size="11" fill="#8b97a5">${lab}</text>`;
   const MODE_TXT={B:'Bell — low frequencies (heart, low-pitched sounds)',D:'Diaphragm — mid frequencies (standard for lung sounds)',E:'Extended — wide band'};
   const rows=['D','B','E'].map(m=>{const x=p.sites.find(q=>q.mode===m); if(!x)return ''; const sel=x.loc===p.curLoc, types=x.types||[];
-    return `<div class="list-item siteRow" data-loc="${x.loc}" style="${sel?'background:#eaf2fd':''}"><span class="lamp" style="background:${c}"></span>
+    return `<div class="list-item siteRow" data-loc="${x.loc}" style="${sel?'background:var(--accent-soft)':''}"><span class="lamp" style="background:${c}"></span>
       <div style="flex:1;min-width:0"><div style="font-weight:600;font-size:13px">${esc(MODE_TXT[m])} ${sel?'<span class="tag">playing</span>':''}</div>
       <div class="meta">expert: <b>${esc(x.record)}</b> (${esc(p.sound||'')}) · detected: ${types.length?types.map(t=>TYPES[t].label).join(', '):'none'} · vs healthy adult, same mode</div></div><button class="btn small" data-listen="${x.loc}">▶</button></div>`}).join('');
   return `<div class="card"><h2>Chest map · filter modes</h2>
@@ -1135,7 +1233,7 @@ function chooseSite(p,loc,autoplay){stopPlayback();destroyLive();LIVE.autoplay=!
   if(isPre(p)){p.curLoc=loc;ensureSite(p,loc).then(go).catch(e=>toast('Could not load site: '+e.message))}else{selectSite(p,loc);go()}}
 function reportText(p,r){
   const d=docOf(p.doctorId);
-  return [`AuscultaDB analysis report`,`Patient: ${p.name} (${p.mrn}), ${ageLabel(p)}, ${p.sex}`,`Doctor: ${d.name} (${d.specialty})`,`Diagnosis: ${p.diagnosis}`,`Site: ${p.site}   Recorded: ${p.recorded}`,
+  return [`AuscultaDB analysis report`,`Patient: ${p.name} (${p.mrn}), ${ageLabel(p)}, ${p.sex}`,`Recorded at: ${d.name} (${d.dept})`,`Diagnosis: ${p.diagnosis}`,`Site: ${p.site}   Release: ${p.recorded}`,
     `Baseline: RR ≈ ${Math.round(r.normA.rr||0)}/min, HR ≈ ${Math.round(r.normA.heart.hr||0)} bpm, I:E 1:${r.normA.ie?(1/r.normA.ie).toFixed(1):'?'}`,
     `Current:  RR ≈ ${Math.round(r.pathA.rr||0)}/min, HR ≈ ${Math.round(r.pathA.heart.hr||0)} bpm, I:E 1:${r.pathA.ie?(1/r.pathA.ie).toFixed(1):'?'}`,``,`Anomalies (${r.findings.length}):`,
     ...r.findings.map((f,i)=>`${i+1}. ${TYPES[f.type].label}${f.poly?' (polyphonic)':''} — ${f.phase}, ${f.pos}; site: ${f.site}; ${f.t0.toFixed(2)}–${f.t1.toFixed(2)} s; ${f.count} events; confidence ${Math.round(f.conf*100)}%\n   ${f.detail}`),
@@ -1249,7 +1347,6 @@ function openPatientForm(){
   <form id="pf"><div class="form-grid">
     <div><label class="f">Name or study ID</label><input class="f" name="name" required></div><div><label class="f">Age (years, e.g. 0.5)</label><input class="f" name="age" type="number" min="0" max="120" step="0.1" required></div>
     <div><label class="f">Sex</label><select class="f" name="sex"><option>F</option><option>M</option></select></div>
-    <div><label class="f">Treating doctor</label><select class="f" name="doctorId">${doctors.map(d=>`<option value="${d.id}">${esc(d.name)} — ${esc(d.specialty)}</option>`).join('')}</select></div>
     <div style="grid-column:1/-1"><label class="f">Working diagnosis</label><input class="f" name="diagnosis"></div>
     <div><label class="f">Baseline recording (normal)</label><input class="f" name="fBase" type="file" accept="audio/*" required></div><div><label class="f">Baseline site</label><select class="f" name="sBase">${opt(UP_SITES[0])}</select></div>
     <div><label class="f">Current recording</label><input class="f" name="fCur" type="file" accept="audio/*" required></div><div><label class="f">Current site</label><select class="f" name="sCur">${opt(UP_SITES[0])}</select></div>
@@ -1259,7 +1356,7 @@ function openPatientForm(){
     try{
       const [B,C]=await Promise.all([decodeToSR(fd.get('fBase'),MAX_FLOW_S),decodeToSR(fd.get('fCur'),MAX_FLOW_S)]);
       const crop=x=>x.length>MAX_ANALYSE_S*SR?x.slice(0,MAX_ANALYSE_S*SR):x, age=+fd.get('age');
-      const p={id:'up-'+Date.now().toString(36),source:'upload',name:String(fd.get('name')).trim(),mrn:'your upload',age,ageLabel:fmtAge(age),sex:fd.get('sex'),doctorId:fd.get('doctorId'),
+      const p={id:'up-'+Date.now().toString(36),source:'upload',name:String(fd.get('name')).trim(),mrn:'your upload',age,ageLabel:fmtAge(age),sex:fd.get('sex'),doctorId:'upload',
         recorded:new Date().toISOString().slice(0,10),diagnosis:String(fd.get('diagnosis')||'').trim()||'—',
         sites:[{loc:'base',site:fd.get('sBase'),record:'Normal (your label)',events:[]},{loc:'cur',site:fd.get('sCur'),record:'Current',events:[]}],baselineLoc:'base',
         audio:{base:crop(B.x),cur:crop(C.x)},fullAudio:{base:B.x,cur:C.x},
@@ -1571,22 +1668,74 @@ const DISCOVER_MAP=[
   {id:'pitch',q:'Does wheeze pitch change with a child’s age or disease?',m:'Dominant pitch inside expert-labelled wheeze events (one median per child) vs age; by diagnosis',d:'SPRSound wheeze events',nov:'New hypothesis — airway size could shape wheeze pitch',st:'result'},
   {id:'rates',q:'Can breathing and heart rate be measured reliably from 9–15 s auscultation clips?',m:'Rates from the recordings; test–retest agreement across sites of the same child (ICC); WHO fast-breathing thresholds',d:'SPRSound, all releases',nov:'Methodological check',st:'result'},
   {id:'audit',q:'Which “normal” labels may hide adventitious sounds?',m:'Expert-Normal recordings with sustained tonal sound or many fine-crackle-like transients, ranked for re-listening',d:'SPRSound expert-Normal recordings',nov:'Label-quality audit (finds candidates, not errors)',st:'result'},
-  {id:'probe',q:'Can one aggregate score per child separate sick from healthy children, using only the sites experts called normal?',m:'Method of Google’s wearable hypertension study: per-recording features averaged into one child-level vector, regularised logistic regression, 5-fold cross-validation, batch-confound check',d:'SPRSound 2022–2024 (635 children)',nov:'Tests whether the group-level “hidden abnormality” is usable per individual',st:'result'},
+  {id:'probe',q:'Can one aggregate score per child separate sick from healthy children, using only the sites experts called normal?',m:'Method of Google’s wearable hypertension study: per-recording features averaged into one child-level vector, regularised logistic regression, 5-fold cross-validation, batch-confound check',d:'SPRSound 2022–2024',nov:'Tests whether the group-level “hidden abnormality” is usable per individual',st:'result'},
   {id:'hear',q:'Do learned health-audio embeddings (Google HeAR) beat hand-made features?',m:'HeAR embeddings of 2-s windows, averaged per child, same linear probe; MedGemma to draft the written report from the structured findings',d:'SPRSound + adult sets',nov:'Foundation-model vs hand-crafted features on paediatric auscultation',st:'hear'},
-  {id:'life',q:'How do breath sounds change across the lifespan, from infant to elderly?',m:'Same spectral-centroid reference on healthy children (SPRSound) and healthy adolescents/adults 12–90 y (KAUH), per age group',d:'SPRSound controls + KAUH healthy',nov:'First look across two open datasets; device-confounded',st:'result'},
+  {id:'life',q:'How do breath sounds change across the lifespan, from infant to elderly?',m:'Same spectral-centroid reference on healthy children (SPRSound) and healthy adolescents/adults (KAUH), per age group',d:'SPRSound controls + KAUH healthy',nov:'First look across two open datasets; device-confounded',st:'result'},
   {id:'disease',q:'Adult diseases: asthma, heart failure, COPD, pneumonia, fibrosis — what does each sound like?',m:'Detector features (diaphragm mode) per diagnosis vs healthy adults; can sound alone tell heart failure from asthma?',d:'KAUH',nov:'Replication + “cardiac asthma” question',st:'result'},
   {id:'apnea',q:'Apnea / hypopnea and AHI from breathing sounds overnight',m:'Acoustic flow proxy with AASM scoring over full nights, compared with polysomnography AHI',d:'PhysioNet / sleep datasets (overnight)',nov:'Acoustic AHI validated against PSG',st:'physio'},
   {id:'heart',q:'Do the murmur and S3 detectors work on real heart sounds?',m:'Detector output vs expert murmur timing, grade and valve location',d:'CirCor DigiScope (PhysioNet)',nov:'First validation of the cardiac findings',st:'physio'},
-  {id:'cbemph',q:'On one stethoscope, what separates chronic bronchitis and emphysema from healthy adults — and from each other?',m:'234 recordings (86 CB, 148 emphysema) on the same Littmann 3200 as KAUH, against KAUH’s 35 healthy adults in all three filter modes; plus a CB-vs-emphysema probe',d:'Mendeley 9hdrddjpny (Fraiwan et al.) + KAUH',nov:'First device-matched disease comparison here — no stethoscope confound',st:'result'},
-  {id:'device',q:'Do the detectors generalise across stethoscopes, hospitals and filter modes?',m:'Thresholds from SPRSound (Yunting) applied unchanged to KAUH (Littmann 3200) in bell, diaphragm and extended mode; agreement between modes',d:'SPRSound vs KAUH',nov:'Generalisation test across devices and filters',st:'result'}];
+  {id:'cbemph',q:'On one stethoscope, what separates chronic bronchitis and emphysema from healthy adults — and from each other?',m:'Chronic bronchitis and emphysema recordings on the same Littmann 3200 as KAUH, against KAUH’s healthy adults in all three filter modes; plus a CB-vs-emphysema probe',d:'Mendeley 9hdrddjpny (Fraiwan et al.) + KAUH',nov:'First device-matched disease comparison here — no stethoscope confound',st:'result'},
+  {id:'device',q:'Do the detectors generalise across stethoscopes, hospitals and filter modes?',m:'Thresholds from SPRSound (Yunting) applied unchanged to KAUH (Littmann 3200) in bell, diaphragm and extended mode; agreement between modes',d:'SPRSound vs KAUH',nov:'Generalisation test across devices and filters',st:'result'},
+  {id:'age',q:'Does auscultation carry a biological-age signal — the precondition for a longevity marker?',m:'Age clock: ridge regression on detector features, fit on 60 % of patients and scored on the held-out 40 % against a predict-the-mean null (bootstrap CI, permutation p); heart rate against CirCor age bands; heart-rate-for-age deviation against clinical outcome',d:'KAUH adults · SPRSound per release · CirCor',nov:'New question here — age-gap clocks exist for ECG, not for auscultation; no survival data, so longevity itself is not measured',st:'result'}];
 const ST={result:['pill ok','result below'],adults:['pill warn','needs adult data — waiting for site access'],sleep:['pill warn','needs overnight data — waiting for site access'],hear:['pill warn','needs Hugging Face access (HAI-DEF terms + token)'],physio:['pill warn','needs PhysioNet data — run the download on your computer and attach']};
 function dChart(id,cfg){const el=$('#'+id);if(!el||!window.Chart)return;discoverCharts.push(new Chart(el,{...cfg,options:{animation:false,responsive:true,maintainAspectRatio:false,...cfg.options}}))}
+// ---- 16 · age signal. Every sentence below is chosen by the numbers in discover.json['age'].
+const ageVerdict=c=>c.significant?'<span class="pill ok">signal on held-out data</span>':c.pPerm<0.05?'<span class="pill warn">weak — CI includes zero</span>':'<span class="pill">no signal</span>';
+function ageCard(A){
+  const n=DISCOVER_MAP.findIndex(x=>x.id==='age')+1;
+  if(!A)return `<div class="card" id="d-age"><h2>${n} · Biological-age signal in auscultation</h2><div class="notice">Not computed yet — run <span class="mono">python3 pipeline/age_discover.py</span> then <span class="mono">merge.py --bump</span>.</div></div>`;
+  const a=A.adults,ch=A.children||[],h=A.heart,o=A.outcome, sig=ch.filter(c=>c.significant);
+  const row=c=>`<tr><td>${esc(c.label)}</td><td class="mono">${c.nTrain} / ${c.nTest}</td><td class="mono">${c.mae} y</td><td class="mono">${c.maeNull} y</td><td class="mono">${c.gainCI[0]} to ${c.gainCI[1]} y</td><td class="mono">${c.pPerm<0.001?'< 0.001':c.pPerm.toFixed(3)}</td><td>${ageVerdict(c)}</td></tr>`;
+  const anyBreath=a.significant||sig.length;
+  return `<div class="card" id="d-age"><h2>${n} · Biological-age signal in auscultation — can sound support a longevity marker?</h2>
+    <p class="hint" style="margin-top:0">In other modalities the gap between a model’s predicted age and real age tracks survival: the ECG-age gap predicts all-cause mortality (${esc(A.refs[0].cite)}, PMID ${A.refs[0].pmid}), and resting heart rate is itself linked to mortality (${esc(A.refs[1].cite)}, PMID ${A.refs[1].pmid}). <b>No dataset here has follow-up or survival data, so longevity is not measured on this page.</b> What can be tested is the precondition: does the sound carry age at all? Fit on ${Math.round(100*(1-A.testFrac))} % of patients, scored on the held-out ${Math.round(100*A.testFrac)} % (seed ${A.seed}, computed ${esc(String(A.generated).slice(0,10))}).</p>
+    <h3>Breath-sound age clock</h3>
+        <div style="overflow-x:auto"><table><thead><tr><th>Data</th><th>Patients train / test</th><th>Test error</th><th>Guess-the-mean error</th><th>Gain, 95 % CI</th><th>Permutation p</th><th></th></tr></thead><tbody>${row(a)}${ch.map(row).join('')}</tbody></table></div>
+        <p class="hint">${a.significant?`In adults the clock beats the null on held-out subjects (Spearman ρ = ${a.rho}).`:`<b>Adults: no age signal.</b> On ${a.nTest} held-out KAUH subjects (${a.ageRange[0]}–${a.ageRange[1]} y) the clock misses by ${a.mae} y — the same as guessing the training mean (${a.maeNull} y); permutation p = ${a.pPerm.toFixed(2)}.`}
+        ${sig.length?` Children: ${sig.map(c=>`${esc(c.release)} beats the null by ${(c.maeNull-c.mae).toFixed(2)} y (ρ = ${c.rho})`).join('; ')} — statistically real but ${sig.every(c=>c.maeNull-c.mae<0.5)?'clinically negligible (a few weeks of age)':'small'}, and ${ch.length-sig.length} of ${ch.length} releases show nothing, so it does not generalise across recording batches.`:` Children: no release shows a signal that survives its CI.`}
+        ${anyBreath?'':' The detector features describe the abnormal sounds they were built for, not the person’s age.'}</p>
+    <div class="grid g2">
+      <div><h3>Held-out adults: predicted vs real age</h3>
+        <div style="position:relative;height:230px"><canvas id="c-ageclock"></canvas></div>
+        <p class="hint">Held-out KAUH subjects: predicted vs real age. The dashed line is a perfect clock; a flat cloud means no age information.</p></div>
+      <div><h3>Heart-sound maturation (CirCor)</h3>
+        <div style="position:relative;height:230px"><canvas id="c-agehr"></canvas></div>
+        <p class="hint">Bars: 10th–90th percentile of acoustic heart rate in ${h.refN} training-split patients with no murmur and a normal outcome (line = median). Dots: median of the ${h.nTest} held-out patients per band. ${h.significant?`Heart rate falls with age band on held-out data (ρ = ${h.rho}, ${fmtP(h.pRho)}): the heart-sound detector recovers normal cardiac maturation, so the heart channel <b>does</b> carry age.`:'No age trend on held-out data.'} This is expected physiology, which is the point — it shows the measure is sound before anything is built on it.</p>
+        <h3>Does heart rate for age flag the sick?</h3>
+        <table><thead><tr><th>Comparison (held-out)</th><th>Normal</th><th>Abnormal</th><th>Effect r</th><th></th></tr></thead><tbody>
+          <tr><td>HR-for-age deviation (z)</td><td class="mono">${o.z.medA}</td><td class="mono">${o.z.medB}</td><td class="mono">${fmtR(o.z.r)}</td><td class="mono">${fmtP(o.z.p)}</td></tr>
+          <tr><td>Size of deviation |z|</td><td class="mono">${o.absZ.medA}</td><td class="mono">${o.absZ.medB}</td><td class="mono">${fmtR(o.absZ.r)}</td><td class="mono">${fmtP(o.absZ.p)}</td></tr>
+          ${Object.entries(o.byCampaign).map(([c,m])=>`<tr><td class="hint">within campaign ${esc(c)}</td><td class="mono">${m.medA}</td><td class="mono">${m.medB}</td><td class="mono">${fmtR(m.r)}</td><td class="mono">${fmtP(m.p)}</td></tr>`).join('')}
+        </tbody></table>
+        <p class="hint">${o.significant?'Heart rate for age differs with clinical outcome on held-out patients.':'<b>No.</b> A child’s heart rate relative to their age band does not differ between normal and abnormal clinical outcome, overall or within either screening campaign.'} Outcome here is CirCor’s screening verdict, not survival.</p></div></div>
+    <div class="notice" style="margin-top:10px"><b>Verdict.</b> ${a.significant?'Breath sounds carry age information in adults.':sig.length?`Breath sounds carry almost no age information: adults show none, and only ${sig.length} of ${ch.length} SPRSound releases beat the null, by ${sig.map(c=>(c.maeNull-c.mae).toFixed(2)+' y').join(', ')}. An auscultation “age gap” cannot be built from these features.`:'Breath sounds, as this platform measures them, carry no usable age signal — an auscultation “age gap” cannot be built from these features.'} ${h.significant?'Heart sounds carry age through heart rate, which is the one acoustic measure with published mortality links in adults.':''} ${o.significant?'':'In children that rate-for-age is not linked to outcome.'} Testing longevity needs recordings with follow-up — adults, one device, years of outcome data — which no open auscultation dataset provides today.</div>
+  </div>`;
+}
+function ageCharts(A){
+  if(!A)return;
+  const t=A.adults.test, lo=Math.min(...t.map(x=>Math.min(x.age,x.pred))), hi=Math.max(...t.map(x=>Math.max(x.age,x.pred)));
+  dChart('c-ageclock',{type:'scatter',data:{datasets:[{label:'held-out subject',data:t.map(x=>({x:x.age,y:x.pred})),backgroundColor:'rgba(15,111,222,.55)',pointRadius:3.5},
+    {label:'perfect clock',type:'line',data:[{x:lo,y:lo},{x:hi,y:hi}],borderColor:'#8592a6',borderDash:[5,4],borderWidth:1.2,pointRadius:0}]},
+    options:{scales:{x:{type:'linear',title:{display:true,text:'real age (y)'}},y:{title:{display:true,text:'predicted age (y)'}}},plugins:{legend:{labels:{boxWidth:10}}}}});
+  const H=A.heart,B=Object.keys(H.ref);
+  dChart('c-agehr',{type:'bar',data:{labels:B.map(b=>`${b} (n=${H.ref[b].n})`),datasets:[
+    {label:'healthy reference 10th–90th pct',data:B.map(b=>[H.ref[b].p10,H.ref[b].p90]),backgroundColor:'rgba(214,51,108,.18)',borderColor:'rgba(214,51,108,.5)',borderWidth:1,borderSkipped:false},
+    {label:'reference median',type:'line',data:B.map(b=>H.ref[b].p50),borderColor:'#d6336c',borderWidth:2,pointRadius:3},
+    {label:'held-out median',type:'line',data:B.map(b=>(H.byBand.find(x=>x.band===b)||{}).p50??null),borderColor:'#0e1726',showLine:false,pointRadius:5,pointStyle:'rectRot'}]},
+    options:{scales:{y:{title:{display:true,text:'heart rate (bpm)'}}},plugins:{legend:{labels:{boxWidth:10}}}}});
+}
 async function renderDiscover(){
   $('#view').innerHTML='<h1>Discoveries</h1><div class="empty">Loading results…</div>';
   let D; try{D=await cachedFetch('data/discover.json','json');window.__DISC=D}catch(e){$('#view').innerHTML=`<h1>Discoveries</h1><div class="notice">Results not available: ${esc(e.message)}</div>`;return}
   if(location.hash!=='#discover')return;
   const g=D.growth,h=D.hidden,sv=D.severity,wp=D.wheezePitch,ra=D.rates,au=D.audit;
   const cohortKeys=new Set(patients.filter(p=>p.source==='sprsound').map(p=>p.key));
+  // counts in the analysis map come from discover.json, not from text
+  const MP=id=>DISCOVER_MAP.find(x=>x.id===id)||{};
+  if(D.probe&&D.probe.n)MP('probe').d=`SPRSound 2022–2024 (${D.probe.n[0]} children)`;
+  if(D.cbemph&&D.cbemph.n){const c=D.cbemph.n;MP('cbemph').m=`${c.recordings} recordings (${c.cb} CB, ${c.emphysema} emphysema) on the same Littmann 3200 as KAUH, against KAUH’s ${c.kauhHealthy.D} healthy adults in all three filter modes; plus a CB-vs-emphysema probe`}
+  const KH=patients.filter(p=>p.source==='kauh'&&p.control&&p.age!=null).map(p=>p.age);
+  if(KH.length)MP('life').m=`Same spectral-centroid reference on healthy children (SPRSound) and healthy adolescents/adults ${Math.min(...KH)}–${Math.max(...KH)} y (KAUH), per age group`;
   const HRT=DISCOVER_MAP.find(x=>x.id==='heart');   // CirCor is in: flip the row from "waiting for data" to a result
   if(HRT){const CV=INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full; HRT.st=CV?'result':'physio';
     if(CV)HRT.d=`CirCor DigiScope \u00b7 ${CV.nPatients.toLocaleString()} patients, ${CV.nRecordings.toLocaleString()} recordings`;}
@@ -1659,7 +1808,7 @@ async function renderDiscover(){
       <p class="hint">${q.sound<0.65?`Weak. Pooled across releases the sound score reaches AUC ${q.sound.toFixed(2)}, but part of that is the recording batch (batch alone ${q.release.toFixed(2)}), and within a single release it falls to ${Math.min(q.within_BioCAS2022[2],q.within_BioCAS2024[2]).toFixed(2)}–${Math.max(q.within_BioCAS2022[2],q.within_BioCAS2024[2]).toFixed(2)}. So the “hidden abnormality” in section 2 is real on average but too small to screen an individual child with these six hand-made features. This is the gap a learned encoder (Google HeAR, analysis 9) is meant to close.`:`The child-level score separates the groups beyond batch and age.`}</p></div></div>`})():''}
     ${D.kauh?(()=>{const K=D.kauh,L=K.life,G=D.growth;return `<div class="card" id="d-life"><h2>10 · Across the lifespan — healthy children and healthy adults</h2>
       <div class="grid g2"><div style="position:relative;height:280px"><canvas id="c-life"></canvas></div>
-      <p class="hint">Median spectral centroid of healthy recordings per age group: ${G.nControls} healthy-control recordings from SPRSound children (Yunting stethoscope) and ${L.n} healthy KAUH subjects aged 12–90 (Littmann 3200, diaphragm mode). Within each dataset the curve is flat — children ρ = ${G.rhoControls.toFixed(2)} (${fmtP(G.pControls)}), adults ρ = ${L.rho.toFixed(2)} (${fmtP(L.p)}). The jump between the two curves is the stethoscope and its filter, not age: in KAUH the same recordings sit at ${K.modes.byMode.B.cen.toFixed(0)} Hz in bell mode, ${K.modes.byMode.D.cen.toFixed(0)} Hz in diaphragm and ${K.modes.byMode.E.cen.toFixed(0)} Hz in extended. A true lifespan curve needs one device across all ages (ICBHI has children to elderly on the same devices).</p></div></div>
+      <p class="hint">Median spectral centroid of healthy recordings per age group: ${G.nControls} healthy-control recordings from SPRSound children (Yunting stethoscope) and ${L.n} healthy KAUH subjects${KH.length?` aged ${Math.min(...KH)}–${Math.max(...KH)}`:''} (Littmann 3200, diaphragm mode). Within each dataset the curve is flat — children ρ = ${G.rhoControls.toFixed(2)} (${fmtP(G.pControls)}), adults ρ = ${L.rho.toFixed(2)} (${fmtP(L.p)}). The jump between the two curves is the stethoscope and its filter, not age: in KAUH the same recordings sit at ${K.modes.byMode.B.cen.toFixed(0)} Hz in bell mode, ${K.modes.byMode.D.cen.toFixed(0)} Hz in diaphragm and ${K.modes.byMode.E.cen.toFixed(0)} Hz in extended. A true lifespan curve needs one device across all ages (ICBHI has children to elderly on the same devices).</p></div></div>
     <div class="card" id="d-disease"><h2>11 · Adult diseases — what the detector hears, by diagnosis</h2>
       <p class="hint" style="margin-top:0">KAUH, diaphragm mode, each group vs the ${K.n.healthy} healthy subjects (median age ${K.disease.healthyAge.toFixed(0)} y). Combined diagnoses (e.g. heart failure + COPD) count in both groups. Effect r: rank-biserial, positive = higher in the disease group. Red = p &lt; 0.05.</p>
       <table><thead><tr><th>Diagnosis</th><th>n</th><th>Median age</th><th>Expert: wheeze · crackles</th>${K.disease.feats.map(f=>`<th>${esc(f[1])}</th>`).join('')}</tr></thead><tbody>
@@ -1749,6 +1898,7 @@ async function renderDiscover(){
       <div><h3 style="margin-top:0">Breathing rate: does a longer clip help?</h3><table><thead><tr><th>Clip length</th><th>SPRSound children</th><th>KAUH adults</th></tr></thead><tbody>${K.rateByLen.map(x=>`<tr><td>${x.len}</td><td class="mono">${x.spr[1]?Math.round(100*x.spr[0]/x.spr[1])+' % of '+x.spr[1]:'—'}</td><td class="mono">${x.kauh[1]?Math.round(100*x.kauh[0]/x.kauh[1])+' % of '+x.kauh[1]:'—'}</td></tr>`).join('')}</tbody></table>
       <p class="hint">Share of recordings where full breath cycles could be segmented. Across filter modes of the same recording, heart rate agrees well (ICC ${K.modes.iccHR.toFixed(2)}, ${K.modes.nHR} subjects) but breathing rate does not (ICC ${K.modes.iccRR.toFixed(2)}, ${K.modes.nRR} subjects).</p></div></div>
       <p class="hint">Thresholds unchanged. On the Littmann diaphragm signal the detector over-calls (false rhonchi in healthy adults) and misses crackles; bell and extended modes are quiet and miss more. The filter alone moves the spectral centroid by ${(K.modes.byMode.E.cen-K.modes.byMode.B.cen).toFixed(0)} Hz on identical audio — so absolute acoustic numbers are only comparable within one device and one filter. Adults' breath cycles are segmented far more often than children's (about half vs about 10 %) at every clip length, so clip length is not what limits the paediatric recordings — children's faster breathing or the device is the more likely cause (the two can't be separated here).</p></div>`})():''}
+    ${ageCard(D.age)}
     <div class="card" id="d-limits"><h2>Limits of this data, and what is still missing</h2>
       <h3 style="margin-top:4px">Every clip is 9–15 seconds</h3>
       <p class="hint" style="margin-top:0">SPRSound and KAUH recordings run 9–15 s (CirCor 5–65 s). Three questions cannot be answered at that length and all wait on overnight recordings: apnea and AHI measured on real sleep rather than a test file; breathing and heart rate over a whole night instead of one clip; and the acoustic AHI checked against a scored sleep study.</p>
@@ -1802,6 +1952,7 @@ async function renderDiscover(){
     dChart('c-life',{type:'line',data:{labels:labs,datasets:[{label:'SPRSound healthy children (Yunting)',data:[...G.ctrlCurve.map(x=>x.p50),...ab.map(()=>null)],borderColor:'#1f9d55',backgroundColor:'#1f9d55'},
       {label:'KAUH healthy adolescents/adults (Littmann, diaphragm)',data:[...cb.map(()=>null),...L.curve.map(x=>x.p50)],borderColor:'#0f6fde',backgroundColor:'#0f6fde'}]},
       options:{plugins:{tooltip:{callbacks:{afterLabel:c=>{const arr=c.datasetIndex?L.curve:G.ctrlCurve,x=arr.find(z=>z.bin===c.label);return x?'n = '+x.n:''}}}},scales:{y:{title:{display:true,text:'median centroid (Hz)'}}}}})}
+  ageCharts(D.age);
   const sp=D.spatial;
   (()=>{const CV=INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full; if(!CV)return;
     const GR=['I/VI','II/VI','III/VI'], pr=g=>{const v=CV.byGrade[g];return v&&v[1]?100*v[0]/v[1]:0};
@@ -1859,7 +2010,7 @@ async function renderDatasets(){
     <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">KAUH — lung sounds recorded from the chest wall (King Abdullah University Hospital, Jordan)</h2><span class="pill ok">downloaded · in use</span></div>
       <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr">
         <dt>Licence</dt><dd><b>CC BY 4.0</b> (Mendeley Data). Redistribution and adaptation allowed with attribution.</dd>
-        <dt>Population</dt><dd>112 subjects aged 12–90 y (median 52): 35 healthy, asthma 32, heart failure 18, COPD 9, pneumonia 5, lung fibrosis 4, bronchitis 3, pleural effusion 2, and combined HF + COPD / HF + fibrosis / asthma + fibrosis</dd>
+        <dt>Population</dt><dd>${(()=>{const K=patients.filter(p=>p.source==='kauh'),a=K.map(p=>p.age).filter(x=>x!=null),dx={};K.forEach(p=>dx[p.diagnosis]=(dx[p.diagnosis]||0)+1);return K.length?`${K.length} subjects aged ${Math.min(...a)}–${Math.max(...a)} y (median ${median(a)}): `+Object.entries(dx).sort((x,y)=>y[1]-x[1]).map(([d,n])=>`${esc(d)} ${n}`).join(', '):'not loaded'})()}</dd>
         <dt>Recording</dt><dd>3M Littmann 3200 electronic stethoscope, 4 kHz, 5–30 s (median 16 s). One chest site per subject (posterior or anterior, left/right, upper/middle/lower), each exported in the three filter modes — bell, diaphragm, extended (336 WAV files, 1.6 h). Proprietary .zsa originals not used.</dd>
         <dt>Annotations</dt><dd>Whole-recording label by sound type (normal, wheeze, crackles/crepitations, bronchial breathing; inspiratory/expiratory) and diagnosis. No event timings.</dd>
         <dt>Used here</dt><dd><b>All 112 subjects browsable</b>; each compared with an age-matched healthy subject from KAUH (same filter mode, nearest age, same chest zone preferred). Analysed at 8 kHz after resampling.</dd>
@@ -1879,7 +2030,7 @@ async function renderDatasets(){
       <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr">
         <dt>Licence</dt><dd><b>Open Data Commons Attribution License (ODC-By 1.0)</b> — LICENSE.txt shipped with the release. Redistribution and adaptation allowed with attribution, so the audio may be republished here. <span class="hint">(Not a Creative Commons licence; the obligation is the same in substance — credit the source.)</span></dd>
         <dt>Population</dt><dd>942 patients from two mass screening campaigns in Paraíba, Brazil (CC2014, CC2015); age bands neonate to adolescent, mostly children. 179 with an annotated murmur, 695 without, 68 unknown. Clinical outcome normal 486 / abnormal 456.</dd>
-        <dt>Recording</dt><dd>Up to four valve sites per patient — aortic, pulmonary, tricuspid, mitral — 4 kHz 16-bit mono WAV, 5–65 s. 3,163 recordings in all; this platform uses the 3,118 primary takes (repeat takes <span class="mono">_1/_2/_3</span> and the extra <span class="mono">Phc</span> site are skipped). Resampled to 8 kHz on load; analysis runs on the original files.</dd>
+        <dt>Recording</dt><dd>Up to four valve sites per patient — aortic, pulmonary, tricuspid, mitral — 4 kHz 16-bit mono WAV, 5–65 s. 3,163 recordings in the 1.0.3 release; this platform uses ${CV?CV.nRecordings.toLocaleString():'the'} primary takes (repeat takes <span class="mono">_1/_2/_3</span> and the extra <span class="mono">Phc</span> site are skipped). Resampled to 8 kHz on load; analysis runs on the original files.</dd>
         <dt>Annotations</dt><dd>Per patient: murmur present/absent/unknown, <b>which valves carry it</b>, the most audible valve, and systolic/diastolic timing, shape, grading (I–III/VI), pitch and quality. Per recording: a <span class="mono">.tsv</span> segmentation of every S1, systole, S2 and diastole — which is what lets the beat detector be scored directly.</dd>
         <dt>Used here</dt><dd><b>Browsable: ${CP.length} patients, ${nrec} recordings</b> — ${mur} with a murmur, ${abs_} without — chosen to cover every grade, all four systolic timings, all five diastolic murmurs in the database and every age band. <b>The validation uses all ${CV?CV.nPatients.toLocaleString():'941'} patients</b>, not this subset. Baseline = a murmur-free patient of the same age band, same valve; the four valve recordings are the same heart at one sitting and a murmur radiates, so no valve is another's baseline. Playback MP3 (32 kbps); analysis from the original WAVs.</dd>
         <dt>Sampling caveat</dt><dd>The browsable cohort deliberately <b>over-samples murmurs</b> (${mur} of ${CP.length}, against ${Math.round(100*179/942)} % in the full database) so the rare grades and timings are present to listen to. Any rate computed from the browsable list alone will therefore overstate murmur prevalence — the Discoveries figures come from the full set.</dd>

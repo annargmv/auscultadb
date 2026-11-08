@@ -7,7 +7,7 @@ A respiratory **and cardiac** auscultation platform built on **open, real record
 - a live player whose "ghost" lane shows the baseline under the current recording, aligned breath by breath;
 - a chest map to hear each site, and a heart map to hear each valve (CirCor);
 - a breathing-flow graph with apnea/hypopnea and AHI;
-- a **Discoveries** page of cohort-level analyses.
+- a **Discoveries** page of cohort-level analyses, including #16, the biological-age / longevity-precondition test.
 
 It is decision support for research and teaching, not a diagnostic device.
 
@@ -69,6 +69,9 @@ python3 pipeline/merge.py --add circor   # append to web/data without rebuilding
 python3 pipeline/circor_discover.py      # -> discover.json['circor'] (threshold/feature analysis)
 python3 pipeline/merge.py --bump         # re-stamp the cache key — ALWAYS last, after any discover script
 
+# biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
+npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
+
 # rebuild data (needs raw/ — see README "Getting the data")
 npm run build            # index → KAUH prep → MP3 → precompute → merge → discoveries
 npm run build:features   # per-recording features for Discoveries (slow: all 6,567 SPRSound recordings)
@@ -99,10 +102,23 @@ npm run build:discover   # only re-run the statistics from meta/features
 9. `circor_validate.js` runs the page's own `analyzeSignal` + `compareRecordings` over all 941 patients and scores them against the expert labels, writing `meta/circor_validation.json` and `meta/features/circor.jsonl`. It tunes nothing.
 10. **`merge.py --add <src>` appends one dataset** to the existing `web/data` instead of rebuilding everything. A full `merge.py` re-precomputes every patient, which needs all of `raw/` (SPRSound alone is a 1.2 GB clone); `--add` only touches its own patients and allocates new shard numbers.
 11. `circor_discover.py` adds `discover.json['circor']` — the threshold-vs-feature analysis behind Discoveries 13.
-12. **`merge.py --bump` must run last.** `index.json`'s `version` is the browser cache key, and the discover
+12a. `age_discover.py` adds `discover.json['age']`: a ridge age clock on the detector features (fit on 60 % of
+    patients, scored on the held-out 40 %, seed fixed, null = training mean, bootstrap CI + permutation p), CirCor heart
+    rate by age band, and HR-for-age deviation vs clinical outcome. The healthy HR reference (`age.heart.ref`) also feeds
+    the per-patient card. Result on the current data: **no breath-sound age signal in adults** (MAE 17.4 vs null 17.5 y),
+    one SPRSound release beats the null by 0.13 y, heart rate tracks age band (ρ −0.43), and HR-for-age does **not**
+    separate CirCor outcome (p 0.45). No dataset here has survival data — never describe anything as a longevity predictor.
+12. **`merge.py --bump` must run last.** It also stamps every patient with `rel` (SPRSound release, CirCor campaign,
+    KAUH release) from `meta/`, which the UI shows as "Release". `index.json`'s `version` is the browser cache key, and the discover
     scripts write `discover.json` *after* merge has stamped it. Without a final re-stamp, a browser that loads
     the site in between caches the stale `discover.json` under the new key and never refetches it.
     `npm run build:discover` now ends with the bump; do the same for any new discover script.
+
+## No invented content
+There are no treating doctors in the open data, so none are shown. The former Doctors page is **Recording sites**
+(route `#doctors` kept): the three real institutions/devices, with every count, age range, release and diagnosis
+computed from the loaded index. Footer, sidebar data stamp ("data built … UTC · n min ago", from `index.json`
+`version`) and the patient-list summary are generated from the data. Don't reintroduce typed-in counts.
 
 ## Code map (web/index.html)
 - §0 constants: `SR = 8000`; §3 signal analysis
@@ -125,7 +141,7 @@ npm run build:discover   # only re-run the statistics from meta/features
   - `cachedFetch` (Cache Storage `auscultadb-<version>`), `getDetail` (shards), `fetchAudioBytes` (bundles);
   - `loadRealDataset` (l.~734), `ensureSite` (l.~757);
   - `isPre(p)` = precomputed dataset patient (sources `sprsound`, `kauh`); `SRC_META` = per-source credit and citation.
-- §6 views: patient list (filters `LF`, `AGE_GROUPS`), patient page, `chestMapCard` / `kauhMapCard`, doctors, `renderDiscover` (`DISCOVER_MAP` l.~1434), `renderDatasets` (l.~1583).
+- §6 views: app shell = fixed dark sidebar (`header`, collapses to a top bar < 900 px; neutral ink chrome so data colours stand out), patient list (filters `LF`, `AGE_GROUPS`), patient page (`.ptgrid`), `chestMapCard` / `kauhMapCard`, `fillHrAge` (CirCor heart rate for age), recording sites (`renderDoctors`), `ageCard`/`ageCharts` (Discoveries 16), `renderDiscover` (`DISCOVER_MAP` l.~1434), `renderDatasets` (l.~1583).
 - §7 live player: wavesurfer.js 7.12.12 (Regions, Spectrogram, Timeline, Minimap) plus AnalyserNode panels.
 - §8 flow / apnea:
   - `computeFlow` / `scoreFlow` implement the AASM rules: apnea ≥90 % drop, hypopnea ≥30 % drop, each against the 2 preceding breaths;

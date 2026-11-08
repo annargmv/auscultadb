@@ -24,7 +24,7 @@ discover.json under the new key and never refetches it. Run it last, after disco
 existing shards and audio bundles are left exactly as they are, and only new shard numbers
 are allocated. The data `version` is always bumped, so browsers drop their old cache.
 """
-import base64, datetime, json, sys
+import collections, base64, datetime, json, sys
 from paths import BUILD, META, WEB, WEB_DATA, WEB_AUDIO
 
 SHARD = 20
@@ -73,7 +73,20 @@ def write_patients(patients, audio, first_shard=0):
     return shards
 
 
+def provenance(I):
+    """Stamp each patient with where its recordings come from, read from the meta tables (never typed in):
+    SPRSound release(s), CirCor screening campaign, KAUH release. Idempotent, touches no analysis."""
+    spr = collections.defaultdict(set)
+    for r in json.load(open(META / 'spr_full_index.json'))['recs']: spr[r['key']].add(r['rel'])
+    cc = {p['key']: p.get('campaign') for p in json.load(open(META / 'circor_index.json'))['patients']}
+    for p in I['patients']:
+        if p['src'] == 'sprsound': p['rel'] = sorted(spr.get(p['key'], ())) or None
+        elif p['src'] == 'circor': p['rel'] = [cc[p['key']]] if cc.get(p['key']) else None
+        elif p['src'] == 'kauh': p['rel'] = ['Mendeley jwyy9np4gv v3']
+
+
 def bump(I):
+    provenance(I)
     I['version'] = datetime.datetime.now(datetime.timezone.utc).isoformat()   # new version => browsers drop the old cache
     json.dump(I, open(WEB_DATA / 'index.json', 'w'), separators=(',', ':'))
 
