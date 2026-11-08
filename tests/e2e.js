@@ -100,6 +100,23 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(ag && ag.clock && ag.hr && ag.rows > 5 && ag.honest && ag.pmid, `age-signal section rendered (${ag ? ag.rows : 0} rows, longevity caveat ${ag && ag.honest}, refs ${ag && ag.pmid})`);
     await (await pg.$('#d-age')).screenshot({ path: path.join(OUT, 'discover-age.png') });
 
+    // Validation: a physician-readable report per detector, every estimate with a 95 % CI
+    await pg.goto(url('#validation')); await pg.waitForSelector('#v-murmur', { timeout: 30000 }); await pg.waitForTimeout(600);
+    const va = await pg.evaluate(() => { const cards = [...document.querySelectorAll('#view .card[id^="v-"]')];
+      return { n: cards.length, ids: cards.map(c => c.id), ci: cards.filter(c => /95 % CI/.test(c.innerText)).length,
+        sections: cards.filter(c => !c.id.startsWith('v-ml')).every(c => /Clinical question/.test(c.innerText) && /Compared against/.test(c.innerText) && /What this means at the bedside/.test(c.innerText) && /Limits/.test(c.innerText)),
+        dev: /development data/.test(document.querySelector('#v-resp_spr')?.innerText || ''), ml: !!document.querySelector('#v-ml_murmur') && /Fairness audit/.test(document.body.innerText),
+        charts: document.querySelectorAll('#view canvas').length } });
+    check(va.n >= 6 && va.ci === va.n && va.sections && va.dev && va.ml && va.charts >= 3, `validation page: ${va.n} reports (${va.ids.join(', ')}), all with 95 % CIs, clinician sections, development data labelled, ML + fairness`);
+    await pg.screenshot({ path: path.join(OUT, 'validation.png'), fullPage: true });
+
+    // Longevity: gathered on its own page, with no longevity estimate anywhere
+    await pg.goto(url('#longevity')); await pg.waitForSelector('#d-age', { timeout: 30000 }); await pg.waitForTimeout(500);
+    const lo = await pg.evaluate(() => ({ none: /Nothing on this platform estimates longevity/.test(document.body.innerText), icc: /ICC = /.test(document.body.innerText),
+      refs: /PMID 26598376/.test(document.body.innerText) && /PMID 34433816/.test(document.body.innerText), charts: !!document.querySelector('#c-ageclock') }));
+    check(lo.none && lo.icc && lo.refs && lo.charts, 'longevity page: markers with measured reliability, cited evidence, age clock, no longevity estimate');
+    await pg.screenshot({ path: path.join(OUT, 'longevity.png'), fullPage: true });
+
     // no invented people: recording sites come from the datasets, with live counts
     await pg.goto(url('#doctors')); await pg.waitForTimeout(500);
     const rs = await pg.evaluate(() => ({ dr: /\bDr\.|555-01/.test(document.body.innerText), cards: document.querySelectorAll('#view .card').length,

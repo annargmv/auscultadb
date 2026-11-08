@@ -19,6 +19,7 @@
     "build:features": "node pipeline/precompute.js features 0 1 && node pipeline/precompute.js kfeatures && node pipeline/precompute.js cbfeatures",
     "build:age": "python3 pipeline/age_discover.py && python3 pipeline/merge.py --bump",
     "build:apnea": "python3 pipeline/psg_audio_prep.py 10 && node pipeline/psg_audio_validate.js && python3 pipeline/psg_audio_discover.py && python3 pipeline/merge.py --bump",
+    "build:validation": "python3 pipeline/clinical_validation.py && python3 pipeline/ml_validate.py && python3 pipeline/merge.py --bump",
     "validate:circor": "node pipeline/circor_validate.js",
     "build:merge": "python3 pipeline/merge.py",
     "build:discover": "python3 pipeline/discover.py && python3 pipeline/person_probe.py && python3 pipeline/kauh_discover.py && python3 pipeline/circor_discover.py && python3 pipeline/cbemph_discover.py && python3 pipeline/age_discover.py && python3 pipeline/merge.py --bump",

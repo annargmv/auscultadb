@@ -18,6 +18,14 @@ What it does:
   CirCor's clinical outcome. No open auscultation set has survival data, so longevity itself is not measured.
   Rebuild with `npm run build:age`. References: Lima et al., Nat Commun 2021 (PMID 34433816); Zhang et al., CMAJ 2016
   (PMID 26598376).
+- a **Validation** page written for clinicians: one STARD-style report per detector (clinical question, intended use,
+  who was tested, reference standard, exact rule, sensitivity / specificity / PPV / NPV / likelihood ratios with 95 % CIs,
+  subgroups, bedside meaning, limits, and whether the test data were independent of tuning), plus two research
+  machine-learning models trained on one patient split and scored on another, with a subgroup fairness audit.
+  Statistics come from **Seismometer** (Epic Systems, open source, BSD-3-Clause, https://github.com/epic-open-source/seismometer).
+  Rebuild with `npm run build:validation`.
+- a **Longevity** page: the markers with a published mortality link that sound could carry, how reliably this platform
+  measures each one, and the biological-age test. It states plainly that nothing here estimates longevity.
 - an apnea / AHI validation on real nights (Discoveries 12): the page's own flow scoring run unchanged on a pilot of
   **PSG-Audio** (Korompili et al., *Scientific Data* 2021, doi 10.1038/s41597-021-00977-w; data doi 10.11922/sciencedb.00345,
   **CC BY 4.0**), overnight polysomnograms with synchronised tracheal and ambient microphones from Sismanoglio – Amalia Fleming
