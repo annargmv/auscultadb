@@ -3,3 +3,4 @@ scipy
 scikit-learn
 openpyxl
 imageio-ffmpeg   # static ffmpeg binary; used by encode_audio.py when ffmpeg is not on PATH
+seismometer==0.5.0   # Epic, BSD-3-Clause — validation statistics (clinical_validation.py, ml_validate.py)

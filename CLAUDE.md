@@ -75,6 +75,11 @@ python3 pipeline/psg_audio_prep.py 10    #   HF mirror -> raw/psg_audio/<pid>/h<
 node pipeline/psg_audio_validate.js      #   page's own computeFlow/scoreFlow per hour -> meta/features/psg_audio.jsonl (resumable)
 python3 pipeline/psg_audio_discover.py   #   -> meta/psg_audio_validation.json + discover.json['apnea']
 
+# clinician validation reports + ML models (Validation page) — Seismometer 0.5.0 (pip, BSD-3-Clause)
+npm run build:validation                 # clinical_validation.py -> ml_validate.py -> --bump
+python3 pipeline/clinical_validation.py  #   web/data/validation.json['reports']: one STARD-style report per detector
+python3 pipeline/ml_validate.py          #   validation.json['ml']: sklearn models, patient split, Seismometer metrics + fairness
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -120,6 +125,18 @@ npm run build:discover   # only re-run the statistics from meta/features
     the site in between caches the stale `discover.json` under the new key and never refetches it.
     `npm run build:discover` now ends with the bump; do the same for any new discover script.
 
+## Validation reports — how to write one (owner's rule: a physician must understand relevance and accuracy)
+Every validated result gets a report in `pipeline/clinical_validation.py`, laid out like a diagnostic-accuracy study
+(STARD 2015): clinical question, intended use, who was tested, reference standard, exact rule and threshold,
+**independence** (`external` = thresholds fixed before the data; `development` = tuned on it, optimistic; `pilot` =
+external but small; `research` = no clinical claim), then sensitivity / specificity / PPV / NPV with Agresti–Coull 95 %
+CIs, prevalence, LR+ / LR− (log-method CI) read in words (Jaeschke 1994 bands), subgroups, bedside sentences
+("of 100 patients with it, it flags N"), limits and a one-line verdict. Numbers only from existing validation outputs —
+never typed in. ML models (`ml_validate.py`): patient-level split, model + threshold chosen on training patients only,
+the shipped rule scored on the same test patients, Seismometer fairness rule (largest subgroup = reference, ×0.80–1.25).
+Current ML results (seed 20261108): murmur AUC 0.82, 54 % sens at 90 % spec vs shipped rule 42 % / 98.6 %, infants
+critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Research models — not used by the pages.
+
 ## No invented content
 There are no treating doctors in the open data, so none are shown. The former Doctors page is **Recording sites**
 (route `#doctors` kept): the three real institutions/devices, with every count, age range, release and diagnosis
@@ -147,7 +164,7 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
   - `cachedFetch` (Cache Storage `auscultadb-<version>`), `getDetail` (shards), `fetchAudioBytes` (bundles);
   - `loadRealDataset` (l.~734), `ensureSite` (l.~757);
   - `isPre(p)` = precomputed dataset patient (sources `sprsound`, `kauh`); `SRC_META` = per-source credit and citation.
-- §6 views: app shell = fixed dark sidebar (`header`, collapses to a top bar < 900 px; neutral ink chrome so data colours stand out), patient list (filters `LF`, `AGE_GROUPS`), patient page (`.ptgrid`), `chestMapCard` / `kauhMapCard`, `fillHrAge` (CirCor heart rate for age), recording sites (`renderDoctors`), `ageCard`/`ageCharts` (Discoveries 16), `renderDiscover` (`DISCOVER_MAP` l.~1434), `renderDatasets` (l.~1583).
+- §6 views: `renderValidation` (Validation page, `reportCard` / `mlCard`, CI charts), `renderLongevity` (Longevity page; reuses `ageCard` / `ageCharts`); app shell = fixed dark sidebar (`header`, collapses to a top bar < 900 px; neutral ink chrome so data colours stand out), patient list (filters `LF`, `AGE_GROUPS`), patient page (`.ptgrid`), `chestMapCard` / `kauhMapCard`, `fillHrAge` (CirCor heart rate for age), recording sites (`renderDoctors`), `ageCard`/`ageCharts` (Discoveries 16), `renderDiscover` (`DISCOVER_MAP` l.~1434), `renderDatasets` (l.~1583).
 - §7 live player: wavesurfer.js 7.12.12 (Regions, Spectrogram, Timeline, Minimap) plus AnalyserNode panels.
 - §8 flow / apnea:
   - `computeFlow` / `scoreFlow` implement the AASM rules: apnea ≥90 % drop, hypopnea ≥30 % drop, each against the 2 preceding breaths;

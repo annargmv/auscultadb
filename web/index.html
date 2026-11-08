@@ -184,6 +184,8 @@ footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px
 .ptgrid>div:first-child .kv{grid-template-columns:1fr;gap:0}
 .ptgrid>div:first-child .kv dt{font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-top:10px}
 .ptgrid>div:first-child .kv dt:first-child{margin-top:0}
+.bedside{margin:6px 0 10px;padding-left:20px}
+.vrep td.mono{white-space:nowrap}.bedside li{margin:3px 0}
 </style>
 </head>
 <body>
@@ -196,6 +198,8 @@ footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px
     <a href="#doctors" id="nav-doctors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-5h4v5"/><path d="M12 8v4M10 10h4"/></svg>Recording sites</a>
     <div class="navlabel">Research</div>
     <a href="#discover" id="nav-discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>Discoveries</a>
+    <a href="#validation" id="nav-validation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>Validation</a>
+    <a href="#longevity" id="nav-longevity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>Longevity</a>
     <a href="#datasets" id="nav-datasets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Datasets &amp; licences</a>
   </nav>
   <button class="btn primary" id="btnAdd">+ New patient (upload)</button>
@@ -924,11 +928,15 @@ function route(scroll=true){
   $('#nav-patients').classList.toggle('active',h==='patients'||h.startsWith('patient-'));
   $('#nav-doctors').classList.toggle('active',h.startsWith('doctor'));
   $('#nav-datasets').classList.toggle('active',h==='datasets');
+  $('#nav-validation').classList.toggle('active',h==='validation');
+  $('#nav-longevity').classList.toggle('active',h==='longevity');
   $('#nav-discover').classList.toggle('active',h==='discover');
   if(scroll===false&&h.startsWith('patient-')&&current&&current.p.id===h.slice(8))return; // do not interrupt an open patient
   stopPlayback(); destroyLive(); if(flowChart){try{flowChart.destroy()}catch(e){}flowChart=null;flowState=null}
   destroyDiscoverCharts();
   if(h==='datasets')renderDatasets();
+  else if(h==='validation')renderValidation();
+  else if(h==='longevity')renderLongevity();
   else if(h==='discover')renderDiscover();
   else if(h==='doctors')renderDoctors();
   else if(h.startsWith('doctor-'))renderDoctor(h.slice(7));
@@ -2017,6 +2025,116 @@ function validationSummary(){ // precomputed offline over the browsable cohort (
   const V=INDEX.validation, byKey=Object.fromEntries(patients.filter(p=>p.source==='sprsound').map(p=>[p.key,p]));
   const rows=V.rows.map(r=>{const p=byKey[r.key];return p?{p,x:p.sites.find(s=>s.loc===r.loc),types:r.types,expCls:r.record,hit:r.hit,partial:r.partial,agree:r.agree,n:r.n,baseFrom:r.base,isBase:r.base==='self'}:null}).filter(Boolean);
   return {...V,rows,cls:['Normal','CAS','DAS','CAS & DAS']};
+}
+/* ---------- Validation: one physician-readable report per detector (web/data/validation.json) ----------
+   Laid out like a diagnostic-accuracy study (STARD 2015): question and intended use, participants, reference
+   standard, index test and threshold, accuracy with 95 % CIs, subgroups, bedside meaning, limits. Every number
+   comes from pipeline/clinical_validation.py and pipeline/ml_validate.py (Seismometer statistics). */
+const EVID={external:['pill ok','external validation','Thresholds were fixed before this data was seen — an honest estimate for similar patients.'],
+  development:['pill warn','development data','Thresholds were tuned on this same data — optimistic; expect worse on new patients.'],
+  pilot:['pill warn','pilot','External but small — the direction is informative, the exact number is not.'],
+  research:['pill','research only','Not a clinical test; no clinical claim is made.']};
+const ciTxt=m=>m.value==null?'—':`${m.value}${m.k!=null||m.label.match(/Sens|Spec|PPV|NPV|Prev|sensitivity|recogn/i)?' %':''}`;
+const ciRange=m=>m.lo==null?'':`${m.lo} – ${m.hi}`;
+let valCharts=[];
+function valMetricRows(ms){return ms.map(m=>`<tr><td><b>${esc(m.label)}</b>${m.explain?`<div class="hint">${m.explain}</div>`:''}</td><td class="mono">${ciTxt(m)}</td><td class="mono">${ciRange(m)}</td><td class="mono">${m.k!=null&&m.n!=null?`${m.k} / ${m.n}`:m.n!=null?'n = '+m.n:''}</td></tr>`).join('')}
+function lrBlock(r){if(!r.lrPos)return '';const w=v=>v>=10?'large':v>=5?'moderate':v>=2?'small':'minimal',wn=v=>v<=0.1?'large':v<=0.2?'moderate':v<=0.5?'small':'minimal';
+  return `<tr><td><b>Positive likelihood ratio (LR+)</b><div class="hint">how much a positive result raises the odds — ${w(r.lrPos.value)} effect</div></td><td class="mono">${r.lrPos.value}</td><td class="mono">${r.lrPos.lo} – ${r.lrPos.hi}</td><td></td></tr>
+    <tr><td><b>Negative likelihood ratio (LR−)</b><div class="hint">how much a negative result lowers the odds — ${wn(r.lrNeg.value)} effect</div></td><td class="mono">${r.lrNeg.value}</td><td class="mono">${r.lrNeg.lo} – ${r.lrNeg.hi}</td><td></td></tr>`}
+function subTable(g){const hasSpec=g.rows.some(r=>r.spec);
+  return `<h3 style="margin-top:12px">${esc(g.group)}</h3><table><thead><tr><th>Subgroup</th><th>Sensitivity (95 % CI)</th>${hasSpec?'<th>Specificity (95 % CI)</th>':''}</tr></thead><tbody>${g.rows.map(r=>`<tr><td>${esc(r.label)}</td><td class="mono">${ciTxt(r)} <span class="hint">${r.lo!=null?'('+ciRange(r)+') ':''}${r.k!=null?r.k+'/'+r.n:''}</span></td>${hasSpec?`<td class="mono">${r.spec?ciTxt(r.spec)+' <span class="hint">('+ciRange(r.spec)+') '+r.spec.k+'/'+r.spec.n+'</span>':'—'}</td>`:''}</tr>`).join('')}</tbody></table>
+    ${(()=>{const tot=g.rows.reduce((a,r)=>a+(r.n||0),0);return g.rows.every(r=>r.n!=null)&&tot?`<p class="hint">Counts cover patients with this field recorded (${tot}).</p>`:''})()}`}
+function reportCard(r,i){const E=EVID[r.evidence]||EVID.research;
+  return `<div class="card vrep" id="v-${r.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 style="margin:0">${i+1} · ${esc(r.title)}</h2><span class="${E[0]}" title="${esc(E[2])}">${E[1]}</span></div>
+    <dl class="kv" style="margin-top:12px;grid-template-columns:190px 1fr">
+      <dt>Clinical question</dt><dd>${esc(r.question)}</dd>
+      <dt>Intended use</dt><dd>${esc(r.intendedUse)}</dd>
+      <dt>Who was tested</dt><dd>${esc(r.population.text)}</dd>
+      <dt>Compared against</dt><dd>${esc(r.reference)} <span class="hint">(reference standard)</span></dd>
+      <dt>The test</dt><dd>${esc(r.indexTest)}</dd>
+      <dt>How independent</dt><dd>${r.independence} <span class="hint">${esc(E[2])}</span></dd>
+    </dl>
+    ${r.metrics.length||r.lrPos||(r.extra||[]).length?`<h3 style="margin-top:14px">Results</h3><div class="grid g2"><div style="overflow-x:auto"><table><thead><tr><th>Measure</th><th>Value</th><th>95 % CI</th><th>Count</th></tr></thead><tbody>${valMetricRows(r.metrics)}${lrBlock(r)}${valMetricRows(r.extra||[])}</tbody></table></div>
+      <div>${r.metrics.some(m=>m.lo!=null)?`<div style="position:relative;height:${Math.max(150,r.metrics.filter(m=>m.lo!=null).length*34+50)}px"><canvas id="vc-${r.id}"></canvas></div><p class="hint">Bars = 95 % confidence interval, dot = estimate. A wide bar means the data cannot pin the number down.</p>`:''}</div></div>`:''}
+    ${(r.subgroups||[]).map(subTable).join('')}
+    <h3 style="margin-top:14px">What this means at the bedside</h3><ul class="bedside">${r.bedside.map(b=>`<li>${b}</li>`).join('')}</ul>
+    <h3>Limits</h3><ul class="hint">${r.limits.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
+    <div class="row" style="justify-content:space-between;margin-top:8px"><span><b>Verdict:</b> ${esc(r.verdict)}</span><a href="#discover" class="toDisc" data-d="${r.discover}">full analysis in Discoveries →</a></div></div>`}
+function mlCard(m){const s=m.metrics,c=m.comparator,e=m.external;
+  return `<div class="card vrep" id="v-${m.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 style="margin:0">${esc(m.title)}</h2><span class="pill info">held-out test · research model</span></div>
+    <dl class="kv" style="margin-top:12px;grid-template-columns:190px 1fr">
+      <dt>Task</dt><dd>${esc(m.task)}</dd><dt>Data</dt><dd>${esc(m.data)} — ${m.nTrain} patients to train, <b>${m.nTest} held-out patients to test</b> (no patient in both)</dd>
+      <dt>Model</dt><dd>${esc(m.chosen)}, chosen by 5-fold cross-validated AUC on the training patients only (${Object.entries(m.cvAuc).map(([k,v])=>`${esc(k)} ${v}`).join(' · ')})</dd>
+      <dt>Operating point</dt><dd>score ≥ ${m.threshold}, fixed on the training patients to reach ${Math.round(100*VAL.ml.protocol.targetSpec)} % specificity — not adjusted on the test patients</dd>
+      <dt>Inputs</dt><dd class="mono" style="font-size:11.5px">${m.features.map(esc).join(', ')}</dd></dl>
+    <h3 style="margin-top:12px">Held-out results</h3><div style="overflow-x:auto"><table><thead><tr><th>Measure</th><th>ML model (95 % CI)</th>${c?`<th>${esc(c.name)}</th>`:''}${e?`<th>${esc(e.name)}</th>`:''}</tr></thead><tbody>
+      <tr><td><b>ROC AUC</b></td><td class="mono">${m.testAuc.value} <span class="hint">(${m.testAuc.lo} – ${m.testAuc.hi})</span></td>${c?'<td class="hint">binary rule — no AUC</td>':''}${e?`<td class="mono">${e.auc.value} <span class="hint">(${e.auc.lo} – ${e.auc.hi})</span></td>`:''}</tr>
+      ${s.map((x,i)=>`<tr><td><b>${x.label}</b></td><td class="mono">${ciTxt(x)} <span class="hint">(${ciRange(x)}) ${x.k}/${x.n}</span></td>${c?`<td class="mono">${ciTxt(c.metrics[i])} <span class="hint">(${ciRange(c.metrics[i])})</span></td>`:''}${e?`<td class="mono">${ciTxt(e.metrics[i])} <span class="hint">(${ciRange(e.metrics[i])})</span></td>`:''}</tr>`).join('')}
+      <tr><td><b>LR+ / LR−</b></td><td class="mono">${m.lrPos} / ${m.lrNeg}</td>${c?`<td class="mono">${c.lrPos} / ${c.lrNeg}</td>`:''}${e?'<td></td>':''}</tr></tbody></table></div>
+    <h3 style="margin-top:12px">Fairness audit <span class="hint" style="font-weight:400">(Seismometer rule: reference = largest subgroup; flagged outside ×0.80–1.25, critical outside ×0.67–1.50; groups under 10 patients left out)</span></h3>
+    ${m.fairness.map(f=>`<table style="margin-bottom:8px"><thead><tr><th>${esc(f.cohort)}</th><th>n (with finding)</th><th>Sensitivity</th><th>Specificity</th><th>Flag</th></tr></thead><tbody>${f.rows.map(r=>`<tr><td>${esc(r.group)}${r.reference?' <span class="tag">reference</span>':''}</td><td class="mono">${r.n} (${r.positives})</td><td class="mono">${ciTxt(r.sens)} <span class="hint">(${ciRange(r.sens)})</span></td><td class="mono">${ciTxt(r.spec)} <span class="hint">(${ciRange(r.spec)})</span></td><td>${r.flags.length?r.flags.map(x=>`<span class="pill ${/critical/.test(x)?'bad':'warn'}">${esc(x)}</span>`).join(' '):'<span class="hint">—</span>'}</td></tr>`).join('')}</tbody></table>`).join('')}
+    <h3>What this means at the bedside</h3><ul class="bedside">${m.bedside.map(b=>`<li>${esc(b)}</li>`).join('')}</ul>
+    <p class="hint">${esc(m.note)}</p></div>`}
+let VAL=null;
+async function renderValidation(){
+  $('#view').innerHTML='<h1>Validation</h1><div class="empty">Loading validation reports…</div>';
+  try{VAL=await cachedFetch('data/validation.json','json')}catch(e){$('#view').innerHTML=`<h1>Validation</h1><div class="notice">Validation reports not available: ${esc(e.message)}</div>`;return}
+  if(location.hash!=='#validation')return;
+  const R=VAL.reports, row=r=>{const E=EVID[r.evidence]||EVID.research,sn=r.metrics[0],sp=r.metrics[1];
+    return `<tr class="click" data-v="v-${r.id}"><td><b>${esc(r.title)}</b></td><td><span class="${E[0]}">${E[1]}</span></td><td class="mono">${sn?ciTxt(sn)+' <span class="hint">('+ciRange(sn)+')</span>':'—'}</td><td class="mono">${sp?ciTxt(sp)+' <span class="hint">('+ciRange(sp)+')</span>':'—'}</td><td class="mono">${r.lrPos?r.lrPos.value+' / '+r.lrNeg.value:'—'}</td><td>${esc(r.verdict)}</td></tr>`};
+  $('#view').innerHTML=`<h1>Validation</h1>
+    <p class="sub">How accurate each automatic finding on this platform is, measured against an expert reference standard and written for clinicians. Every number has a 95 % confidence interval; every report says how independent the test data were. Statistics: ${esc(VAL.engine)}. <span class="hint mono">computed ${esc(String(VAL.generated).slice(0,16).replace('T',' '))} UTC</span></p>
+    <div class="notice" style="margin-bottom:14px"><b>None of these detectors is validated for clinical decisions.</b> They are decision support for research and teaching. Read sensitivity as “of patients who have it, how many are flagged”, specificity as “of patients who do not, how many are left alone”, and the likelihood ratios as how much a result should move your pre-test probability (LR+ above 10 or LR− below 0.1 is a large, often decisive change; between 0.5 and 2 barely matters).</div>
+    <div class="card tablecard vrep" style="margin-bottom:16px"><table><thead><tr><th>Finding</th><th>Evidence</th><th>Sensitivity (95 % CI)</th><th>Specificity (95 % CI)</th><th>LR+ / LR−</th><th>Verdict</th></tr></thead><tbody>${R.map(row).join('')}</tbody></table></div>
+    <div class="grid">${R.map(reportCard).join('')}</div>
+    ${VAL.ml?`<h2 style="margin:26px 0 6px;font-size:19px">Machine-learning models on this database</h2>
+      <p class="sub">Research models trained on the platform’s features and validated with <a href="https://github.com/epic-open-source/seismometer" target="_blank" rel="noopener">Seismometer</a>, Epic’s open-source tool for validating healthcare AI on local data. Protocol fixed in advance: patient-level split (${Math.round(100*(1-VAL.ml.protocol.testFrac))} % train / ${Math.round(100*VAL.ml.protocol.testFrac)} % test, seed ${VAL.ml.protocol.seed}); model and operating point chosen on training patients only; held-out patients scored once. They do not change what the patient pages show.</p>
+      <div class="grid">${VAL.ml.models.map(mlCard).join('')}</div>`:''}`;
+  $('#view').querySelectorAll('tr[data-v]').forEach(tr=>tr.onclick=()=>{const t=document.getElementById(tr.dataset.v);if(t)t.scrollIntoView({behavior:'smooth'})});
+  $('#view').querySelectorAll('.toDisc').forEach(a=>a.onclick=e=>{e.preventDefault();location.hash='#discover';const go=()=>{const t=document.getElementById(a.dataset.d);if(t)t.scrollIntoView();else setTimeout(go,150)};setTimeout(go,300)});
+  valCharts.forEach(c=>{try{c.destroy()}catch(e){}}); valCharts=[];
+  if(window.Chart)for(const r of R){const ms=r.metrics.filter(m=>m.lo!=null), el=$('#vc-'+r.id); if(!el||!ms.length)continue;
+    valCharts.push(new Chart(el,{type:'bar',data:{labels:ms.map(m=>m.label),datasets:[
+      {label:'95 % CI',data:ms.map(m=>[m.lo,m.hi]),backgroundColor:'rgba(15,111,222,.18)',borderColor:'rgba(15,111,222,.55)',borderWidth:1,borderSkipped:false,barThickness:14},
+      {label:'estimate',type:'scatter',data:ms.map(m=>({x:m.value,y:m.label})),backgroundColor:'#0e1726',pointRadius:5,pointStyle:'rectRot'}]},
+      options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,scales:{x:{min:0,max:100,title:{display:true,text:'%'}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const m=ms[c.dataIndex];return `${m.label}: ${m.value} % (95 % CI ${m.lo}–${m.hi})`}}}}}}))}
+}
+/* ---------- Longevity: what this platform can and cannot say about lifespan, from its own data ----------
+   No dataset here has survival or follow-up data, so nothing estimates longevity. This page shows the markers
+   with a published mortality link that sound could carry, how reliably THIS platform measures each one (numbers
+   from discover.json), and the biological-age test (Discoveries 16). */
+async function renderLongevity(){
+  $('#view').innerHTML='<h1>Longevity</h1><div class="empty">Loading…</div>';
+  let D; try{D=window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){$('#view').innerHTML=`<h1>Longevity</h1><div class="notice">Results not available: ${esc(e.message)}</div>`;return}
+  if(location.hash!=='#longevity')return;
+  const A=D.age, ra=D.rates, f2=v=>v==null?'—':v.toFixed(2), rel=v=>v==null?'':v>=0.75?'<span class="pill ok">good</span>':v>=0.5?'<span class="pill warn">moderate</span>':'<span class="pill bad">poor</span>';
+  const ex=patients.find(p=>p.source==='circor'&&p.ageBand==='Child');
+  const n16=DISCOVER_MAP.findIndex(x=>x.id==='age')+1;
+  $('#view').innerHTML=`<h1>Longevity</h1>
+    <p class="sub">Can listening to the chest say anything about how long a person will live? This page answers from the platform’s own data: which sound-derived markers have a published link to mortality, how reliably this platform measures each one, and whether the sound carries age information at all.</p>
+    <div class="notice" style="margin-bottom:14px"><b>Nothing on this platform estimates longevity, life expectancy or mortality risk.</b> None of the open auscultation datasets used here follows patients over time or records survival, so no such estimate could be validated — and an unvalidated one would mislead.</div>
+    <div class="card" style="margin-bottom:16px"><h2>Markers with a published longevity link — and what this platform can measure</h2>
+      <div style="overflow-x:auto"><table><thead><tr><th>Marker</th><th>Published evidence (other populations)</th><th>Measured here</th><th>How reliably, on this data</th><th>Status</th></tr></thead><tbody>
+        <tr><td><b>Resting heart rate</b></td><td>Higher resting heart rate is associated with higher all-cause and cardiovascular mortality in the general adult population (meta-analysis, ${esc(A?A.refs[1].cite:'Zhang et al., CMAJ 2016')}, PMID ${A?A.refs[1].pmid:'26598376'}).</td>
+          <td>From heart-sound recordings (CirCor children) and, less directly, from breath-sound clips (SPRSound).</td>
+          <td>Heart sounds: falls with age band on held-out children as physiology predicts (ρ = ${A?f2(A.heart.rho):'—'}, ${A?fmtP(A.heart.pRho):''}).<br>Breath-sound clips: agreement between two sites of the same child, ICC = <b>${f2(ra&&ra.iccHR)}</b> ${rel(ra&&ra.iccHR)}.</td>
+          <td>Measurable in children from heart sounds; <b>not</b> from 9–15 s breath clips. No adult heart-sound data.</td></tr>
+        <tr><td><b>“Biological age” gap</b></td><td>The gap between an ECG-predicted age and real age predicts all-cause mortality (${esc(A?A.refs[0].cite:'Lima et al., Nat Commun 2021')}, PMID ${A?A.refs[0].pmid:'34433816'}). No equivalent exists for auscultation.</td>
+          <td>An age clock on breath-sound features, tested on held-out patients (Discoveries ${n16}).</td>
+          <td>${A?`Adults: error ${A.adults.mae} y vs ${A.adults.maeNull} y for guessing the average — <b>no age signal</b> (p = ${A.adults.pPerm.toFixed(2)}).`:'—'}</td>
+          <td>Not possible with the current sound features.</td></tr>
+        <tr><td><b>Breathing rate</b></td><td>No mortality link is claimed here.</td><td>From breath-sound clips.</td>
+          <td>ICC = <b>${f2(ra&&ra.iccRR)}</b> ${rel(ra&&ra.iccRR)}; full breath cycles segmented in ${ra?Math.round(100*ra.fracRRreliable):'—'} % of recordings. The estimator is also biased in adults (see Validation).</td><td>Not reliable from these clips.</td></tr>
+      </tbody></table></div>
+      <p class="hint">ICC = intraclass correlation between two recordings of the same patient: above 0.75 good, below 0.5 poor. A marker that disagrees with itself cannot predict anything.</p></div>
+    ${A?ageCard(A):'<div class="notice">The biological-age analysis has not been computed yet.</div>'}
+    <div class="card" style="margin-top:16px"><h2>Per patient</h2><p class="hint" style="margin-top:0">Children with heart-sound recordings show a <b>Heart rate for age</b> card: their measured rate against healthy children of the same age band, as a reference — not a risk score, because on held-out data the deviation does not predict clinical outcome.${ex?` Example: <a href="#patient-${ex.id}">${esc(ex.name)}</a>.`:''}</p></div>
+    <div class="card" style="margin-top:16px"><h2>What would make longevity testable</h2><ul class="bedside">
+      <li>Recordings from <b>adults</b>, on <b>one stethoscope model</b> across all ages (device differences swamp age effects here).</li>
+      <li><b>Years of follow-up</b> with recorded outcomes (death, cardiovascular events) — the missing piece in every open auscultation dataset found so far.</li>
+      <li>Heart sounds long enough for heart-rate variability (minutes, not seconds).</li>
+      <li>A pre-registered analysis: fit on one cohort, test on another, as for the age clock above.</li></ul></div>`;
+  destroyDiscoverCharts(); if(A)ageCharts(A);
 }
 async function renderDatasets(){
   // the CB/emphysema card reports counts computed in discover.json; fetch it here rather than
