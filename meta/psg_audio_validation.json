@@ -1,0 +1,1082 @@
+{
+ "generated": "2026-11-08T10:38:00.095514+00:00",
+ "source": {
+  "name": "PSG-Audio (V3)",
+  "mirror": "https://huggingface.co/datasets/dust-systems/psg-audio",
+  "doi": "10.11922/sciencedb.00345",
+  "paper": "10.1038/s41597-021-00977-w",
+  "licence": "CC BY 4.0",
+  "hospital": "Sismanoglio \u2013 Amalia Fleming General Hospital, Athens",
+  "channels": {
+   "trach": "Tracheal contact microphone (Clockaudio CTH100)",
+   "mic": "Ambient microphone ~1 m above bed (Behringer ECM8000)"
+  },
+  "selection": "V3 patients with an .rml and every hourly EDF part in the mirror, sorted by id, first 10"
+ },
+ "channels": {
+  "mic": {
+   "patients": 10,
+   "hours": 44.2,
+   "events": {
+    "expert": 1975,
+    "found": 758,
+    "sens": 38.4,
+    "acoustic": 1011,
+    "matched": 696,
+    "ppv": 68.8,
+    "byType": {
+     "OA": {
+      "n": 1058,
+      "found": 470,
+      "sens": 44.4
+     },
+     "CA": {
+      "n": 20,
+      "found": 10,
+      "sens": 50.0
+     },
+     "MA": {
+      "n": 100,
+      "found": 58,
+      "sens": 58.0
+     },
+     "H": {
+      "n": 797,
+      "found": 220,
+      "sens": 27.6
+     }
+    },
+    "typeAgreement": {
+     "apnea->hypopnea": 347,
+     "hypopnea->apnea": 45,
+     "apnea->apnea": 191,
+     "hypopnea->hypopnea": 175
+    }
+   },
+   "perPatient": [
+    {
+     "pid": "00000999-100507",
+     "hours": 4.14,
+     "sleepH": 3.76,
+     "nExpert": 205,
+     "nAcoustic": 80,
+     "ahiPsg": 54.5,
+     "ahiAcoustic": 19.3,
+     "ahiAcousticPerSleepH": 21.3,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001006-100507",
+     "hours": 3.98,
+     "sleepH": 3.81,
+     "nExpert": 167,
+     "nAcoustic": 18,
+     "ahiPsg": 43.9,
+     "ahiAcoustic": 4.5,
+     "ahiAcousticPerSleepH": 4.7,
+     "sevPsg": "severe",
+     "sevAcoustic": "normal"
+    },
+    {
+     "pid": "00001014-100507",
+     "hours": 3.63,
+     "sleepH": 3.43,
+     "nExpert": 252,
+     "nAcoustic": 149,
+     "ahiPsg": 73.5,
+     "ahiAcoustic": 41.0,
+     "ahiAcousticPerSleepH": 43.4,
+     "sevPsg": "severe",
+     "sevAcoustic": "severe"
+    },
+    {
+     "pid": "00001016-100507",
+     "hours": 6.07,
+     "sleepH": 5.93,
+     "nExpert": 108,
+     "nAcoustic": 98,
+     "ahiPsg": 18.2,
+     "ahiAcoustic": 16.2,
+     "ahiAcousticPerSleepH": 16.5,
+     "sevPsg": "moderate",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001018-100507",
+     "hours": 4.24,
+     "sleepH": 3.56,
+     "nExpert": 207,
+     "nAcoustic": 67,
+     "ahiPsg": 58.2,
+     "ahiAcoustic": 15.8,
+     "ahiAcousticPerSleepH": 18.8,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001026-100507",
+     "hours": 3.72,
+     "sleepH": 3.44,
+     "nExpert": 295,
+     "nAcoustic": 221,
+     "ahiPsg": 85.7,
+     "ahiAcoustic": 59.5,
+     "ahiAcousticPerSleepH": 64.2,
+     "sevPsg": "severe",
+     "sevAcoustic": "severe"
+    },
+    {
+     "pid": "00001028-100507",
+     "hours": 6.13,
+     "sleepH": 5.56,
+     "nExpert": 201,
+     "nAcoustic": 54,
+     "ahiPsg": 36.2,
+     "ahiAcoustic": 8.8,
+     "ahiAcousticPerSleepH": 9.7,
+     "sevPsg": "severe",
+     "sevAcoustic": "mild"
+    },
+    {
+     "pid": "00001039-100507",
+     "hours": 3.71,
+     "sleepH": 3.54,
+     "nExpert": 193,
+     "nAcoustic": 77,
+     "ahiPsg": 54.5,
+     "ahiAcoustic": 20.7,
+     "ahiAcousticPerSleepH": 21.7,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001041-100507",
+     "hours": 4.17,
+     "sleepH": 3.35,
+     "nExpert": 191,
+     "nAcoustic": 134,
+     "ahiPsg": 57.0,
+     "ahiAcoustic": 32.2,
+     "ahiAcousticPerSleepH": 40.0,
+     "sevPsg": "severe",
+     "sevAcoustic": "severe"
+    },
+    {
+     "pid": "00001045-100507",
+     "hours": 4.41,
+     "sleepH": 3.44,
+     "nExpert": 156,
+     "nAcoustic": 113,
+     "ahiPsg": 45.3,
+     "ahiAcoustic": 25.6,
+     "ahiAcousticPerSleepH": 32.8,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    }
+   ],
+   "headroom": {
+    "hours": 45,
+    "rho": 0.391,
+    "p": 0.007980476488620962,
+    "median": 1.2,
+    "sensLow": 26.2,
+    "sensHigh": 43.4,
+    "rows": [
+     {
+      "pid": "00000999-100507",
+      "k": 1,
+      "headroom": 1.53,
+      "sens": 0.185,
+      "n": 65
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 2,
+      "headroom": 1.45,
+      "sens": 0.093,
+      "n": 54
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 3,
+      "headroom": 1.37,
+      "sens": 0.222,
+      "n": 27
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 4,
+      "headroom": 1.22,
+      "sens": 0.245,
+      "n": 53
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 5,
+      "headroom": 1.22,
+      "sens": 0.0,
+      "n": 6
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 1,
+      "headroom": 1.08,
+      "sens": 0.0,
+      "n": 37
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 2,
+      "headroom": 1.08,
+      "sens": 0.0,
+      "n": 43
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 3,
+      "headroom": 1.08,
+      "sens": 0.476,
+      "n": 42
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 4,
+      "headroom": 1.07,
+      "sens": 0.0,
+      "n": 45
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 1,
+      "headroom": 3.97,
+      "sens": 0.462,
+      "n": 65
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 2,
+      "headroom": 1.35,
+      "sens": 0.375,
+      "n": 48
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 3,
+      "headroom": 1.35,
+      "sens": 0.565,
+      "n": 85
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 4,
+      "headroom": 1.24,
+      "sens": 0.63,
+      "n": 54
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 1,
+      "headroom": 1.17,
+      "sens": 0.083,
+      "n": 24
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 2,
+      "headroom": 1.26,
+      "sens": 0.5,
+      "n": 10
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 3,
+      "headroom": 1.2,
+      "sens": 1.0,
+      "n": 13
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 4,
+      "headroom": 1.14,
+      "sens": 0.447,
+      "n": 38
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 5,
+      "headroom": 11778500183.58,
+      "sens": 0.455,
+      "n": 11
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 6,
+      "headroom": 0.0,
+      "sens": 0.0,
+      "n": 12
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 1,
+      "headroom": 1.23,
+      "sens": 0.0,
+      "n": 36
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 2,
+      "headroom": 1.99,
+      "sens": 0.786,
+      "n": 28
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 3,
+      "headroom": 6.11,
+      "sens": 0.276,
+      "n": 76
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 4,
+      "headroom": 1.69,
+      "sens": 0.317,
+      "n": 63
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 1,
+      "headroom": 1.56,
+      "sens": 0.472,
+      "n": 72
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 2,
+      "headroom": 1.29,
+      "sens": 0.713,
+      "n": 87
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 3,
+      "headroom": 1.18,
+      "sens": 0.775,
+      "n": 80
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 4,
+      "headroom": 1.18,
+      "sens": 0.911,
+      "n": 56
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 1,
+      "headroom": 1.28,
+      "sens": 0.0,
+      "n": 13
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 2,
+      "headroom": 1.24,
+      "sens": 0.442,
+      "n": 43
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 3,
+      "headroom": 1.19,
+      "sens": 0.0,
+      "n": 10
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 4,
+      "headroom": 1.12,
+      "sens": 0.013,
+      "n": 78
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 5,
+      "headroom": 1.12,
+      "sens": 0.0,
+      "n": 37
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 6,
+      "headroom": 1.12,
+      "sens": 0.9,
+      "n": 20
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 1,
+      "headroom": 1.44,
+      "sens": 0.659,
+      "n": 44
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 2,
+      "headroom": 1.15,
+      "sens": 0.0,
+      "n": 38
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 3,
+      "headroom": 1.16,
+      "sens": 0.0,
+      "n": 67
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 4,
+      "headroom": 1.25,
+      "sens": 0.773,
+      "n": 44
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 2,
+      "headroom": 1.16,
+      "sens": 0.346,
+      "n": 52
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 3,
+      "headroom": 1.16,
+      "sens": 0.45,
+      "n": 60
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 4,
+      "headroom": 1.09,
+      "sens": 0.634,
+      "n": 71
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 5,
+      "headroom": 1.08,
+      "sens": 0.0,
+      "n": 8
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 1,
+      "headroom": 1.06,
+      "sens": 0.0,
+      "n": 16
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 2,
+      "headroom": 1.08,
+      "sens": 0.294,
+      "n": 51
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 3,
+      "headroom": 1.7,
+      "sens": 0.824,
+      "n": 34
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 4,
+      "headroom": 1.1,
+      "sens": 0.436,
+      "n": 55
+     }
+    ]
+   },
+   "ahi": {
+    "rho": 0.705,
+    "p": 0.022737736615376807,
+    "rhoCI": [
+     0.019,
+     0.968
+    ],
+    "bias": -28.3,
+    "loa": [
+     -51.0,
+     -5.7
+    ],
+    "medianPsg": 54.5,
+    "medianAcoustic": 20.0
+   },
+   "severity": {
+    "agree": 4,
+    "n": 10,
+    "confusion": {
+     "normal": {
+      "normal": 0,
+      "mild": 0,
+      "moderate": 0,
+      "severe": 0
+     },
+     "mild": {
+      "normal": 0,
+      "mild": 0,
+      "moderate": 0,
+      "severe": 0
+     },
+     "moderate": {
+      "normal": 0,
+      "mild": 0,
+      "moderate": 1,
+      "severe": 0
+     },
+     "severe": {
+      "normal": 1,
+      "mild": 1,
+      "moderate": 4,
+      "severe": 3
+     }
+    }
+   }
+  },
+  "trach": {
+   "patients": 10,
+   "hours": 44.2,
+   "events": {
+    "expert": 1975,
+    "found": 884,
+    "sens": 44.8,
+    "acoustic": 1110,
+    "matched": 805,
+    "ppv": 72.5,
+    "byType": {
+     "OA": {
+      "n": 1058,
+      "found": 548,
+      "sens": 51.8
+     },
+     "CA": {
+      "n": 20,
+      "found": 5,
+      "sens": 25.0
+     },
+     "MA": {
+      "n": 100,
+      "found": 59,
+      "sens": 59.0
+     },
+     "H": {
+      "n": 797,
+      "found": 272,
+      "sens": 34.1
+     }
+    },
+    "typeAgreement": {
+     "apnea->apnea": 339,
+     "apnea->hypopnea": 273,
+     "hypopnea->hypopnea": 178,
+     "hypopnea->apnea": 94
+    }
+   },
+   "perPatient": [
+    {
+     "pid": "00000999-100507",
+     "hours": 4.14,
+     "sleepH": 3.76,
+     "nExpert": 205,
+     "nAcoustic": 41,
+     "ahiPsg": 54.5,
+     "ahiAcoustic": 9.9,
+     "ahiAcousticPerSleepH": 10.9,
+     "sevPsg": "severe",
+     "sevAcoustic": "mild"
+    },
+    {
+     "pid": "00001006-100507",
+     "hours": 3.98,
+     "sleepH": 3.81,
+     "nExpert": 167,
+     "nAcoustic": 130,
+     "ahiPsg": 43.9,
+     "ahiAcoustic": 32.7,
+     "ahiAcousticPerSleepH": 34.1,
+     "sevPsg": "severe",
+     "sevAcoustic": "severe"
+    },
+    {
+     "pid": "00001014-100507",
+     "hours": 3.63,
+     "sleepH": 3.43,
+     "nExpert": 252,
+     "nAcoustic": 130,
+     "ahiPsg": 73.5,
+     "ahiAcoustic": 35.8,
+     "ahiAcousticPerSleepH": 37.9,
+     "sevPsg": "severe",
+     "sevAcoustic": "severe"
+    },
+    {
+     "pid": "00001016-100507",
+     "hours": 6.07,
+     "sleepH": 5.93,
+     "nExpert": 108,
+     "nAcoustic": 104,
+     "ahiPsg": 18.2,
+     "ahiAcoustic": 17.1,
+     "ahiAcousticPerSleepH": 17.5,
+     "sevPsg": "moderate",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001018-100507",
+     "hours": 4.24,
+     "sleepH": 3.56,
+     "nExpert": 207,
+     "nAcoustic": 74,
+     "ahiPsg": 58.2,
+     "ahiAcoustic": 17.4,
+     "ahiAcousticPerSleepH": 20.8,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001026-100507",
+     "hours": 3.72,
+     "sleepH": 3.44,
+     "nExpert": 295,
+     "nAcoustic": 217,
+     "ahiPsg": 85.7,
+     "ahiAcoustic": 58.4,
+     "ahiAcousticPerSleepH": 63.1,
+     "sevPsg": "severe",
+     "sevAcoustic": "severe"
+    },
+    {
+     "pid": "00001028-100507",
+     "hours": 6.13,
+     "sleepH": 5.56,
+     "nExpert": 201,
+     "nAcoustic": 92,
+     "ahiPsg": 36.2,
+     "ahiAcoustic": 15.0,
+     "ahiAcousticPerSleepH": 16.6,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001039-100507",
+     "hours": 3.71,
+     "sleepH": 3.54,
+     "nExpert": 193,
+     "nAcoustic": 107,
+     "ahiPsg": 54.5,
+     "ahiAcoustic": 28.8,
+     "ahiAcousticPerSleepH": 30.2,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001041-100507",
+     "hours": 4.17,
+     "sleepH": 3.35,
+     "nExpert": 191,
+     "nAcoustic": 117,
+     "ahiPsg": 57.0,
+     "ahiAcoustic": 28.1,
+     "ahiAcousticPerSleepH": 34.9,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    },
+    {
+     "pid": "00001045-100507",
+     "hours": 4.41,
+     "sleepH": 3.44,
+     "nExpert": 156,
+     "nAcoustic": 98,
+     "ahiPsg": 45.3,
+     "ahiAcoustic": 22.2,
+     "ahiAcousticPerSleepH": 28.5,
+     "sevPsg": "severe",
+     "sevAcoustic": "moderate"
+    }
+   ],
+   "headroom": {
+    "hours": 45,
+    "rho": 0.525,
+    "p": 0.00021678373670622075,
+    "median": 1.35,
+    "sensLow": 26.1,
+    "sensHigh": 57.9,
+    "rows": [
+     {
+      "pid": "00000999-100507",
+      "k": 1,
+      "headroom": 1.12,
+      "sens": 0.508,
+      "n": 65
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 2,
+      "headroom": 1.07,
+      "sens": 0.0,
+      "n": 54
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 3,
+      "headroom": 1.15,
+      "sens": 0.0,
+      "n": 27
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 4,
+      "headroom": 1.21,
+      "sens": 0.057,
+      "n": 53
+     },
+     {
+      "pid": "00000999-100507",
+      "k": 5,
+      "headroom": 1.18,
+      "sens": 0.0,
+      "n": 6
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 1,
+      "headroom": 2.48,
+      "sens": 0.595,
+      "n": 37
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 2,
+      "headroom": 2.61,
+      "sens": 0.535,
+      "n": 43
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 3,
+      "headroom": 2.72,
+      "sens": 0.595,
+      "n": 42
+     },
+     {
+      "pid": "00001006-100507",
+      "k": 4,
+      "headroom": 1.45,
+      "sens": 0.333,
+      "n": 45
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 1,
+      "headroom": 2.52,
+      "sens": 0.2,
+      "n": 65
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 2,
+      "headroom": 2.27,
+      "sens": 0.417,
+      "n": 48
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 3,
+      "headroom": 2.51,
+      "sens": 0.553,
+      "n": 85
+     },
+     {
+      "pid": "00001014-100507",
+      "k": 4,
+      "headroom": 1.4,
+      "sens": 0.685,
+      "n": 54
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 1,
+      "headroom": 1.11,
+      "sens": 0.042,
+      "n": 24
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 2,
+      "headroom": 1.76,
+      "sens": 0.6,
+      "n": 10
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 3,
+      "headroom": 1.47,
+      "sens": 1.0,
+      "n": 13
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 4,
+      "headroom": 1.23,
+      "sens": 0.474,
+      "n": 38
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 5,
+      "headroom": 19392251196.48,
+      "sens": 0.727,
+      "n": 11
+     },
+     {
+      "pid": "00001016-100507",
+      "k": 6,
+      "headroom": 0.0,
+      "sens": 0.0,
+      "n": 12
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 1,
+      "headroom": 1.29,
+      "sens": 0.167,
+      "n": 36
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 2,
+      "headroom": 3.6,
+      "sens": 0.536,
+      "n": 28
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 3,
+      "headroom": 16.23,
+      "sens": 0.355,
+      "n": 76
+     },
+     {
+      "pid": "00001018-100507",
+      "k": 4,
+      "headroom": 2.69,
+      "sens": 0.397,
+      "n": 63
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 1,
+      "headroom": 1.81,
+      "sens": 0.306,
+      "n": 72
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 2,
+      "headroom": 2.5,
+      "sens": 0.713,
+      "n": 87
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 3,
+      "headroom": 1.36,
+      "sens": 0.825,
+      "n": 80
+     },
+     {
+      "pid": "00001026-100507",
+      "k": 4,
+      "headroom": 1.83,
+      "sens": 0.893,
+      "n": 56
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 1,
+      "headroom": 1.09,
+      "sens": 0.0,
+      "n": 13
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 2,
+      "headroom": 1.17,
+      "sens": 0.605,
+      "n": 43
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 3,
+      "headroom": 1.35,
+      "sens": 0.4,
+      "n": 10
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 4,
+      "headroom": 1.13,
+      "sens": 0.077,
+      "n": 78
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 5,
+      "headroom": 1.18,
+      "sens": 0.027,
+      "n": 37
+     },
+     {
+      "pid": "00001028-100507",
+      "k": 6,
+      "headroom": 1.29,
+      "sens": 1.0,
+      "n": 20
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 1,
+      "headroom": 1.29,
+      "sens": 0.705,
+      "n": 44
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 2,
+      "headroom": 1.26,
+      "sens": 0.0,
+      "n": 38
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 3,
+      "headroom": 1.13,
+      "sens": 0.522,
+      "n": 67
+     },
+     {
+      "pid": "00001039-100507",
+      "k": 4,
+      "headroom": 1.62,
+      "sens": 0.773,
+      "n": 44
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 2,
+      "headroom": 1.54,
+      "sens": 0.538,
+      "n": 52
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 3,
+      "headroom": 1.33,
+      "sens": 0.4,
+      "n": 60
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 4,
+      "headroom": 1.08,
+      "sens": 0.62,
+      "n": 71
+     },
+     {
+      "pid": "00001041-100507",
+      "k": 5,
+      "headroom": 1.18,
+      "sens": 0.25,
+      "n": 8
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 1,
+      "headroom": 1.08,
+      "sens": 0.0,
+      "n": 16
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 2,
+      "headroom": 1.29,
+      "sens": 0.294,
+      "n": 51
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 3,
+      "headroom": 3.75,
+      "sens": 0.794,
+      "n": 34
+     },
+     {
+      "pid": "00001045-100507",
+      "k": 4,
+      "headroom": 2.66,
+      "sens": 0.545,
+      "n": 55
+     }
+    ]
+   },
+   "ahi": {
+    "rho": 0.578,
+    "p": 0.08041257910277319,
+    "rhoCI": [
+     -0.131,
+     0.926
+    ],
+    "bias": -26.2,
+    "loa": [
+     -52.1,
+     -0.2
+    ],
+    "medianPsg": 54.5,
+    "medianAcoustic": 25.15
+   },
+   "severity": {
+    "agree": 4,
+    "n": 10,
+    "confusion": {
+     "normal": {
+      "normal": 0,
+      "mild": 0,
+      "moderate": 0,
+      "severe": 0
+     },
+     "mild": {
+      "normal": 0,
+      "mild": 0,
+      "moderate": 0,
+      "severe": 0
+     },
+     "moderate": {
+      "normal": 0,
+      "mild": 0,
+      "moderate": 1,
+      "severe": 0
+     },
+     "severe": {
+      "normal": 0,
+      "mild": 1,
+      "moderate": 5,
+      "severe": 3
+     }
+    }
+   }
+  }
+ }
+}

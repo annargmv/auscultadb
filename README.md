@@ -18,6 +18,12 @@ What it does:
   CirCor's clinical outcome. No open auscultation set has survival data, so longevity itself is not measured.
   Rebuild with `npm run build:age`. References: Lima et al., Nat Commun 2021 (PMID 34433816); Zhang et al., CMAJ 2016
   (PMID 26598376).
+- an apnea / AHI validation on real nights (Discoveries 12): the page's own flow scoring run unchanged on a pilot of
+  **PSG-Audio** (Korompili et al., *Scientific Data* 2021, doi 10.1038/s41597-021-00977-w; data doi 10.11922/sciencedb.00345,
+  **CC BY 4.0**), overnight polysomnograms with synchronised tracheal and ambient microphones from Sismanoglio – Amalia Fleming
+  General Hospital, Athens. Read from the public Hugging Face mirror `dust-systems/psg-audio`. Rebuild with `npm run build:apnea`
+  (downloads ~0.7 GB per patient-hour, keeps only the two microphones at 8 kHz in `raw/psg_audio/`). **No PSG-Audio audio is
+  published** — overnight bedroom audio can contain speech; only the statistics reach `web/`.
 
 *Decision support for research and teaching — not a diagnosis.*
 
