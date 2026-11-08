@@ -221,6 +221,13 @@ arousal channel exists; Levine I–VI used properly.
    got the **adult** gate (50–110) inside a paediatric database — 24 % outside, the worst band.
    `circor_prep.py` now emits `AGE_SPAN` (ageLo/ageHi) and `hrN` takes the **union** over the band;
    unknown age gets the full 50–160 span, never the adult range.
+   **Measured effect on the full 941-patient set: none, and a shade worse.** Sensitivity is
+   39.7 % (71/179) before and after — not one finding flipped — while specificity slipped from
+   99.0 % (687/694) to 98.6 % (684/694): the widened gate let three more false positives through
+   and no true ones. The bug was real but it was never the binding constraint; the `sysDia`
+   threshold is (AUC 0.742, live cut 2.5× at 30.4 % sens, Youden 1.97× at 58.5 %). Keep the fix —
+   it is correct, and rejecting normal toddlers on a mis-derived age would bite on any dataset
+   with a wider HR spread — but do not expect detection to improve until the threshold is refit.
 2. **Respiratory panels on heart-sound recordings.** A CirCor patient page printed
    "Resp. rate (est.) 36 /min" and a full apnea/AHI card from a 6.6 s valve recording. `isCardiacOnly()`
    now suppresses both and says why. Guarded by two e2e checks.
