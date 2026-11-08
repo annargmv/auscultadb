@@ -60,6 +60,21 @@ tr.click{cursor:pointer}tr.click:hover td{background:#f7f9fc}
 .list-item:hover{background:#f7f9fc}
 .list-item .meta{color:var(--muted);font-size:12.5px}
 .swatch{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+/* expert label = filled square · detector output = hollow ring. Same hue, different mark, so a
+   disagreement between the two is legible at a glance instead of needing the surrounding words. */
+.swatch.det{background:transparent!important;border-radius:50%;box-shadow:inset 0 0 0 2.5px currentColor}
+.lamp.det{background:transparent!important;box-shadow:inset 0 0 0 2.5px currentColor}
+.markkey{display:inline-flex;gap:12px;align-items:center;font-size:11px;color:#8b97a5;margin-left:auto}
+/* Discoveries is 15 long sections; the analysis map promised navigation it never delivered.
+   This rail stays put while you scroll and marks where you are. */
+.toc{position:sticky;top:0;z-index:5;background:#fbfcfdee;backdrop-filter:blur(6px);border-bottom:1px solid #e1e6ed;
+     margin:0 0 14px;padding:8px 0;display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin}
+.toc a{flex:0 0 auto;font-size:11.5px;padding:4px 9px;border-radius:999px;text-decoration:none;color:#5d6b7a;
+       background:#eef1f5;white-space:nowrap;border:1px solid transparent}
+.toc a:hover{background:#e3e9f1;color:#15202b}
+.toc a.on{background:#0f6fde;color:#fff;border-color:#0f6fde}
+.toc a.pending{opacity:.55;font-style:italic}
+.markkey i{font-style:normal;display:inline-flex;align-items:center;gap:4px}
 .player{display:flex;flex-direction:column;gap:10px}
 .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 canvas.graph{width:100%;height:auto;display:block;border-radius:8px;border:1px solid var(--line);background:#fff;cursor:crosshair}
@@ -413,9 +428,19 @@ function detectTransients(x, thr=TR_THR){
     // two-cycle duration (2CD): span of the first two full oscillations after onset (clinical fine/coarse criterion)
     const zcs=[]; for(let i=a+1;i<Math.min(x.length,a+0.03*SR)&&zcs.length<5;i++)if((hpS[i]>=0)!==(hpS[i-1]>=0))zcs.push(i);
     const cd2=zcs.length>=5?(zcs[4]-zcs[0])/SR:0.03; const f=2/cd2;
+    // CORSA waveform measures (Sovijärvi et al., Eur Respir Rev 2000; ranges in Palaniappan et al., PMC2990233):
+    //   IDW  initial deflection width  — first half-cycle   fine 0.50–0.90 ms, coarse 1.00–1.25 ms
+    //   2CD  two-cycle duration        — first two cycles   fine 3.3–6.0 ms,   coarse 5.1–9.5 ms
+    //   TDW  total deflection width    — decay to 30 % peak fine ≈4 ms,        coarse ≈6.7 ms
+    // Zero crossings are linearly interpolated: at SR = 8000 an IDW of 0.5–1.25 ms is only 4–10 samples,
+    // so without interpolation the measure is quantised to 0.125 ms and unusable. Reported, NOT used to
+    // classify — `fine` below is unchanged, so precomputed results stay valid.
+    const zi=zcs.map(i=>{const y0=hpS[i-1],y1=hpS[i];return (i-1+(y1===y0?0.5:y0/(y0-y1)))/SR});
+    const idw=zi.length>=2?zi[1]-zi[0]:null, cd2i=zi.length>=5?zi[4]-zi[0]:null;
     let end=pi; while(end<x.length-1&&end-pi<0.04*SR){let m=0;for(let i=end;i<Math.min(x.length,end+16);i++)m=Math.max(m,Math.abs(hpS[i]));if(m<0.3*pk)break;end+=16}
     let eh=0,el=0; for(let i=Math.max(0,a-40);i<Math.min(x.length,a+160);i++){eh+=hiB[i]*hiB[i];el+=loB[i]*loB[i]}
-    events.push({t0:a/SR,t1:Math.max(end,a+16)/SR,dur:cd2,freq:f,amp:pk,fine:cd2<0.006,hl:10*Math.log10((eh+1e-12)/(el+1e-12))});
+    events.push({t0:a/SR,t1:Math.max(end,a+16)/SR,dur:cd2,freq:f,amp:pk,fine:cd2<0.006,hl:10*Math.log10((eh+1e-12)/(el+1e-12)),
+      idw,cd2i,tdw:(Math.max(end,a+16)-a)/SR});
   }
   return events;
 }
@@ -542,7 +567,7 @@ function compareRecordings(pathA, normA, patient){
     const cyclesHit=new Set(list.map(e=>e.cycle&&e.cycle.start)).size;
     findings.push({type:kind==='fine'?'fine_crackle':'coarse_crackle',t0:Math.min(...list.map(e=>e.t0)),t1:Math.max(...list.map(e=>e.t1)),
       phase:ph,pos:`${pos} ${ph==='inspiratory'?'inspiration':'expiration'}`,site,count:list.length,
-      detail:`${list.length} ${kind} transients (median 2CD ${(median(list.map(e=>e.dur))*1000).toFixed(1)} ms, ~${Math.round(median(list.map(e=>e.freq)))} Hz) over ${cyclesHit} of ${cyc.length} cycles (incl. edge partials); ${Math.round(100*inPhase/list.length)} % ${ph}, mostly ${pos}. Baseline recording: ${baseEv} transients.`,
+      detail:`${list.length} ${kind} transients (CORSA: median IDW ${(()=>{const v=median(list.map(e=>e.idw).filter(z=>z!=null));return v==null?'—':(v*1000).toFixed(2)+' ms'})()}, 2CD ${(median(list.map(e=>e.dur))*1000).toFixed(1)} ms, TDW ${(()=>{const v=median(list.map(e=>e.tdw).filter(z=>z!=null));return v==null?'—':(v*1000).toFixed(1)+' ms'})()}, ~${Math.round(median(list.map(e=>e.freq)))} Hz) over ${cyclesHit} of ${cyc.length} cycles (incl. edge partials); ${Math.round(100*inPhase/list.length)} % ${ph}, mostly ${pos}. Baseline recording: ${baseEv} transients.`,
       events:list.map(e=>[e.t0,e.t1]),conf:Math.min(0.95,0.5+list.length/40)});
   }
   // --- continuous sounds
@@ -573,7 +598,20 @@ function compareRecordings(pathA, normA, patient){
   // --- cardiac
   const H=pathA.heart, HN=normA.heart;
   // cardiac rules need resolvable diastole and beats in breath pauses (not met at infant heart rates / continuous breathing)
-  const hrN=patient.age==null?[50,110]:patient.age<1?[100,160]:patient.age<3?[90,150]:patient.age<6?[80,140]:patient.age<12?[70,120]:[50,110];
+  // Normal awake heart rate by age. A dataset that records age only as a BAND (CirCor: Neonate /
+  // Infant / Child / Adolescent) must not be collapsed to one number — "Child" spans 1–11 y, whose
+  // normal range runs 90–150 at the young end and 70–120 at the old end. Collapsing it to age 6 and
+  // gating at 70–120 suppressed cardiac findings on perfectly normal toddlers (13 % of CirCor
+  // "Child" recordings sat outside the gate). Pass ageLo/ageHi and the gate takes the union.
+  // Unknown age gets the full paediatric-to-adult span, never the adult range: defaulting an
+  // age-less patient in a children's database to 50–110 rejected 24 % of their recordings.
+  const hrBand=a=>a<1?[100,160]:a<3?[90,150]:a<6?[80,140]:a<12?[70,120]:[50,110];
+  const hrN=(()=>{
+    const lo=patient.ageLo, hi=patient.ageHi;
+    if(lo!=null&&hi!=null){const A=hrBand(lo),B=hrBand(hi);return [Math.min(A[0],B[0]),Math.max(A[1],B[1])]}
+    if(patient.age!=null)return hrBand(patient.age);
+    return [50,160];
+  })();
   const hrOk=H.hr&&H.hr>=0.85*hrN[0]&&H.hr<=1.15*hrN[1];
   if(H.beats.length>=3&&hrOk&&H.hr<=150&&H.quietBeats>=3){
     const s3n=H.beats.filter(b=>b.s3).length;
@@ -664,6 +702,29 @@ function selectSite(p,loc){
   audioCache.set(p.id,{path:p.audio[cur.loc],normal:p.audio[base.loc],orig:{path:p.audio[cur.loc],normal:p.audio[base.loc]},uploaded:{}});
 }
 const isPre=p=>p.source==='sprsound'||p.source==='kauh'||p.source==='circor';
+// Datasets that auscultate the heart, not the chest wall. A breathing-rate or apnea/AHI number
+// computed from a few seconds of valve recording is not a measurement of anything — suppress the
+// respiratory panels rather than print a figure that invites being read as clinical.
+const isCardiacOnly=p=>p.source==='circor';
+const CARDIAC=new Set(['murmur','dmurmur','s3']);
+/* How well has THIS finding type actually been shown to work on THIS dataset?
+   Returns {txt, tone} or null. Cardiac detectors were measured on CirCor (941 patients); the
+   respiratory detectors were never measured on heart sounds, and vice versa. */
+function trackRecord(p,type){
+  const V=INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full;
+  const cardiac=CARDIAC.has(type);
+  if(p.source==='circor'){
+    if(!cardiac)return {txt:'respiratory detector · never validated on heart sounds',tone:'warn'};
+    if(type==='s3')return {txt:'S3 · unvalidatable — CirCor carries no S3 labels',tone:'warn'};
+    if(!V)return null;
+    const pc=a=>a&&a[1]?Math.round(100*a[0]/a[1]):null;
+    if(type==='murmur'){const g=V.byGrade||{},q=k=>pc(g[k]);
+      return {txt:`measured on 941 patients: finds ${pc(V.murmurPatient.sens)} % of annotated murmurs overall — ${q('I/VI')} % of grade I/VI, ${q('III/VI')} % of grade III/VI`,tone:'warn'};}
+    return {txt:`diastolic murmur · ${pc(V.diastolic.detected)} % of the ${V.diastolic.truthN} labelled cases found`,tone:'warn'};
+  }
+  if(cardiac)return {txt:`cardiac finding · ${esc(SRC_META[p.source]?SRC_META[p.source].tag:'this dataset')} has no heart-sound labels, so this is not validated here`,tone:'warn'};
+  return null;
+}
 const siteScore=x=>x.events.filter(e=>e.type!=='Normal').length+(x.record==='Normal'?0:100);
 function siteResult(p,loc){ // analysis of one site against its baseline, without changing the selection
   const cur=p.sites.find(x=>x.loc===loc), base=baseFor(p,loc);
@@ -748,6 +809,7 @@ async function loadRealDataset(){
         const first=sites.find(x=>x.audible)||sites.find(x=>x.record==='Murmur')||sites[0];
         p.curLoc=first.loc; p.summary={n:first.nFind,types:first.types}; p.doctorId='d2';
         p.murmur=m.murmur; p.murLoc=m.murLoc||[]; p.audible=m.audible; p.sys=m.sys||{}; p.dia=m.dia||{}; p.outcome=m.outcome; p.ageBand=m.ageBand;
+        p.ageLo=m.ageLo; p.ageHi=m.ageHi;   // the band's real span — the cardiac HR gate takes its union
         p.notes=`Real heart-sound recording from the CirCor DigiScope database (two mass screening campaigns in Para\u00edba, Brazil; 4 kHz, resampled to 8 kHz). Up to four valve sites per patient \u2014 aortic, pulmonary, tricuspid and mitral. Expert annotation: murmur <b>${esc(m.murmur||'?')}</b>${(m.murLoc||[]).length?` at ${esc((m.murLoc||[]).join(', '))}`:''}${m.audible?`, most audible at ${esc(m.audible)}`:''}${m.sys&&m.sys.timing?`; ${esc(m.sys.timing.toLowerCase())}, ${esc(m.sys.shape||'shape n/a')}, grade ${esc(m.sys.grading||'n/a')}, ${esc(m.sys.pitch||'pitch n/a')} pitch, ${esc(m.sys.quality||'quality n/a')}`:''}${m.dia&&m.dia.timing?`; diastolic: ${esc(m.dia.timing.toLowerCase())}, grade ${esc(m.dia.grading||'n/a')}`:''}. Baseline = a murmur-free patient of the same age band, same valve. <b>Respiratory</b> findings are not validated on this set \u2014 it is a cardiac database.`;
       }
       else p.curLoc=sites.slice().sort((a,b)=>siteScore(b)-siteScore(a))[0].loc; site0(p);
@@ -829,14 +891,14 @@ const SRC_META={sprsound:{tag:'SPRSound',credit:'© Zhang et al., SPRSound',lic:
   kauh:{tag:'KAUH',credit:'© Fraiwan et al., KAUH lung sounds',lic:'CC BY 4.0',licUrl:'https://creativecommons.org/licenses/by/4.0/',cite:'KAUH lung sounds dataset (Fraiwan et al., Data in Brief 35:106913, 2021; Mendeley Data jwyy9np4gv v3), CC BY 4.0'},
   circor:{tag:'CirCor',credit:'© Oliveira et al., CirCor DigiScope',lic:'ODC-By 1.0',licUrl:'https://opendatacommons.org/licenses/by/1-0/',cite:'CirCor DigiScope phonocardiogram dataset (Oliveira et al., IEEE JBHI 26(6):2524–2535, 2022; PhysioNet 1.0.3), ODC-By 1.0'}};
 const srcPill=p=>SRC_META[p.source]?`<span class="src real">real · ${SRC_META[p.source].tag}</span>`:'<span class="src syn">your upload</span>';
-const LF={dx:'',age:'',abn:'',sort:'severity'};
+const LF={dx:'',age:'',abn:'',src:'',sort:'severity'};
 const AGE_GROUPS=[['','All ages'],['0-1','< 1 year'],['1-3','1–3 y'],['3-6','3–6 y'],['6-12','6–12 y'],['12-18','12–18 y'],['18-40','18–40 y'],['40-65','40–65 y'],['65-200','65+ y']];
 const dxRank=p=>p.severe?0:/Control/i.test(p.diagnosis)?3:/Pneumonia \(non|Asthma|Bronchitis$/.test(p.diagnosis)?2:1;
 function renderPatients(){
   const q=($('#q').value||'').toLowerCase().trim();
-  const inAge=p=>{if(!LF.age)return true;const [lo,hi]=LF.age.split('-').map(Number);return p.age>=lo&&p.age<hi};
+  const inAge=p=>{if(!LF.age)return true;if(p.age==null)return false;const [lo,hi]=LF.age.split('-').map(Number);return p.age>=lo&&p.age<hi};
   const abnOf=p=>p.sites?p.sites.some(x=>x.record!=='Normal'):true;
-  const list=patients.filter(p=>(!q||[p.name,p.mrn,p.diagnosis,docOf(p.doctorId).name,p.site].join(' ').toLowerCase().includes(q))&&(!LF.dx||p.diagnosis===LF.dx)&&inAge(p)&&(!LF.abn||(LF.abn==='abn'?abnOf(p):!abnOf(p))))
+  const list=patients.filter(p=>(!q||[p.name,p.mrn,p.diagnosis,docOf(p.doctorId).name,p.site].join(' ').toLowerCase().includes(q))&&(!LF.dx||p.diagnosis===LF.dx)&&inAge(p)&&(!LF.src||(p.source||'upload')===LF.src)&&(!LF.abn||(LF.abn==='abn'?abnOf(p):!abnOf(p))))
     .sort((a,b)=>LF.sort==='age'?a.age-b.age:LF.sort==='dx'?a.diagnosis.localeCompare(b.diagnosis)||a.age-b.age:dxRank(a)-dxRank(b)||a.diagnosis.localeCompare(b.diagnosis)||a.age-b.age);
   const dxCount={}; patients.forEach(p=>dxCount[p.diagnosis]=(dxCount[p.diagnosis]||0)+1);
   const rows=list.map(p=>{const s=findingSummary(p);const d=docOf(p.doctorId);
@@ -847,20 +909,23 @@ function renderPatients(){
   const loading=REAL.status==='loading'?'<div class="notice" style="margin-bottom:12px">Loading real recordings (SPRSound, KAUH)…</div>':REAL.status==='error'?`<div class="notice" style="margin-bottom:12px">Real recordings could not be loaded (${esc(REAL.error)}). Synthetic demo patients are shown.</div>`:'';
   $('#view').innerHTML=`<h1>Patients</h1><p class="sub">Real auscultation recordings from two open databases: SPRSound children (up to four chest sites each, analysed against the child's own normal site) and KAUH adolescents and adults 12–90 y (one chest site, three stethoscope filter modes, analysed against an age-matched healthy adult).</p>${loading}
     <div class="grid g3" style="margin-bottom:16px">
-      <div class="card stat"><b>${patients.length}</b><span>patients · ${nReal} children (SPRSound) · ${nKauh} adolescents/adults (KAUH)${patients.length-nReal-nKauh?`, ${patients.length-nReal-nKauh} uploaded`:''}</span></div>
+      <div class="card stat"><b>${patients.length}</b><span>patients · ${nReal} children (SPRSound) · ${nKauh} adolescents/adults (KAUH) · ${patients.filter(p=>p.source==='circor').length} heart sounds (CirCor)${patients.filter(p=>!isPre(p)).length?` · ${patients.filter(p=>!isPre(p)).length} uploaded`:''}</span></div>
       <div class="card stat"><b>${nRec}</b><span>recordings (chest sites)</span></div>
       <div class="card stat"><b>${total}</b><span>anomalies detected across the database</span></div>
     </div>
     <div class="row" style="margin-bottom:10px">
       <select class="f" id="fDx" style="width:auto"><option value="">All diagnoses (${patients.length})</option>${Object.keys(dxCount).sort().map(d=>`<option ${LF.dx===d?'selected':''} value="${esc(d)}">${esc(d)} (${dxCount[d]})</option>`).join('')}</select>
       <select class="f" id="fAge" style="width:auto">${AGE_GROUPS.map(([v,l])=>`<option value="${v}" ${LF.age===v?'selected':''}>${l}</option>`).join('')}</select>
+      ${(()=>{const SRCS=[['','All datasets'],['sprsound','SPRSound · children · lungs'],['kauh','KAUH · adults · lungs'],['circor','CirCor · children · heart'],['upload','Your uploads']];
+        const c=o=>o?patients.filter(p=>(p.source||'upload')===o).length:patients.length;
+        return `<select class="f" id="fSrc" style="width:auto">${SRCS.filter(([v])=>!v||c(v)).map(([v,l])=>`<option value="${v}" ${LF.src===v?'selected':''}>${l} (${c(v)})</option>`).join('')}</select>`})()}
       <select class="f" id="fAbn" style="width:auto"><option value="">All children</option><option value="abn" ${LF.abn==='abn'?'selected':''}>≥1 abnormal site (expert)</option><option value="norm" ${LF.abn==='norm'?'selected':''}>All sites normal</option></select>
       <select class="f" id="fSort" style="width:auto"><option value="severity" ${LF.sort==='severity'?'selected':''}>Sort: severe & rare first</option><option value="age" ${LF.sort==='age'?'selected':''}>Sort: age</option><option value="dx" ${LF.sort==='dx'?'selected':''}>Sort: diagnosis</option></select>
       <span class="hint">${list.length} shown</span></div>
     <div class="card" style="padding:0 6px"><table><thead><tr><th>Patient</th><th>Age · Sex</th><th>Diagnosis · expert label per site</th><th>Doctor</th><th>Recorded</th><th>Analysis</th></tr></thead><tbody>${rows||`<tr><td colspan="6" class="empty">No patients match.</td></tr>`}</tbody></table></div>`;
   $('#view').querySelectorAll('tr.click').forEach(tr=>{tr.onclick=()=>location.hash='#patient-'+tr.dataset.id;
     tr.onmouseenter=()=>{const p=patients.find(x=>x.id===tr.dataset.id);if(p&&isPre(p)&&!p.detail)getDetail(p).then(d=>{p.detail=p.detail||d}).catch(()=>{})}});
-  for(const [id,k] of [['fDx','dx'],['fAge','age'],['fAbn','abn'],['fSort','sort']])$('#'+id).onchange=e=>{LF[k]=e.target.value;renderPatients()};
+  for(const [id,k] of [['fDx','dx'],['fAge','age'],['fAbn','abn'],['fSrc','src'],['fSort','sort']]){const el=$('#'+id);if(el)el.onchange=e=>{LF[k]=e.target.value;renderPatients()}}
 }
 function renderDoctors(){
   $('#view').innerHTML=`<h1>Doctors</h1><p class="sub">Treating physicians and their patient panels.</p><div class="grid g3">`+doctors.map(d=>{
@@ -897,7 +962,7 @@ function renderPatient(id){
   player.pos=0;
   const recCard=(which,title,tag)=>{const A=which==='path'?r.pathA:r.normA; const em=isReal?p.expert[which==='path'?'path':'normal']:null;
     return `<div class="rec-card"><h3>${title} <span class="tag">${tag}</span>${a.uploaded[which]?'<span class="tag" style="background:#e4f6ec;color:#176b3c">uploaded WAV</span>':''}</h3>
-      <dl class="kv"><dt>Site</dt><dd>${esc(isReal&&which==='normal'?p.baseSite:p.site)}</dd>${em?`<dt>Expert label</dt><dd><b>${esc(em.record)}</b> · ${p.source==='kauh'?'whole-recording label (no event timings)':em.events.length+' annotated events'}<div class="hint mono">${esc(em.name)}</div></dd>`:''}<dt>Duration</dt><dd>${(A.dur).toFixed(1)} s · ${SR/1000} kHz mono</dd><dt>Resp. rate (est.)</dt><dd>${A.cycles.some(c=>c.estimated)?'<span class="hint">not reliable — phases estimated</span>':(A.rr?Math.round(A.rr)+' /min':'—')+' · '+A.cycles.filter(c=>!c.partial).length+' full cycles'}</dd><dt>Heart rate (est.)</dt><dd>${(()=>{const hr=A.heart.hr,a=p.age,n=a==null?[50,110]:a<1?[100,160]:a<3?[90,150]:a<6?[80,140]:a<12?[70,120]:a<18?[60,110]:[50,100];return !hr?'—':(hr>=0.85*n[0]&&hr<=1.15*n[1])?Math.round(hr)+' bpm':'<span class="hint">not reliable ('+Math.round(hr)+' bpm is implausible for age)</span>'})()}</dd><dt>I:E ratio</dt><dd>${A.ie&&!A.cycles.some(c=>c.estimated)&&1/A.ie>=0.4&&1/A.ie<=3?'1:'+(1/A.ie).toFixed(1):'—'}</dd></dl>
+      <dl class="kv"><dt>Site</dt><dd>${esc(isReal&&which==='normal'?p.baseSite:p.site)}</dd>${em?`<dt>Expert label</dt><dd><b>${esc(em.record)}</b> · ${p.source==='kauh'?'whole-recording label (no event timings)':em.events.length+' annotated events'}<div class="hint mono">${esc(em.name)}</div></dd>`:''}<dt>Duration</dt><dd>${(A.dur).toFixed(1)} s · ${SR/1000} kHz mono</dd><dt>Resp. rate (est.)</dt><dd>${isCardiacOnly(p)?'<span class="hint">not applicable — heart-sound recording, not chest-wall breathing</span>':A.cycles.some(c=>c.estimated)?'<span class="hint">not reliable — phases estimated</span>':(A.rr?Math.round(A.rr)+' /min':'—')+' · '+A.cycles.filter(c=>!c.partial).length+' full cycles'}</dd><dt>Heart rate (est.)</dt><dd>${(()=>{const hr=A.heart.hr,a=p.age,n=a==null?[50,110]:a<1?[100,160]:a<3?[90,150]:a<6?[80,140]:a<12?[70,120]:a<18?[60,110]:[50,100];return !hr?'—':(hr>=0.85*n[0]&&hr<=1.15*n[1])?Math.round(hr)+' bpm':'<span class="hint">not reliable ('+Math.round(hr)+' bpm is implausible for age)</span>'})()}</dd><dt>I:E ratio</dt><dd>${A.ie&&!A.cycles.some(c=>c.estimated)&&1/A.ie>=0.4&&1/A.ie<=3?'1:'+(1/A.ie).toFixed(1):'—'}</dd></dl>
       <div class="row" style="margin-top:10px"><button class="btn small primary" data-play="${which}">▶ Play</button><label class="btn small">⬆ Replace with WAV<input type="file" accept="audio/*" class="sr-only" data-upload="${which}"></label>${a.uploaded[which]?`<button class="btn small" data-restore="${which}">Restore ${isReal?'original':'synthetic'}</button>`:''}</div></div>`};
   $('#view').innerHTML=`<a href="#patients">← Patients</a>
     <div class="row" style="justify-content:space-between;margin-top:8px"><div><h1>${esc(p.name)} <span class="hint mono" style="font-weight:400;font-size:13px">${esc(p.mrn)}</span></h1><p class="sub">${ageLabel(p)} · ${p.sex==='M'?'Male':'Female'} · ${esc(p.diagnosis)}</p></div>
@@ -912,7 +977,7 @@ function renderPatient(id){
         <div class="card player">
           <div class="row" style="justify-content:space-between"><h2 style="margin:0">Live player</h2><span class="hint">the view scrolls with the sound · ghost lane follows the same breath, cycle-aligned</span></div>
           <div class="controls">
-            <button class="btn primary" id="playPath">▶ Current${p.sites?' · '+esc(p.site.replace(' chest','')):''}</button><button class="btn" id="playNorm">▶ Baseline${p.sites?' · '+esc(p.baseSite.replace(' chest','')):''}</button><button class="btn" id="btnStop">■ Stop</button>
+            <button class="btn primary" id="playPath">▶ Current${p.sites?' · '+esc(p.site.replace(' chest','')):''}</button><button class="btn" id="playNorm" title="${p.baseFrom==='control'?'This baseline is a DIFFERENT patient — a matched control':'This patient\'s own normal recording'}">▶ Baseline${p.sites?' · '+esc(p.baseSite.replace(' chest','')):''}</button><button class="btn" id="btnStop">■ Stop</button>
             <span class="time" id="timeLbl">0.00 s / ${dur.toFixed(2)} s</span>
             <span class="spacer"></span>
             <span class="zoomctl">zoom <input type="range" id="zoom" min="40" max="400" step="10" value="${LIVE.zoom}"></span>
@@ -942,14 +1007,17 @@ function renderPatient(id){
           </div>
           ${isReal&&r.pathA.cycles.some(c=>c.estimated)?'<div class="hint">Breathing phases for this recording were estimated from breath-sound activity; phase labels are approximate.</div>':''}
         </div>
+        ${isCardiacOnly(p)?`<div class="card"><h2>Breathing flow · apnea &amp; hypopnea</h2>
+          <p class="hint" style="margin-top:0">Not shown for this patient. ${esc(SRC_META[p.source].tag)} recordings are taken over a heart valve, not the chest wall, and run a few seconds — there is no breathing signal here to score, and an AHI needs a full night. Printing a flow trace or an event count from this audio would look like a measurement without being one.</p></div>`:`
         <div class="card" id="flowCard">
           <div class="row" style="justify-content:space-between"><h2 style="margin:0">Breathing flow · apnea &amp; hypopnea</h2><span class="row"><span class="hint">acoustic flow proxy · follows the live player</span><button class="btn small active" id="flowFollow">Follow playhead</button></span></div>
           <div style="position:relative;height:210px;margin-top:8px"><canvas id="flowChart"></canvas></div>
           <div class="grid g3" style="margin-top:10px" id="flowStats"><div class="hint">Computing flow…</div></div>
           <div class="hint" id="flowNote" style="margin-top:8px"></div>
-        </div>
+        </div>`}
         <div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Anomalies <span class="badge-n">${r.findings.length}</span></h2><span class="hint">click a finding to play that segment</span></div>
-          <div style="margin-top:10px" id="findings">${r.findings.length?r.findings.map((f,i)=>`<div class="finding" data-i="${i}" style="border-left-color:${TYPES[f.type].color}"><div class="row" style="justify-content:space-between"><span class="t"><span class="swatch" style="background:${TYPES[f.type].color}"></span>${TYPES[f.type].label}${f.poly?' (polyphonic)':''}</span><span class="pill ${f.conf>0.8?'bad':'warn'}">confidence ${Math.round(f.conf*100)} %</span></div>
+          <div class="markkey" style="margin:2px 0 0"><i><span class="swatch" style="background:#8b97a5"></span>expert label</i><i><span class="swatch det" style="color:#8b97a5"></span>detected here</i></div>
+          <div style="margin-top:10px" id="findings">${r.findings.length?r.findings.map((f,i)=>`<div class="finding" data-i="${i}" style="border-left-color:${TYPES[f.type].color}"><div class="row" style="justify-content:space-between"><span class="t"><span class="swatch det" style="color:${TYPES[f.type].color}"></span>${TYPES[f.type].label}${f.poly?' (polyphonic)':''}</span><span class="row" style="gap:6px"><span class="pill ${f.conf>0.8?'bad':'warn'}" title="The detector's own score for this finding — not a probability that it is correct">confidence ${Math.round(f.conf*100)} %</span></span></div>${(()=>{const t=trackRecord(p,f.type);return t?`<div class="hint" style="margin-top:4px;padding:4px 8px;border-radius:4px;background:#fff6e5;color:#8a5a00"><b>Track record:</b> ${t.txt}. <a href="#discover">see validation</a></div>`:''})()}
             <div class="d"><b>Location:</b> ${esc(f.site)} · <b>Phase:</b> ${esc(f.phase)} — ${esc(f.pos)} · <b>Time:</b> <span class="mono">${fmtT(f.t0)} – ${fmtT(f.t1)}</span> · <b>Events:</b> ${f.count}</div><div class="d">${esc(f.detail)}</div></div>`).join(''):'<div class="empty">No anomalies detected relative to this patient\'s baseline.</div>'}</div>
           <table style="margin-top:12px"><thead><tr><th>#</th><th>Anomaly</th><th>Kind</th><th>Respiratory location</th><th>Anatomical site</th><th>Time window</th></tr></thead><tbody>${r.findings.map((f,i)=>`<tr><td class="mono">${i+1}</td><td><span class="swatch" style="background:${TYPES[f.type].color}"></span>${TYPES[f.type].label}</td><td>${TYPES[f.type].kind}</td><td>${esc(f.phase)}, ${esc(f.pos)}</td><td>${esc(f.site)}</td><td class="mono">${f.t0.toFixed(2)}–${f.t1.toFixed(2)} s</td></tr>`).join('')||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>
         </div>
@@ -1408,7 +1476,32 @@ function scoreFlow(F,age){
     let hyp=0,cur=0,ap=0,cur2=0,mn=Infinity,s0=-1,s1=-1;
     for(let i=a;i<=b;i++){const v=exc[i];mn=Math.min(mn,v);if(v<=0.7*Bpre){cur++;if(cur*dt>=hyp)hyp=cur*dt;if(s0<0)s0=i;s1=i}else cur=0;if(v<=0.1*Bpre){cur2++;ap=Math.max(ap,cur2*dt)}else cur2=0}
     if(hyp<D)continue;
-    events.push({type:ap>=D?'apnea':'hypopnea',start:F.t[s0],end:F.t[s1],dur:(s1-s0+1)*dt,drop:Math.round(100*(1-mn/Bpre)),edge:b>=n-1-trim});
+    // ---- descriptive extras (they do not affect the type / AHI decision above) ----
+    // Shape of the flow drop. Obstructive events classically show a flat, sustained reduction with a
+    // sharp recovery overshoot; central events a smoother, more symmetric fall to zero. Airflow SOUND
+    // alone cannot separate the two — no effort or SpO2 channel — so these are reported, never labelled.
+    const seg=Array.from(exc.subarray(s0,s1+1)).map(v=>v/(Bpre||1e-9));
+    const L=seg.length, q=u=>seg[Math.min(L-1,Math.max(0,Math.round(u*(L-1))))];
+    const nadir=seg.indexOf(Math.min(...seg))/Math.max(1,L-1);          // 0 = early, 1 = late
+    const flat=seg.filter(v=>v<=1.3*Math.min(...seg)).length/L;         // fraction spent near the floor
+    const fall=(q(0)-q(0.25))/0.25, rise=(q(1)-q(0.75))/0.25;           // entry / exit slopes (per unit time)
+    const post=Array.from(exc.subarray(s1+1,Math.min(n,s1+1+Math.round(2*period/dt))));
+    const overshoot=post.length?Math.max(...post)/(Bpre||1e-9):null;    // recovery breath vs pre-event baseline
+    // Pre-event baseline quality: AASM needs a stable 2-breath reference. Spread tells you if it was.
+    const preArr=Array.from(exc.subarray(pa,a)).sort((x,y)=>x-y);
+    const p25=preArr[Math.floor(preArr.length*0.25)], p75=preArr[Math.floor(preArr.length*0.75)];
+    const preSpread=Bpre>0?(p75-p25)/Bpre:null;
+    // Confidence WITHOUT SpO2. The AASM hypopnea rule allows flow-drop + (desaturation OR arousal);
+    // with neither channel we can only weight the flow evidence: depth past threshold, duration past
+    // minimum, how steady the reference was, and whether a recovery breath followed.
+    const depth=Math.min(1,(1-mn/Bpre)/0.9), lenOK=Math.min(1,((s1-s0+1)*dt)/(2*D));
+    const stable=preSpread==null?0.5:Math.max(0,1-preSpread/0.6);
+    const rec=overshoot==null?0.5:Math.min(1,Math.max(0,(overshoot-0.8)/0.5));
+    const conf=Math.round(100*Math.max(0.05,Math.min(0.95,0.35*depth+0.25*lenOK+0.2*stable+0.2*rec)))/100;
+    events.push({type:ap>=D?'apnea':'hypopnea',start:F.t[s0],end:F.t[s1],dur:(s1-s0+1)*dt,drop:Math.round(100*(1-mn/Bpre)),edge:b>=n-1-trim,
+      shape:{nadir:+nadir.toFixed(2),flat:+flat.toFixed(2),fall:+fall.toFixed(2),rise:+rise.toFixed(2),overshoot:overshoot==null?null:+overshoot.toFixed(2)},
+      quality:{preSpread:preSpread==null?null:+preSpread.toFixed(2),preBreaths:+(preN*dt/period).toFixed(1),clipped:b>=n-1-trim||a<=trim},
+      conf});
   }
   return {period,periodSrc,B,D,pediatric,events,exc,dur:F.dur};
 }
@@ -1421,6 +1514,7 @@ async function buildFlow(p,r,a){
   let Fp,Fn; try{[Fp,Fn]=await Promise.all([computeFlow(full.path),computeFlow(full.normal)])}catch(e){stats.innerHTML=`<div class="notice" style="grid-column:1/-1">Flow analysis failed: ${esc(e.message)}</div>`;return}
   if(!current||current.p!==p)return;
   const Sp=scoreFlow(Fp,p.age), Sn=scoreFlow(Fn,p.age);
+  window.__flow=Sp;                                  // exposed for tests/upload_ahi.js (read-only)
   const map=(t)=>live&&live.map?live.map('path',t):t;
   const cur=Array.from(Fp.t,(t,i)=>({x:t,y:Fp.flow[i]/Sp.B}));
   const matchedDur=a.path.length/SR;
@@ -1454,7 +1548,7 @@ async function buildFlow(p,r,a){
     <div class="stat"><b>${nA} apnea · ${nH} hypopnea</b><span>scored events in this recording${nE?` · ${nE} low-flow stretch${nE>1?'es':''} not scorable (no 2-breath pre-event baseline)`:''}</span></div>
     <div class="stat"><b>${Sp.pediatric?'Paediatric':'Adult'} AASM rule</b><span>drop of the breath-peak envelope ≥ 90 % (apnea) or ≥ 30 % (hypopnea) for ≥ ${Sp.pediatric?'2 breaths = '+Sp.D.toFixed(1)+' s':'10 s'} · breath period ${Sp.period.toFixed(1)} s (${Sp.periodSrc})</span></div>
     <div class="stat"><b>AHI: ${reportable?rate.toFixed(1)+' /h ('+cls(rate)+', provisional)':'not reportable'}</b><span>${reportable?'':'monitored '+Sp.dur.toFixed(1)+' s — AHI is events per hour of sleep from an overnight study · '}${Sp.dur>=600&&!reportable?'event rate so far: '+rate.toFixed(1)+' /h (needs a full night) · ':''}severity scale ${Sp.pediatric?'children 1 / 5 / 10':'adults 5 / 15 / 30'} per h</span></div>`;
-  note.innerHTML=`Flow proxy = breath-sound loudness (RMS from <b>Meyda</b> on the 150–800 Hz band, filtered with the browser's Web Audio API), relative to this recording's reference breathing (median breath-peak level); each event is confirmed against the pre-event baseline of the two preceding breaths, as in the AASM manual. Chest-wall sounds give a loudness surrogate, not calibrated airflow, and there is no SpO₂ or EEG — hypopneas are scored on the flow criterion only, and obstructive vs central apnea cannot be separated. <b>The scoring has only ever been checked against a synthetic test file</b> (<span class="mono">tests/make_test_audio.py</span>, 11/11), never against a scored sleep study, so treat any AHI it reports as provisional. These SPRSound clips are ${Sp.dur.toFixed(0)} s from awake children, so no AHI can be reported; upload a long breathing recording (up to 60 min) with “+ New patient” to score a longer period.`;
+  note.innerHTML=`Flow proxy = breath-sound loudness (RMS from <b>Meyda</b> on the 150–800 Hz band, filtered with the browser's Web Audio API), relative to this recording's reference breathing (median breath-peak level); each event is confirmed against the pre-event baseline of the two preceding breaths, as in the AASM manual. Chest-wall sounds give a loudness surrogate, not calibrated airflow, and there is no SpO₂ or EEG — hypopneas are scored on the flow criterion only, and obstructive vs central apnea cannot be separated. <b>The scoring has only ever been checked against synthetic test files</b> (<span class="mono">tests/make_test_audio.py</span>: 11/11 inserted pauses found, and 0 events on uninterrupted breathing), never against a scored sleep study, so treat any AHI it reports as provisional. Each scored event also carries a <b>shape</b> descriptor (nadir position, flat fraction, entry/exit slope, recovery overshoot) and a <b>confidence</b> built from flow evidence alone — depth past threshold, duration past minimum, how steady the pre-event baseline was, and whether a recovery breath followed. Obstructive and central events differ in exactly these shapes, but breath sound carries no effort or SpO₂ channel, so the descriptors are reported and <b>never used to label an event obstructive or central</b>. These SPRSound clips are ${Sp.dur.toFixed(0)} s from awake children, so no AHI can be reported; upload a long breathing recording (up to 60 min) with “+ New patient” to score a longer period.`;
   $('#flowFollow').onclick=e=>{flowState.follow=!flowState.follow;e.currentTarget.classList.toggle('active',flowState.follow);flowTick(flowState.t,true)};
 }
 function flowTick(t,force){
@@ -1465,8 +1559,8 @@ function flowTick(t,force){
 }
 
 /* ---------- Discoveries page ---------- */
-let discoverCharts=[];
-function destroyDiscoverCharts(){for(const c of discoverCharts)try{c.destroy()}catch(e){}discoverCharts=[]}
+let discoverCharts=[], discoverIO=null;
+function destroyDiscoverCharts(){for(const c of discoverCharts)try{c.destroy()}catch(e){}discoverCharts=[];if(discoverIO){try{discoverIO.disconnect()}catch(e){}discoverIO=null}}
 const fmtP=p=>p==null||isNaN(p)?'—':p<0.001?'p < 0.001':'p = '+p.toFixed(3);
 const fmtR=r=>r==null||isNaN(r)?'—':(r>0?'+':'')+r.toFixed(2);
 const DISCOVER_MAP=[
@@ -1483,12 +1577,13 @@ const DISCOVER_MAP=[
   {id:'disease',q:'Adult diseases: asthma, heart failure, COPD, pneumonia, fibrosis — what does each sound like?',m:'Detector features (diaphragm mode) per diagnosis vs healthy adults; can sound alone tell heart failure from asthma?',d:'KAUH',nov:'Replication + “cardiac asthma” question',st:'result'},
   {id:'apnea',q:'Apnea / hypopnea and AHI from breathing sounds overnight',m:'Acoustic flow proxy with AASM scoring over full nights, compared with polysomnography AHI',d:'PhysioNet / sleep datasets (overnight)',nov:'Acoustic AHI validated against PSG',st:'physio'},
   {id:'heart',q:'Do the murmur and S3 detectors work on real heart sounds?',m:'Detector output vs expert murmur timing, grade and valve location',d:'CirCor DigiScope (PhysioNet)',nov:'First validation of the cardiac findings',st:'physio'},
+  {id:'cbemph',q:'On one stethoscope, what separates chronic bronchitis and emphysema from healthy adults — and from each other?',m:'234 recordings (86 CB, 148 emphysema) on the same Littmann 3200 as KAUH, against KAUH’s 35 healthy adults in all three filter modes; plus a CB-vs-emphysema probe',d:'Mendeley 9hdrddjpny (Fraiwan et al.) + KAUH',nov:'First device-matched disease comparison here — no stethoscope confound',st:'result'},
   {id:'device',q:'Do the detectors generalise across stethoscopes, hospitals and filter modes?',m:'Thresholds from SPRSound (Yunting) applied unchanged to KAUH (Littmann 3200) in bell, diaphragm and extended mode; agreement between modes',d:'SPRSound vs KAUH',nov:'Generalisation test across devices and filters',st:'result'}];
 const ST={result:['pill ok','result below'],adults:['pill warn','needs adult data — waiting for site access'],sleep:['pill warn','needs overnight data — waiting for site access'],hear:['pill warn','needs Hugging Face access (HAI-DEF terms + token)'],physio:['pill warn','needs PhysioNet data — run the download on your computer and attach']};
 function dChart(id,cfg){const el=$('#'+id);if(!el||!window.Chart)return;discoverCharts.push(new Chart(el,{...cfg,options:{animation:false,responsive:true,maintainAspectRatio:false,...cfg.options}}))}
 async function renderDiscover(){
   $('#view').innerHTML='<h1>Discoveries</h1><div class="empty">Loading results…</div>';
-  let D; try{D=await cachedFetch('data/discover.json','json')}catch(e){$('#view').innerHTML=`<h1>Discoveries</h1><div class="notice">Results not available: ${esc(e.message)}</div>`;return}
+  let D; try{D=await cachedFetch('data/discover.json','json');window.__DISC=D}catch(e){$('#view').innerHTML=`<h1>Discoveries</h1><div class="notice">Results not available: ${esc(e.message)}</div>`;return}
   if(location.hash!=='#discover')return;
   const g=D.growth,h=D.hidden,sv=D.severity,wp=D.wheezePitch,ra=D.rates,au=D.audit;
   const cohortKeys=new Set(patients.filter(p=>p.source==='sprsound').map(p=>p.key));
@@ -1499,8 +1594,9 @@ async function renderDiscover(){
   $('#view').innerHTML=`<h1>Discoveries</h1>
     <p class="sub">What the open data can tell us — computed on the full SPRSound database: <b>${D.n.children} children, ${D.n.recordings.toLocaleString()} recordings, ${D.n.hours} h</b> (expert labels + this platform’s detectors on the original WAV files).</p>
     <div class="notice" style="margin-bottom:14px">Exploratory research analyses: p-values are not corrected for multiple comparisons, recordings are short clips from one hospital and one stethoscope type, and detector-based measures carry the detector’s error. Treat results as hypotheses to confirm, not clinical evidence.</div>
+    <nav class="toc" id="dToc">${DISCOVER_MAP.map((x,i)=>`<a href="#discover" data-jump="d-${x.id}" class="${x.st==='result'?'':'pending'}" title="${esc(x.q)}">${i+1} · ${esc(x.q.replace(/\?$/,'').split(/[,—:]/)[0].trim().slice(0,34))}</a>`).join('')}<a href="#discover" data-jump="d-limits" class="pending">limits</a></nav>
     <div class="card"><h2>Analysis map</h2><table><thead><tr><th>#</th><th>Question</th><th>What we measure</th><th>Data</th><th>Known vs new</th><th>Status</th></tr></thead><tbody>
-      ${DISCOVER_MAP.map((x,i)=>`<tr${x.st==='result'?` class="click" data-go="${x.id}"`:''}><td class="mono">${i+1}</td><td><b>${esc(x.q)}</b></td><td class="hint">${esc(x.m)}</td><td class="hint">${esc(x.d)}</td><td class="hint">${esc(x.nov)}</td><td><span class="${ST[x.st][0]}">${ST[x.st][1]}</span></td></tr>`).join('')}
+      ${DISCOVER_MAP.map((x,i)=>`<tr${x.st==='result'?` class="click" data-go="${x.id}"`:''} id="row-${x.id}"><td class="mono">${i+1}</td><td><b>${esc(x.q)}</b></td><td class="hint">${esc(x.m)}</td><td class="hint">${esc(x.d)}</td><td class="hint">${esc(x.nov)}</td><td><span class="${ST[x.st][0]}">${ST[x.st][1]}</span></td></tr>`).join('')}
     </tbody></table></div>
 
     <div class="card" id="d-growth"><h2>1 · Acoustic age reference for normal breath sounds</h2>
@@ -1630,7 +1726,21 @@ async function renderDiscover(){
       </tbody></table>
       <div class="notice" style="margin-top:12px"><b>Confounds and limits</b><ul style="margin:6px 0 0 18px;padding:0">${(CV.confounds||[]).map(c=>`<li>${esc(c)}</li>`).join('')}<li>Only ${CV.diastolic.truthN} diastolic murmurs exist in the whole database, so that row is anecdotal, not a measurement.</li></ul></div>
       <p class="hint">Thresholds were left exactly as they were fitted on the respiratory sets — this is a held-out measurement, not a tuned result. Recalibrating would need a fit split kept separate from a reporting split. Data: CirCor DigiScope 1.0.3 (PhysioNet), ${esc(CV.licence||'ODC-By')}; run ${esc((CV.generated||'').slice(0,10))}.</p></div>`})()}
-    <div class="card" id="d-device"><h2>14 · Different stethoscope, different filters — does the detector carry over?</h2>
+    ${(()=>{const C=D.cbemph; if(!C)return '';
+      const fm=(m,d)=>m?`<td class="mono">${m.medA.toFixed(2)}</td><td class="mono">${m.medB.toFixed(2)}</td><td class="mono">${fmtR(m.r)}</td><td class="mono ${m.p<0.05?'bad-t':''}">${fmtP(m.p)}</td>`:'<td colspan="4" class="hint">—</td>';
+      const dc=C.durationConfound, rm=dc&&dc.rrMatched;
+      return `<div class="card" id="d-cbemph"><h2>14 · Chronic bronchitis and emphysema on one stethoscope</h2>
+      <p class="hint" style="margin-top:0"><b>${C.n.recordings} recordings</b> (${C.n.cb} chronic bronchitis, ${C.n.emphysema} emphysema, ${C.n.minutes} min) recorded by the same group, on the <b>same 3M Littmann 3200</b> and the same protocol as KAUH — so for once a disease comparison here carries <b>no stethoscope confound</b>. Compared against KAUH's ${C.n.kauhHealthy.D} healthy adults.</p>
+      <div class="notice" style="margin-bottom:12px">KAUH exported every recording in three Littmann filter modes; <b>this set does not say which mode it used</b>. Every test below is therefore run against all three, and only a difference that holds in <b>all three</b> is treated as real — otherwise it is a filter artefact. Surviving that test: <b>${(C.robust['Chronic bronchitis']||[]).join(', ')||'nothing'}</b> for chronic bronchitis, <b>${(C.robust['Emphysema']||[]).join(', ')||'nothing'}</b> for emphysema.</div>
+      ${['Chronic bronchitis','Emphysema'].map(name=>`<h3>${name} vs healthy adults <span class="hint">(diaphragm mode shown; robustness across modes above)</span></h3>
+        <table style="max-width:820px"><thead><tr><th>Feature</th><th>Healthy (median)</th><th>${name}</th><th>Effect r</th><th>p</th></tr></thead><tbody>
+        ${C.vsHealthy.feats.map(([k,lab])=>`<tr><td>${esc(lab)}</td>${fm(C.vsHealthy.rows[name].D[k])}</tr>`).join('')}
+        </tbody></table>`).join('')}
+      <h3>Can sound alone tell the two apart?</h3>
+      <p class="hint" style="margin-top:0">Both sit on the COPD spectrum and a clinician separates them on imaging and spirometry, not the stethoscope alone. Logistic probe on the same features, 5-fold cross-validation repeated 30×: <b>AUC ${C.cbVsEmph.auc[0].toFixed(3)} ± ${C.cbVsEmph.auc[1].toFixed(3)}</b> over ${C.cbVsEmph.nCB} vs ${C.cbVsEmph.nEM} recordings. ${C.cbVsEmph.auc[0]<0.6?'<b>That is essentially chance</b> — these features do not distinguish chronic bronchitis from emphysema, which matches the clinical picture rather than contradicting it.':'Modest separation.'}</p>
+      <div class="notice"><b>Read the breathing-rate row with care.</b> It shows healthy adults at ${rm?rm.medA.toFixed(1):'—'} /min against ${rm?rm.medB.toFixed(1):'—'} /min in disease — <b>backwards</b>, since COPD normally raises respiratory rate. It is not a recording-length artefact: these clips run ${dc?dc.cbemphMedianDur.toFixed(1):'—'} s against KAUH's ${dc?dc.kauhMedianDur.toFixed(1):'—'} s, rate does not track duration (ρ = ${dc?dc.rhoDurRr.toFixed(2):'—'}, ${dc?fmtP(dc.pDurRr):'—'}), and the difference survives inside the overlapping ${dc?dc.overlapBand.join('–'):'—'} s band (${rm?fmtP(rm.p):'—'}). Both absolute values are nonetheless implausible for their groups, so this most likely reflects <b>how the cycle detector behaves on quiet healthy breathing versus continuous adventitious sound</b> — a detector property, not a disease finding. Treat it as a flag for the recalibration task, not a result.</div>
+      <p class="hint">Data: Mendeley <span class="mono">9hdrddjpny</span> v1 (Fraiwan, Haider &amp; Khassawneh), CC BY 4.0. Not browsable here: the set contains no healthy recordings and a baseline is required to produce findings.</p></div>`})()}
+    <div class="card" id="d-device"><h2>15 · Different stethoscope, different filters — does the detector carry over?</h2>
       <div class="grid g2"><div><table><thead><tr><th>Dataset · mode</th><th>Healthy kept normal</th><th>Abnormal flagged</th></tr></thead><tbody>
         ${INDEX&&INDEX.validation?`<tr><td>SPRSound, Yunting (events, tuned here)</td><td class="mono">${INDEX.validation.spec[0]}/${INDEX.validation.spec[1]}</td><td class="mono">${INDEX.validation.sens[0]}/${INDEX.validation.sens[1]}</td></tr>`:''}
         ${INDEX&&INDEX.validationKAUH?['D','B','E'].map(m=>{const v=INDEX.validationKAUH.byMode[m];return `<tr><td>KAUH, Littmann 3200 · ${({D:'diaphragm',B:'bell',E:'extended'})[m]} (recordings)</td><td class="mono">${v.spec[0]}/${v.spec[1]}</td><td class="mono">${v.sens[0]}/${v.sens[1]}</td></tr>`}).join(''):''}</tbody></table>
@@ -1639,7 +1749,7 @@ async function renderDiscover(){
       <div><h3 style="margin-top:0">Breathing rate: does a longer clip help?</h3><table><thead><tr><th>Clip length</th><th>SPRSound children</th><th>KAUH adults</th></tr></thead><tbody>${K.rateByLen.map(x=>`<tr><td>${x.len}</td><td class="mono">${x.spr[1]?Math.round(100*x.spr[0]/x.spr[1])+' % of '+x.spr[1]:'—'}</td><td class="mono">${x.kauh[1]?Math.round(100*x.kauh[0]/x.kauh[1])+' % of '+x.kauh[1]:'—'}</td></tr>`).join('')}</tbody></table>
       <p class="hint">Share of recordings where full breath cycles could be segmented. Across filter modes of the same recording, heart rate agrees well (ICC ${K.modes.iccHR.toFixed(2)}, ${K.modes.nHR} subjects) but breathing rate does not (ICC ${K.modes.iccRR.toFixed(2)}, ${K.modes.nRR} subjects).</p></div></div>
       <p class="hint">Thresholds unchanged. On the Littmann diaphragm signal the detector over-calls (false rhonchi in healthy adults) and misses crackles; bell and extended modes are quiet and miss more. The filter alone moves the spectral centroid by ${(K.modes.byMode.E.cen-K.modes.byMode.B.cen).toFixed(0)} Hz on identical audio — so absolute acoustic numbers are only comparable within one device and one filter. Adults' breath cycles are segmented far more often than children's (about half vs about 10 %) at every clip length, so clip length is not what limits the paediatric recordings — children's faster breathing or the device is the more likely cause (the two can't be separated here).</p></div>`})():''}
-    <div class="card"><h2>Limits of this data, and what is still missing</h2>
+    <div class="card" id="d-limits"><h2>Limits of this data, and what is still missing</h2>
       <h3 style="margin-top:4px">Every clip is 9–15 seconds</h3>
       <p class="hint" style="margin-top:0">SPRSound and KAUH recordings run 9–15 s (CirCor 5–65 s). Three questions cannot be answered at that length and all wait on overnight recordings: apnea and AHI measured on real sleep rather than a test file; breathing and heart rate over a whole night instead of one clip; and the acoustic AHI checked against a scored sleep study.</p>
       <h3>Apnea / AHI scoring is untested on real data</h3>
@@ -1656,7 +1766,24 @@ async function renderDiscover(){
         <tr><td class="mono">13</td><td>Murmur / S3 on real heart sounds</td><td>${INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full?'<span class="pill ok">done</span>':'<span class="pill warn">blocked</span>'}</td><td>${INDEX&&INDEX.validationCircor&&INDEX.validationCircor.full?'CirCor DigiScope 1.0.3 ingested and validated — see analysis 13 above':'PhysioNet CirCor download'}</td></tr>
       </tbody></table>
       <p class="hint">Only 9 and 12 are waiting on access. 10, 11 and 14 are published with their limits stated.</p></div>`;
-  $('#view').querySelectorAll('tr[data-go]').forEach(tr=>tr.onclick=()=>document.getElementById('d-'+tr.dataset.go).scrollIntoView({behavior:'smooth'}));
+  $('#view').querySelectorAll('tr[data-go]').forEach(tr=>tr.onclick=()=>{const el=document.getElementById('d-'+tr.dataset.go);if(el)el.scrollIntoView({behavior:'smooth'})});
+  // contents rail: jump, and mark where you are. Sections whose card was not rendered (the analysis
+  // is still blocked) are disabled rather than silently dead.
+  (()=>{const toc=$('#dToc'); if(!toc)return;
+    const links=[...toc.querySelectorAll('a[data-jump]')];
+    for(const a of links){const el=document.getElementById(a.dataset.jump);
+      if(!el){a.classList.add('pending');a.style.pointerEvents='none';a.title+=' — no result yet';continue}
+      a.classList.remove('pending');
+      a.onclick=e=>{e.preventDefault();el.scrollIntoView({behavior:'smooth',block:'start'})};}
+    const cards=links.map(a=>document.getElementById(a.dataset.jump)).filter(Boolean);
+    if(!('IntersectionObserver'in window)||!cards.length)return;
+    const io=new IntersectionObserver(es=>{
+      for(const e of es)if(e.isIntersecting){
+        const a=links.find(l=>l.dataset.jump===e.target.id); if(!a)continue;
+        links.forEach(l=>l.classList.remove('on')); a.classList.add('on');
+        a.scrollIntoView({block:'nearest',inline:'nearest'}); break;}
+    },{rootMargin:'-10% 0px -75% 0px',threshold:0});
+    cards.forEach(c=>io.observe(c)); discoverIO=io;})();
   $('#view').querySelectorAll('a.auditGo').forEach(a=>a.onclick=()=>{const p=patients.find(x=>x.id===a.getAttribute('href').slice(9));if(p)p.curLoc=a.dataset.loc});
   if(!window.Chart){$('#view').insertAdjacentHTML('afterbegin','<div class="notice">Charts need Chart.js from cdn.jsdelivr.net, which did not load.</div>');return}
   const bins=g.curve.map(x=>x.bin);
@@ -1695,7 +1822,11 @@ function validationSummary(){ // precomputed offline over the browsable cohort (
   const rows=V.rows.map(r=>{const p=byKey[r.key];return p?{p,x:p.sites.find(s=>s.loc===r.loc),types:r.types,expCls:r.record,hit:r.hit,partial:r.partial,agree:r.agree,n:r.n,baseFrom:r.base,isBase:r.base==='self'}:null}).filter(Boolean);
   return {...V,rows,cls:['Normal','CAS','DAS','CAS & DAS']};
 }
-function renderDatasets(){
+async function renderDatasets(){
+  // the CB/emphysema card reports counts computed in discover.json; fetch it here rather than
+  // relying on the Discoveries page having been visited (cachedFetch makes the repeat free)
+  try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){}
+  if(location.hash!=='#datasets')return;
   const pct=([a,b])=>b?`${a}/${b} (${Math.round(100*a/b)} %)`:'—';
   let val='';
   if(REAL.status==='ready'&&patients.some(p=>p.source==='sprsound')){
@@ -1710,7 +1841,7 @@ function renderDatasets(){
       <table class="cm" style="max-width:640px"><thead><tr><th style="text-align:left">Expert ↓ / automatic →</th>${V.cls.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${V.cls.filter(a=>V.cls.some(b=>V.cm[a][b])).map(a=>`<tr><th style="text-align:left">${a}</th>${V.cls.map(b=>`<td class="${a===b?'diag':''}">${V.cm[a][b]}</td>`).join('')}</tr>`).join('')}</tbody></table>
       <h3 style="margin-top:16px">Per recording (each chest site against the child's normal site, or a matched healthy control) · record-level match ${pct(V.recHit)}</h3>
       <div class="row" style="margin:6px 0"><select class="f" id="valDx" style="width:auto"><option value="">All diagnoses</option>${[...new Set(V.rows.map(o=>o.p.diagnosis))].sort().map(d=>`<option>${esc(d)}</option>`).join('')}</select><span class="hint">${V.rows.length} recordings</span></div>
-      <div style="max-height:520px;overflow:auto"><table id="valT"><thead><tr><th>Patient · site</th><th>Age</th><th>Diagnosis</th><th>Expert record label</th><th>Automatic findings</th><th>Record-level match</th><th>Event agreement</th></tr></thead><tbody>${V.rows.map(o=>`<tr class="click" data-id="${o.p.id}" data-loc="${o.x.loc}" data-dx="${esc(o.p.diagnosis)}"><td class="mono">${esc(o.p.name)}<div class="hint">${esc(o.x.site)}${o.baseFrom==='control'?' · vs healthy control':o.isBase?' · own baseline':''}</div></td><td>${o.p.ageLabel}</td><td>${esc(o.p.diagnosis)}</td><td>${esc(o.expCls)}</td><td>${o.types.map(t=>`<span class="swatch" style="background:${TYPES[t].color}"></span>${TYPES[t].label}`).join('<br>')||'—'}</td><td>${o.hit?'<span class="ok-t">✓</span>':o.partial?'<span class="hint">partial</span>':'<span class="bad-t">✗</span>'}</td><td class="mono">${o.agree}/${o.n}</td></tr>`).join('')}</tbody></table></div></div>`;
+      <div style="max-height:520px;overflow:auto"><table id="valT"><thead><tr><th>Patient · site</th><th>Age</th><th>Diagnosis</th><th>Expert record label</th><th>Automatic findings</th><th>Record-level match</th><th>Event agreement</th></tr></thead><tbody>${V.rows.map(o=>`<tr class="click" data-id="${o.p.id}" data-loc="${o.x.loc}" data-dx="${esc(o.p.diagnosis)}"><td class="mono">${esc(o.p.name)}<div class="hint">${esc(o.x.site)}${o.baseFrom==='control'?' · vs healthy control':o.isBase?' · own baseline':''}</div></td><td>${o.p.ageLabel}</td><td>${esc(o.p.diagnosis)}</td><td>${esc(o.expCls)}</td><td>${o.types.map(t=>`<span class="swatch det" style="color:${TYPES[t].color}"></span>${TYPES[t].label}`).join('<br>')||'—'}</td><td>${o.hit?'<span class="ok-t">✓</span>':o.partial?'<span class="hint">partial</span>':'<span class="bad-t">✗</span>'}</td><td class="mono">${o.agree}/${o.n}</td></tr>`).join('')}</tbody></table></div></div>`;
   } else val=`<div class="card"><h2>Validation on the real recordings</h2><div class="empty">${REAL.status==='error'?'Recordings could not be loaded: '+esc(REAL.error):'Loading recordings…'}</div></div>`;
   $('#view').innerHTML=`<h1>Datasets &amp; licences</h1><p class="sub">Open respiratory-sound databases reviewed for this platform, their licences, and what was downloaded.</p>
     <div class="grid" style="gap:16px">
@@ -1756,6 +1887,19 @@ function renderDatasets(){
         <dt>Respiratory findings</dt><dd>CirCor is a cardiac database with no breath-sound labels, so wheeze/crackle findings shown for these patients are <b>not validated</b> — the mirror image of the untested cardiac findings on SPRSound and KAUH.</dd>
         <dt>Source</dt><dd><a href="https://physionet.org/content/circor-heart-sound/1.0.3/" target="_blank" rel="noopener">physionet.org/content/circor-heart-sound/1.0.3</a></dd>
         <dt>Cite</dt><dd>J. Oliveira et al., "The CirCor DigiScope Dataset: From Murmur Detection to Murmur Classification," <i>IEEE J. Biomed. Health Inform.</i>, vol. 26, no. 6, pp. 2524–2535, 2022.</dd>
+      </dl></div>`})()}
+    ${(()=>{const C=INDEX&&INDEX.cbemph; const D=window.__DISC&&window.__DISC.cbemph; if(!C&&!D)return '';
+      const n=(D&&D.n)||{};
+      return `<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Chronic bronchitis &amp; emphysema (Fraiwan, Haider &amp; Khassawneh — Mendeley)</h2><span class="pill ok">downloaded · analysed</span></div>
+      <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr">
+        <dt>Licence</dt><dd><b>CC BY 4.0</b> (Mendeley Data <span class="mono">9hdrddjpny</span> v1). Redistribution and adaptation allowed with attribution.</dd>
+        <dt>Population</dt><dd>${n.cb||86} chronic-bronchitis and ${n.emphysema||148} emphysema recordings (${n.recordings||234} total, ${n.minutes||94} min).</dd>
+        <dt>Recording</dt><dd>3M Littmann 3200 electronic stethoscope, 4 kHz 16-bit mono, 5–30 s (median ≈25 s). One site per subject — upper-left posterior chest — seated, after 10 min of rest, in a quiet clinical setting. Resampled to 8 kHz on load.</dd>
+        <dt>Why it is here</dt><dd><b>Same team, same device and same protocol as KAUH.</b> That makes it the only disease comparison on this site with <b>no stethoscope confound</b> — it is tested against KAUH's 35 healthy adults recorded on the identical instrument. See <a href="#discover">Discoveries</a> 14.</dd>
+        <dt>Known limits</dt><dd>The file names carry <b>no age, sex or per-file site</b>, and the set does <b>not state which of the Littmann's three filter modes</b> was used — so every comparison is run against all three KAUH modes and only differences holding in all three are treated as real. The set contains <b>no healthy recordings</b>.</dd>
+        <dt>Not browsable</dt><dd>Findings need a baseline recording to compare against, and this set has no controls. It therefore feeds <b>Discoveries only</b>; no patient pages and no audio are published from it.</dd>
+        <dt>Source</dt><dd><a href="https://data.mendeley.com/datasets/9hdrddjpny/1" target="_blank" rel="noopener">data.mendeley.com/datasets/9hdrddjpny/1</a> · doi 10.17632/9hdrddjpny.1</dd>
+        <dt>Cite</dt><dd>M. Fraiwan, N. S. Haider, B. Khassawneh, "Respiratory Sound Dataset of Chronic Bronchitis and Emphysema Patients," <i>Mendeley Data</i>, v1, 2026.</dd>
       </dl></div>`})()}
     <div class="card"><h2>Other databases reviewed</h2>
       <table><thead><tr><th>Database</th><th>Population</th><th>Conditions</th><th>Licence</th><th>Status</th></tr></thead><tbody>

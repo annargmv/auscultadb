@@ -5,6 +5,7 @@
 //   node pipeline/precompute.js circor            → build/index_circor.json + build/p/C####.json (CirCor, meta/circor_cohort.json)
 //   node pipeline/precompute.js features [i] [n]  → meta/features/spr.<i>.jsonl  (every SPRSound recording, shard i of n — for Discoveries)
 //   node pipeline/precompute.js kfeatures         → meta/features/kauh.jsonl
+//   node pipeline/precompute.js cbfeatures        → meta/features/cbemph.jsonl (CB / emphysema, same device as KAUH)
 // Then run pipeline/merge.py to build web/data and web/audio.
 const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path'); const http = require('http');
 const ROOT = path.resolve(__dirname, '..'); const META = path.join(ROOT, 'meta'), BUILD = path.join(ROOT, 'build');
@@ -12,7 +13,8 @@ const PORT = +(process.env.PORT || 8766);
 // raw WAVs: SPRSound clone under raw/sprsound, KAUH WAVs (renamed by kauh_prep.py) under build/kauh_wav,
 // CirCor straight from raw/ (its file names are already safe, so circor_prep.py copies nothing)
 const CIRCOR_DIR = 'raw/circor/circor-heart-sound-1.0.3/training_data';
-const wavDir = dir => dir === 'KAUH' ? 'build/kauh_wav' : dir === 'CIRCOR' ? CIRCOR_DIR : 'raw/sprsound/' + dir;
+const wavDir = dir => dir === 'KAUH' ? 'build/kauh_wav' : dir === 'CIRCOR' ? CIRCOR_DIR
+  : (dir === 'CB' || dir === 'EMPHYSEMA') ? 'raw/cbemph/' + dir : 'raw/sprsound/' + dir;
 const wavUrl = (dir, name) => `http://localhost:${PORT}/${wavDir(dir)}/${encodeURIComponent(name)}.wav`;
 const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.json': 'application/json', '.wav': 'audio/wav' };
 function serve() { return http.createServer((q, r) => { const f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0].split('#')[0])); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); r.end(); return } r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r) }).listen(PORT) }
@@ -72,6 +74,24 @@ const LOC = { p1: 'Left posterior chest', p2: 'Left lateral chest', p3: 'Right p
     }
     out.end(); await new Promise(r => out.on('finish', r)); await b.close(); srv.close(); return;
   }
+  if (MODE === 'cbfeatures') {
+    // Chronic bronchitis / emphysema (Mendeley 9hdrddjpny). Same Littmann 3200 as KAUH, so these rows
+    // are directly comparable with meta/features/kauh.jsonl — no stethoscope confound. No baseline is
+    // needed: features() works on one recording, exactly as the KAUH features pass does.
+    const D = JSON.parse(fs.readFileSync(path.join(META, 'cbemph_index.json')));
+    const out = fs.createWriteStream(path.join(META, 'features', 'cbemph.jsonl'));
+    let i = 0, t0 = Date.now(), bad = 0;
+    for (const r of D.recs) {
+      const res = await pg.evaluate(async url => { try { const A = analyzeSignal(await loadWav(url)); return features(A, []) } catch (e) { return { err: e.message } } }, wavUrl(r.dir, r.name));
+      if (res.err) bad++;
+      out.write(JSON.stringify({ key: r.key, name: r.name, src: 'cbemph', disease: r.disease, group: r.group,
+        zone: r.zone, site: r.site, device: r.device, age: null, g: null, rel: 'CBEMPH', ...res }) + '\n');
+      if (++i % 50 === 0) console.log(i, '/', D.recs.length, ((Date.now() - t0) / 1000).toFixed(0) + 's');
+    }
+    out.end(); await new Promise(r => out.on('finish', r));
+    console.log(`cbemph features: ${i} recordings, ${bad} errors -> meta/features/cbemph.jsonl`);
+    await b.close(); srv.close(); return;
+  }
   if (MODE === 'features') {
     const SH = +(process.argv[3] || 0), NS = +(process.argv[4] || 1);
     const D = JSON.parse(fs.readFileSync(path.join(META, 'spr_full_index.json'))); const out = fs.createWriteStream(path.join(META, 'features', `spr.${SH}.jsonl`));
@@ -111,11 +131,11 @@ const LOC = { p1: 'Left posterior chest', p2: 'Left lateral chest', p3: 'Right p
       if (!base && ref.length) { base = ref.find(x => x.loc === s.loc) || (p.src === 'kauh' && ref.find(x => x.mode === s.mode)) || ref.find(x => PLANE[x.loc] === PLANE[s.loc]) || ref[0]; from = 'control' }
       if (!base) { base = s; from = 'self' }
       if (from === 'control') await analyse(base);
-      const res = await pg.evaluate(([u1, u2, site, age, events]) => {
-        const A = window.__A[u1], B = window.__A[u2]; const f = compareRecordings(A, B, { site, age }).map(roundFinding);
+      const res = await pg.evaluate(([u1, u2, site, age, events, ageLo, ageHi]) => {
+        const A = window.__A[u1], B = window.__A[u2]; const f = compareRecordings(A, B, { site, age, ageLo, ageHi }).map(roundFinding);
         const cmp = expertCompare(events, A, B).map(e => ({ start: e.start, end: e.end, type: e.type, expert: e.expert, ours: e.ours, tonal: +e.tonal.toFixed(3), crackles: e.crackles, agree: e.agree, abnAgree: e.abnAgree }));
         return { f, cmp };
-      }, [wavUrl(s.dir, s.name), wavUrl(base.dir, base.name), s.site, p.age, s.events]);
+      }, [wavUrl(s.dir, s.name), wavUrl(base.dir, base.name), s.site, p.age, s.events, p.ageLo ?? null, p.ageHi ?? null]);
       pairs[s.loc] = { base: { from, key: from === 'control' ? p.ref : p.key, loc: base.loc, site: base.site, record: base.record, name: base.name, file: base.file, events: base.events, rec: from === 'control' ? compactCache[base.name] : undefined }, findings: res.f, cmp: res.cmp };
       for (const e of res.cmp) cm[e.expert][e.ours]++;
       const types = [...new Set(res.f.map(z => z.type))];
@@ -137,7 +157,7 @@ const LOC = { p1: 'Left posterior chest', p2: 'Left lateral chest', p3: 'Right p
     fs.writeFileSync(path.join(BUILD, `p/${p.key}.json`), JSON.stringify({ key: p.key, rec, pairs }));
     index.patients.push({ key: p.key, pid: p.pid, src: p.src || 'sprsound', sound: p.sound, locRaw: p.locRaw, age: p.age, sex: p.g === '0' ? 'M' : 'F', disease: p.disease, ref: p.ref,
       // CirCor: the expert annotation the heart map and the patient notes render
-      ...(CIRCOR ? { murmur: p.murmur, murLoc: p.murLoc, audible: p.audible, outcome: p.outcome, ageBand: p.ageBand, sys: p.sys, dia: p.dia } : {}),
+      ...(CIRCOR ? { murmur: p.murmur, murLoc: p.murLoc, audible: p.audible, outcome: p.outcome, ageBand: p.ageBand, ageLo: p.ageLo, ageHi: p.ageHi, sys: p.sys, dia: p.dia } : {}),
       sites: sites.map(s => ({ loc: s.loc, site: s.site, zone: s.zone, mode: s.mode, record: s.record, labelSrc: s.labelSrc, file: s.file, name: s.name, events: s.events, audible: s.audible, types: [...new Set(pairs[s.loc].findings.map(z => z.type))], nFind: pairs[s.loc].findings.length, base: pairs[s.loc].base.from })),
       summary: { n: all.length, types: [...new Set(all.map(z => z.type))] } });
     await pg.evaluate(() => { window.__A = {} });

@@ -52,7 +52,13 @@ npm install && npx playwright install chromium   # once (Playwright is pinned to
 pip install -r requirements.txt                  # once (+ ffmpeg on PATH for audio encoding)
 npm run serve            # http://localhost:8000  (must be http, not file://)
 npm test                 # e2e smoke test (offline: CDN libs served from node_modules)
-npm run test:ahi         # upload flow + AASM apnea scoring on synthetic audio (expects 11/11)
+npm run test:ahi         # upload flow + AASM apnea scoring: 11/11 inserted pauses AND 0 events on clean breathing
+npm run test:corsa       # CORSA crackle calibration: recover a known IDW from synthetic crackles
+
+# chronic bronchitis / emphysema (Mendeley 9hdrddjpny) — Discoveries only
+npm run build:cbemph                     # raw/cbemph -> meta/cbemph_index.json
+node pipeline/precompute.js cbfeatures   # -> meta/features/cbemph.jsonl
+python3 pipeline/cbemph_discover.py      # -> discover.json['cbemph']  (then merge.py --bump)
 
 # CirCor heart sounds
 npm run build:circor                     # raw/circor -> meta/circor_index.json + meta/circor_cohort.json
@@ -102,6 +108,16 @@ npm run build:discover   # only re-run the statistics from meta/features
 - §0 constants: `SR = 8000`; §3 signal analysis
   - `analyzeSignal` (l.~481): breath cycles, transients (crackles), tonal (wheeze), heart rate;
   - `compareRecordings` (l.~507): findings against the baseline;
+  - CORSA crackle waveform measures on every transient (`detectTransients`): `idw` (initial deflection
+    width), `cd2i` (two-cycle duration), `tdw` (total deflection width), zero crossings linearly
+    interpolated. **Reported only — `fine` is still `cd2 < 6 ms`**, so precomputed results stay valid.
+    Reference ranges (Sovijärvi 2000; Palaniappan, PMC2990233): fine IDW 0.50–0.90 / 2CD 3.3–6.0 ms,
+    coarse IDW 1.00–1.25 / 2CD 5.1–9.5 ms.
+    *Measured bias:* `npm run test:corsa` recovers a known IDW to within ~10 % at SR = 8000 (0.50→0.55,
+    1.00→1.11, 2.00→2.06), so the measure is sound. But on real 8 kHz recordings the medians land about
+    2× the CORSA ranges (DAS: fine IDW 1.32, coarse 1.95 ms). CORSA assumes ≥10 kHz; at 8 kHz the sharp
+    edges that define a narrow deflection are gone. **Do not compare these absolute values with published
+    CORSA cut-offs** — use them as a relative measure within this dataset.
   - detector constants (l.~422):
     - `TR_THR = 6`, `HL_FINE = -6`, `HL_COARSE = -12`;
     - `TONAL_THR = 5.5`, `NARROW = 1.8`, `TONAL_LO = 150`. 150 Hz, because the 125–150 Hz band edge produced false wheezes in the SPRSound 2023–25 releases.
@@ -115,7 +131,12 @@ npm run build:discover   # only re-run the statistics from meta/features
   - `computeFlow` / `scoreFlow` implement the AASM rules: apnea ≥90 % drop, hypopnea ≥30 % drop, each against the 2 preceding breaths;
   - minimum duration ≥10 s for adults, ≥2 breaths for children;
   - AHI only for ≥1 h of recording;
-  - severity scales: adults 5/15/30, children 1/5/10.
+  - severity scales: adults 5/15/30, children 1/5/10;
+  - each scored event also carries `shape` (nadir position, flat fraction, entry/exit slope, recovery
+    overshoot), `quality` (pre-event baseline spread, breaths available, clipped) and `conf` — a
+    confidence from flow evidence alone, since there is no SpO2 or arousal channel. All descriptive:
+    the apnea/hypopnea decision and the AHI are unchanged. Obstructive vs central differ in exactly
+    these shapes but **cannot be separated from breath sound**, so nothing is ever labelled as either.
 - CDN libraries, pinned: wavesurfer.js 7.12.12 (unpkg), Meyda 5.6.3 and Chart.js 4.6.1 (jsDelivr). The same versions are in package.json, for offline tests.
 
 ## Datasets
@@ -123,9 +144,10 @@ npm run build:discover   # only re-run the statistics from meta/features
 |---|---|---|---|
 | SPRSound (SJTU) | in use: 191 browsable children; all 6,567 recordings in Discoveries | CC BY 4.0 | 8 kHz; WAV header has an odd blockAlign, so the custom `parseWav` is used; 390 BioCAS2023 files have no patient number (key `'0'`) |
 | KAUH (Fraiwan et al., Mendeley jwyy9np4gv v3) | in use: 112 subjects, 12–90 y | CC BY 4.0 | 4 kHz Littmann 3200, resampled to 8 kHz; one site per subject; whole-recording labels, no event timings |
+| CB / emphysema (Fraiwan, Haider & Khassawneh, Mendeley 9hdrddjpny v1) | in use: Discoveries only, 234 recordings | CC BY 4.0 | 86 chronic bronchitis + 148 emphysema, **same Littmann 3200 and protocol as KAUH** — the only device-matched disease comparison here. No healthy recordings and no per-file age/sex/site; filter mode not stated. Not browsable: findings need a baseline and the set has no controls |
 | CirCor DigiScope 1.0.3 (PhysioNet) | in use: 120 browsable patients; all 941 validated | **ODC-By 1.0** (checked: `LICENSE.txt` in the release — attribution, republishing allowed) | 942 patients, 3,163 recordings (3,118 primary takes used; `_1/_2/_3` repeats and `Phc` skipped). 4 kHz, up to 4 valve sites. Per-valve murmur truth plus `.tsv` S1/systole/S2/diastole segmentation — the only set here that can score the cardiac detectors |
 | PhysioNet overnight / sleep sets | wanted | varies | For real apnea/AHI validation against PSG |
-| ICBHI 2017 | wanted | research only | Same devices from children to elderly, so a true lifespan curve; don't republish its audio |
+| ICBHI 2017 | wanted — **not obtainable**, see below | research only | Same devices from children to elderly, so a true lifespan curve; don't republish its audio |
 | HF_Lung | optional | V1_IP CC BY-NC | |
 
 ## Known limitations and what is blocked
@@ -163,6 +185,58 @@ only, so it never listens to the audio.
 
 Only 9 and 12 are genuinely waiting on access. 10, 11 and 14 are published with their limits stated;
 13 was completed and its result is live.
+
+## Source notes (checked 2026-11-08)
+
+- **ICBHI 2017 cannot be downloaded.** `bhichallenge.med.auth.gr` does not respond, it is not on
+  PhysioNet (404) and not on Zenodo. It is normally distributed via Kaggle, which needs an account.
+  Nothing is written for it yet. When the data arrives, note rule 3: ICBHI is research-only, so it may
+  be **analysed into Discoveries but its audio must never reach `web/`** — that means no browsable
+  patients, unlike SPRSound / KAUH / CirCor.
+- **Pal & Barney 2024**, *Automatic breathing phase identification based on the second derivative of the
+  recorded lung sounds* (Biomed Signal Process Control 94:106315). Savitzky-Golay second derivative,
+  normalised absolute value; reported 92.8 % / 92.2 % sensitivity for inspiration / expiration. A real
+  upgrade to the `estimated: true` alternation fallback in `segmentCycles`. **Not implemented**: no
+  dataset here carries phase ground truth (SPRSound events are sound-type, KAUH is whole-recording
+  "I E" with no timings), so it could be implemented but not validated. If added, keep it additive —
+  changing `analyzeSignal` invalidates all 303 precomputed SPRSound/KAUH patients and `raw/` for both
+  is gone.
+- **Palaniappan et al., PMC2990233** — the CORSA review the IDW/2CD/TDW ranges above come from.
+- *Magnetic resonance imaging with gradient sound respiration guide* (PLOS ONE) is **not applicable**:
+  it paces a patient's breathing with MRI gradient noise and validates against a respiratory bellows.
+  Nothing to port without belt data.
+
+## Clinical audit (2026-11-08) — what was corrected and what still stands
+
+Audited against AASM, the Levine murmur scale, CORSA and standard paediatric vital ranges.
+**Correct as written:** `ageNormRR` bands; apnea ≥90 % / hypopnea ≥30 %; adult ≥10 s and paediatric
+≥2 breaths; severity 5/15/30 and 1/5/10; refusing an AHI under an hour; stating that no SpO2 or
+arousal channel exists; Levine I–VI used properly.
+
+**Fixed**
+1. **The cardiac HR gate rejected normal children.** `hrN` gates findings on an age-banded normal
+   heart rate, and CirCor records age only as a band. Collapsing "Child" (1–11 y) to age 6 applied
+   the 6–12 y gate of 70–120 bpm, so normal toddlers — whose range is 90–150 — were suppressed:
+   13 % of "Child" recordings fell outside the gate. Worse, the 74 patients with **no** recorded age
+   got the **adult** gate (50–110) inside a paediatric database — 24 % outside, the worst band.
+   `circor_prep.py` now emits `AGE_SPAN` (ageLo/ageHi) and `hrN` takes the **union** over the band;
+   unknown age gets the full 50–160 span, never the adult range.
+2. **Respiratory panels on heart-sound recordings.** A CirCor patient page printed
+   "Resp. rate (est.) 36 /min" and a full apnea/AHI card from a 6.6 s valve recording. `isCardiacOnly()`
+   now suppresses both and says why. Guarded by two e2e checks.
+
+**Open, documented, not fixed**
+3. **The breathing-rate estimator is biased and it is not a disease effect.** KAUH healthy adults
+   measure 25.6 /min (tachypnoeic; normal is 12–20) against 13.8 /min in CB/emphysema — backwards,
+   since COPD raises rate. Not a recording-length artefact: rate does not track duration
+   (ρ = −0.08, p = 0.19) and the gap survives inside the overlapping 9.8–27.9 s band (p = 0.0065).
+   It most likely reflects the cycle detector over-counting on quiet healthy breathing and
+   under-counting when continuous adventitious sound masks cycle boundaries. **`scoreFlow` rejects
+   implausible periods using `ageNormRR`, so apnea scoring inherits this bias.** Fix with the
+   detector work in task 1/2, not by adjusting the norms.
+4. **Infant cardiac detection is close to useless** — 3/25 murmurs found (12 %) against 45 % in
+   children. At a median 143 bpm diastole is too short for the S1/S2 separation the murmur rule
+   needs. Report infants separately rather than inside a pooled figure.
 
 ## Open tasks (priority order)
 1. **Cardiac detector recalibration — the CirCor validation says it is needed.**

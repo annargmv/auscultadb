@@ -25,7 +25,11 @@ from paths import CIRCOR_RAW, META
 VALVES = ['AV', 'PV', 'TV', 'MV']                       # aortic, pulmonary, tricuspid, mitral
 VALVE_TXT = {'AV': 'Aortic valve · 2nd right intercostal space', 'PV': 'Pulmonary valve · 2nd left intercostal space',
              'TV': 'Tricuspid valve · 4th left intercostal space', 'MV': 'Mitral valve · 5th left intercostal space, apex'}
-AGE_Y = {'Neonate': 0.04, 'Infant': 0.5, 'Child': 6, 'Adolescent': 14}   # representative age per band
+AGE_Y = {'Neonate': 0.04, 'Infant': 0.5, 'Child': 6, 'Adolescent': 14}   # representative age per band, for display
+# The SPAN of each band. The cardiac rules gate on an age-banded normal heart rate, and collapsing a
+# band to one number mis-gates its edges: "Child" covers 1–11 y, whose normal HR runs 90–150 at the
+# young end but only 70–120 at the old end. Passing the span lets the gate take the union.
+AGE_SPAN = {'Neonate': (0.0, 0.08), 'Infant': (0.08, 1.0), 'Child': (1.0, 11.0), 'Adolescent': (12.0, 18.0)}
 NA = ('nan', '', 'NA')
 
 
@@ -51,6 +55,7 @@ def read_patients(d):
         murLoc = set((nn(r['Murmur locations']) or '').split('+')) - {''}
         p = {'pid': pid, 'key': 'C' + pid, 'src': 'circor',
              'ageBand': nn(r['Age']), 'age': AGE_Y.get(nn(r['Age'])),
+             'ageLo': (AGE_SPAN.get(nn(r['Age'])) or (None, None))[0], 'ageHi': (AGE_SPAN.get(nn(r['Age'])) or (None, None))[1],
              'g': '0' if nn(r['Sex']) == 'Male' else '1',
              'height': nn(r['Height']), 'weight': nn(r['Weight']),
              'murmur': nn(r['Murmur']) or 'Unknown', 'murLoc': sorted(murLoc),
@@ -144,7 +149,8 @@ def select(P, target=120, n_ctrl=45):
 
 
 def row(p):
-    return {'key': p['key'], 'pid': p['pid'], 'src': 'circor', 'age': p['age'], 'ageBand': p['ageBand'], 'g': p['g'],
+    return {'key': p['key'], 'pid': p['pid'], 'src': 'circor', 'age': p['age'], 'ageBand': p['ageBand'],
+            'ageLo': p['ageLo'], 'ageHi': p['ageHi'], 'g': p['g'],
             'disease': disease(p), 'ref': p['ref'], 'murmur': p['murmur'], 'murLoc': p['murLoc'], 'audible': p['audible'],
             'outcome': p['outcome'], 'sys': p['sys'], 'dia': p['dia'], 'campaign': p['campaign'],
             'sound': p['sys']['timing'] or ('none' if p['murmur'] == 'Absent' else p['murmur']),

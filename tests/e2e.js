@@ -39,10 +39,24 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(heart && heart.murmur, `CirCor patient ${heart && heart.id}: murmur ${heart && heart.murmur} at ${heart && (heart.murLoc || []).join('+')}, audible ${heart && heart.audible}`);
     t0 = Date.now(); await pg.goto(url('#patient-' + heart.id)); await liveReady(pg);
     check(true, `CirCor ${heart.id} playable in ${Date.now() - t0} ms`);
+    const tr = await pg.evaluate(() => { const f = document.querySelector('#findings'); const body = document.body.innerText;
+      return { key: !!document.querySelector('.markkey'), det: !!document.querySelector('#findings .swatch.det') || !f || !f.textContent.trim(),
+               record: /Track record:/.test(body) || !/confidence/.test(body) }; });
+    check(tr.key, 'expert vs detected mark key shown');
+    check(tr.record, 'findings carry a measured track record, not just a confidence score');
     const valves = await pg.evaluate(() => [...document.querySelectorAll('svg[aria-label*="cardiac auscultation"] g.site')].map(g => g.dataset.loc));
     check(valves.length === 4, `heart map shows ${valves.length} valves (${valves.join(',')})`);
     const lic = await pg.evaluate(() => { const d = [...document.querySelectorAll('dt')].find(x => x.textContent === 'Source'); const t = d && d.nextElementSibling.textContent; return { t, ok: /ODC-By/.test(t) && !/CC BY/.test(t) } });
     check(lic.ok, `CirCor credited under its own licence: ${(lic.t || '').replace(/\s+/g, ' ').trim().slice(0, 64)}`);
+    // a heart-sound recording must not advertise respiratory measurements it cannot make
+    const resp = await pg.evaluate(() => {
+      const body = document.body.innerText;
+      const rr = [...document.querySelectorAll('dt')].filter(d => /Resp\. rate/.test(d.textContent)).map(d => d.nextElementSibling.textContent.trim());
+      return { chart: !!document.querySelector('#flowChart'), stats: !!document.querySelector('#flowStats'),
+               rr, explained: /not applicable — heart-sound recording/.test(body) };
+    });
+    check(!resp.chart && !resp.stats, 'no apnea/AHI panel on a cardiac-only recording');
+    check(resp.rr.every(t => /not applicable/.test(t)) && resp.explained, `respiratory rate withheld on heart sounds (${resp.rr[0] || '—'})`);
     check(await pg.evaluate(() => !document.body.innerText.includes('SPRSound physicians labelled')), 'no SPRSound event-label card on a dataset without event timings');
     await pg.screenshot({ path: path.join(OUT, 'circor.png'), fullPage: true });
     const v2 = await pg.evaluate(id => { const p = __app.patients.find(x => x.id === id); return (p.sites.find(s => s.loc !== p.curLoc) || p.sites[0]).loc }, heart.id);
@@ -52,11 +66,21 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.goto(url('#datasets')); await pg.waitForTimeout(1000); await pg.screenshot({ path: path.join(OUT, 'datasets.png'), fullPage: true });
     check(await pg.evaluate(() => /KAUH/.test(document.body.innerText) && /SPRSound/.test(document.body.innerText)), 'datasets page lists SPRSound and KAUH');
     check(await pg.evaluate(() => /CirCor DigiScope/.test(document.body.innerText) && /ODC-By/.test(document.body.innerText)), 'datasets page lists CirCor with its licence');
+    check(await pg.evaluate(() => /Chronic bronchitis/.test(document.body.innerText) && /9hdrddjpny/.test(document.body.innerText)), 'datasets page lists the CB/emphysema set with its DOI');
     await pg.goto(url('#discover')); await pg.waitForFunction(() => document.querySelector('#d-device'), null, { timeout: 30000 }); await pg.waitForTimeout(500);
     await pg.screenshot({ path: path.join(OUT, 'discover.png'), fullPage: true });
     check(await pg.evaluate(() => document.querySelectorAll('canvas').length) >= 4, 'discoveries charts rendered');
     const h = await pg.evaluate(() => { const c = document.querySelector('#d-heart'); return c && { chart: !!c.querySelector('#c-heart'), rows: c.querySelectorAll('table tr').length } });
     check(h && h.chart && h.rows > 5, `cardiac validation section rendered (${h ? h.rows : 0} rows, grade chart ${h && h.chart})`);
+    const toc = await pg.evaluate(() => { const t = document.querySelector('#dToc'); if (!t) return null;
+      const a = [...t.querySelectorAll('a')];
+      return { n: a.length, live: a.filter(x => !x.classList.contains('pending')).length, sticky: getComputedStyle(t).position,
+               dead: a.filter(x => x.classList.contains('pending') && getComputedStyle(x).pointerEvents !== 'none').length };
+    });
+    check(toc && toc.n >= 15 && toc.live >= 12 && toc.sticky === 'sticky' && toc.dead === 0,
+      `contents rail: ${toc ? toc.n : 0} links, ${toc ? toc.live : 0} live, blocked ones disabled`);
+    const cb = await pg.evaluate(() => { const c = document.querySelector('#d-cbemph'); return c && { rows: c.querySelectorAll('table tr').length, device: /no stethoscope confound/.test(c.innerText), caveat: /does not say which mode/.test(c.innerText) } });
+    check(cb && cb.rows > 8 && cb.device && cb.caveat, `CB/emphysema section rendered (${cb ? cb.rows : 0} rows, device + filter-mode caveats present)`);
   } catch (e) { check(false, e.message) }
   check(errors.length === 0, 'no page errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await close();

@@ -66,7 +66,7 @@ const med = a => { if (!a.length) return null; const s = a.slice().sort((x, y) =
     window.grab = async u => { if (!window.__A[u]) window.__A[u] = analyzeSignal(await loadWav(u)); const H = window.__A[u].heart;
       return { dur: window.__A[u].dur, hr: H.hr, quietBeats: H.quietBeats, sysDia: H.sysDia, consistency: H.consistency,
                s1: H.beats.map(z => z.s1), s2: H.beats.map(z => z.s2), s3: H.beats.filter(z => z.s3).map(z => z.s3) } };
-    window.cmp = (u1, u2, site, age) => compareRecordings(window.__A[u1], window.__A[u2], { site, age })
+    window.cmp = (u1, u2, site, age, ageLo, ageHi) => compareRecordings(window.__A[u1], window.__A[u2], { site, age, ageLo, ageHi })
       .filter(f => ['murmur', 'dmurmur', 's3'].includes(f.type)).map(f => ({ type: f.type, conf: f.conf, count: f.count, pos: f.pos }));
   });
 
@@ -86,7 +86,7 @@ const med = a => { if (!a.length) return null; const s = a.slice().sort((x, y) =
       try {
         A = await pg.evaluate(u => grab(u), wavUrl(r.name));
         B = await pg.evaluate(u => grab(u), wavUrl(bName));
-        finds = await pg.evaluate(a => cmp(a[0], a[1], a[2], a[3]), [wavUrl(r.name), wavUrl(bName), r.site, p.age]);
+        finds = await pg.evaluate(a => cmp(a[0], a[1], a[2], a[3], a[4], a[5]), [wavUrl(r.name), wavUrl(bName), r.site, p.age, p.ageLo ?? null, p.ageHi ?? null]);
       } catch (e) { out.write(JSON.stringify({ key: p.key, loc: v, name: r.name, err: String(e.message || e) }) + '\n'); continue }
       const gt = truth(r.name);
       const types = finds.map(f => f.type);

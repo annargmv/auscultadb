@@ -3,7 +3,8 @@
 Respiratory and cardiac sound database and analysis platform built on open, real recordings:
 - **SPRSound** — 191 browsable children, 6,567 recordings analysed;
 - **KAUH** — 112 adolescents and adults, 12–90 y;
-- **CirCor DigiScope** — 120 browsable paediatric heart-sound patients, all 941 used to validate the cardiac detectors.
+- **CirCor DigiScope** — 120 browsable paediatric heart-sound patients, all 941 used to validate the cardiac detectors;
+- **Chronic bronchitis / emphysema** (Mendeley 9hdrddjpny) — 234 recordings on the same stethoscope as KAUH, for a device-matched disease comparison (Discoveries only).
 
 What it does:
 - patient and doctor pages;
@@ -21,6 +22,8 @@ npm install
 npx playwright install chromium   # for tests and the precompute step
 npm run serve                     # open http://localhost:8000
 npm test                          # end-to-end check; screenshots in tests/out/
+npm run test:ahi                  # apnea/AHI scoring on synthetic audio (sensitivity + specificity)
+npm run test:corsa                # CORSA crackle calibration (known IDW in, measured IDW out)
 ```
 `web/` is prebuilt, so the site runs straight away without downloading any dataset.
 
@@ -30,6 +33,7 @@ npm test                          # end-to-end check; screenshots in tests/out/
 | SPRSound | `npm run fetch:sprsound` (git clone, ~1.2 GB) | `raw/sprsound/` |
 | KAUH | Download "Audio Files.zip" and "Data_annotation.xlsx" from https://data.mendeley.com/datasets/jwyy9np4gv/3 | `raw/kauh/` |
 | CirCor | `pip install physionet && npm run fetch:circor` (ODC-By) | `raw/circor/` |
+| CB / emphysema | Download both zips from https://data.mendeley.com/datasets/9hdrddjpny/1 (CC BY 4.0) and unzip | `raw/cbemph/` |
 
 Then:
 ```bash
@@ -53,6 +57,7 @@ python3 pipeline/merge.py --add circor   # append to web/data, leaving the other
 - **Code:** yours to licence.
 - **SPRSound** — CC BY 4.0. Q. Zhang et al., "SPRSound: Open-Source SJTU Paediatric Respiratory Sound Database," *IEEE TBioCAS* 16(5):867–881, 2022. https://github.com/SJTU-YONGFU-RESEARCH-GRP/SPRSound
 - **KAUH** — CC BY 4.0. M. Fraiwan, L. Fraiwan, B. Khassawneh, A. Ibnian, "A dataset of lung sounds recorded from the chest wall using an electronic stethoscope," *Data in Brief* 35:106913, 2021. https://data.mendeley.com/datasets/jwyy9np4gv/3
+- **Chronic bronchitis / emphysema** — CC BY 4.0. M. Fraiwan, N. S. Haider, B. Khassawneh, "Respiratory Sound Dataset of Chronic Bronchitis and Emphysema Patients," *Mendeley Data* v1, 2026. doi:10.17632/9hdrddjpny.1
 - **CirCor DigiScope** — ODC-By 1.0 (Open Data Commons Attribution). J. Oliveira et al., "The CirCor DigiScope Dataset: From Murmur Detection to Murmur Classification," *IEEE J. Biomed. Health Inform.* 26(6):2524–2535, 2022. https://physionet.org/content/circor-heart-sound/1.0.3/
 - **Libraries** (loaded from CDN, pinned): wavesurfer.js 7.12.12 (BSD-3-Clause), Meyda 5.6.3 (MIT), Chart.js 4.6.1 (MIT).
 
