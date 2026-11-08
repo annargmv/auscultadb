@@ -2080,8 +2080,15 @@ async function renderValidation(){
   $('#view').innerHTML='<h1>Validation</h1><div class="empty">Loading validation reports…</div>';
   try{VAL=await cachedFetch('data/validation.json','json')}catch(e){$('#view').innerHTML=`<h1>Validation</h1><div class="notice">Validation reports not available: ${esc(e.message)}</div>`;return}
   if(location.hash!=='#validation')return;
-  const R=VAL.reports, row=r=>{const E=EVID[r.evidence]||EVID.research,sn=r.metrics[0],sp=r.metrics[1];
-    return `<tr class="click" data-v="v-${r.id}"><td><b>${esc(r.title)}</b></td><td><span class="${E[0]}">${E[1]}</span></td><td class="mono">${sn?ciTxt(sn)+' <span class="hint">('+ciRange(sn)+')</span>':'—'}</td><td class="mono">${sp?ciTxt(sp)+' <span class="hint">('+ciRange(sp)+')</span>':'—'}</td><td class="mono">${r.lrPos?r.lrPos.value+' / '+r.lrNeg.value:'—'}</td><td>${esc(r.verdict)}</td></tr>`};
+  // Pick metrics by LABEL, never by position. The apnea report's second metric is Event PPV, not
+  // specificity — reading metrics[1] into a "Specificity" column mislabelled 72.5 % PPV as
+  // specificity, which are different quantities and would be read very differently at a glance.
+  const byLabel=(r,re)=>r.metrics.find(m=>re.test(m.label));
+  const R=VAL.reports, row=r=>{const E=EVID[r.evidence]||EVID.research;
+    const sn=byLabel(r,/sensitivit|recognis/i)||r.metrics[0];
+    const sp=byLabel(r,/specificit/i);
+    const alt=sp?null:byLabel(r,/ppv|precision|predictive/i);
+    return `<tr class="click" data-v="v-${r.id}"><td><b>${esc(r.title)}</b></td><td><span class="${E[0]}">${E[1]}</span></td><td class="mono">${sn?ciTxt(sn)+' <span class="hint">('+ciRange(sn)+')</span>':'—'}</td><td class="mono">${sp?ciTxt(sp)+' <span class="hint">('+ciRange(sp)+')</span>':alt?'<span class="hint">no specificity — '+esc(alt.label)+'</span> '+ciTxt(alt)+' <span class="hint">('+ciRange(alt)+')</span>':'—'}</td><td class="mono">${r.lrPos?r.lrPos.value+' / '+r.lrNeg.value:'—'}</td><td>${esc(r.verdict)}</td></tr>`};
   $('#view').innerHTML=`<h1>Validation</h1>
     <p class="sub">How accurate each automatic finding on this platform is, measured against an expert reference standard and written for clinicians. Every number has a 95 % confidence interval; every report says how independent the test data were. Statistics: ${esc(VAL.engine)}. <span class="hint mono">computed ${esc(String(VAL.generated).slice(0,16).replace('T',' '))} UTC</span></p>
     <div class="notice" style="margin-bottom:14px"><b>None of these detectors is validated for clinical decisions.</b> They are decision support for research and teaching. Read sensitivity as “of patients who have it, how many are flagged”, specificity as “of patients who do not, how many are left alone”, and the likelihood ratios as how much a result should move your pre-test probability (LR+ above 10 or LR− below 0.1 is a large, often decisive change; between 0.5 and 2 barely matters).</div>

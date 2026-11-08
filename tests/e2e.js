@@ -81,6 +81,16 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(await pg.evaluate(() => document.querySelectorAll('canvas').length) >= 4, 'discoveries charts rendered');
     const h = await pg.evaluate(() => { const c = document.querySelector('#d-heart'); return c && { chart: !!c.querySelector('#c-heart'), rows: c.querySelectorAll('table tr').length } });
     check(h && h.chart && h.rows > 5, `cardiac validation section rendered (${h ? h.rows : 0} rows, grade chart ${h && h.chart})`);
+    // the validation summary must never print a metric under the wrong column heading
+    await pg.goto(url('#validation')); await pg.waitForTimeout(1200);
+    const vs = await pg.evaluate(() => {
+      const rows = [...document.querySelectorAll('#view .vrep table tbody tr')].slice(0, 8);
+      const specCol = rows.map(t => (t.children[3] || {}).textContent || '');
+      return { n: rows.length, mislabelled: specCol.filter(t => /PPV|predictive|precision/i.test(t) && !/no specificity/i.test(t)).length,
+               flagged: specCol.filter(t => /no specificity/i.test(t)).length };
+    });
+    check(vs.n > 0 && vs.mislabelled === 0, `validation summary: no metric shown under the wrong heading (${vs.flagged} row(s) correctly flagged as having no specificity)`);
+    await pg.goto(url('#discover')); await pg.waitForFunction(() => document.querySelector('#d-device'), null, { timeout: 30000 }); await pg.waitForTimeout(400);
     const toc = await pg.evaluate(() => { const t = document.querySelector('#dToc'); if (!t) return null;
       const a = [...t.querySelectorAll('a')];
       return { n: a.length, live: a.filter(x => !x.classList.contains('pending')).length, sticky: getComputedStyle(t).position,
