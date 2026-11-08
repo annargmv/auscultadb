@@ -13,6 +13,11 @@ What it does:
 - a live player with a cycle-aligned "ghost" of the baseline;
 - a breathing-flow graph with apnea/hypopnea and AHI (AASM rules);
 - a Discoveries page of cohort analyses, including a held-out validation of the murmur detector against expert annotations.
+- a biological-age test (Discoveries 16): can auscultation support an "age gap" longevity marker, as ECG can? Held-out
+  result: breath sounds carry essentially no age signal; heart rate tracks age band; heart rate for age does not predict
+  CirCor's clinical outcome. No open auscultation set has survival data, so longevity itself is not measured.
+  Rebuild with `npm run build:age`. References: Lima et al., Nat Commun 2021 (PMID 34433816); Zhang et al., CMAJ 2016
+  (PMID 26598376).
 
 *Decision support for research and teaching — not a diagnosis.*
 
