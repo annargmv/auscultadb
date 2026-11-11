@@ -2216,6 +2216,7 @@ function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">swi
     <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr"><dt>Question</dt><dd>${esc(m.question)}</dd><dt>Trained on</dt><dd>${esc(m.data)} — ${m.nTrainPatients} patients (${m.nTrainRec} recordings)</dd>
       <dt>Tested on</dt><dd><b>${m.nTestPatients} held-out patients</b> (${m.nTestRec} recordings)</dd><dt>Model</dt><dd>${esc(m.chosen)} — chosen by cross-validation on the training patients (${Object.entries(m.cv).map(([k,v])=>esc(k)+' '+v).join(' · ')})</dd>
       ${m.gate.deploy?'':`<dt>${isExp(m)?'Why it failed':'Why it is off'}</dt><dd class="bad-t" style="font-weight:500">${m.gate.reasons.map(esc).join('; ')}</dd>`}
+      ${m.ageGate?`<dt>Runs only for</dt><dd>${m.ageRange[0]===0?'patients under '+m.ageRange[1]:'patients aged '+m.ageRange[0]+'–'+m.ageRange[1]} — the ages it was trained on</dd>`:''}
       ${isExp(m)?`<dt>Status</dt><dd>Switched on by the owner on ${esc(m.override.date)} despite failing validation. Its output is research-only and is shown with these failures beside it.</dd>`:''}</dl>
     <div class="grid g2" style="margin-top:8px"><div style="overflow-x:auto"><table><thead><tr><th>Held-out</th><th>Value (95 % CI)</th></tr></thead><tbody>
       <tr><td>Top answer correct</td><td class="mono">${pc(t.accuracy)}</td></tr><tr><td>Baseline: always answering the commonest class</td><td class="mono">${pc(m.majority)}</td></tr>
@@ -2242,12 +2243,14 @@ async function runAnalyze(){
     const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf};
     window.__analyze={feats,type,age,results:[]};
     const ms=MODELS.models.filter(m=>m.kind===type);
-    const res=ms.map(m=>{const v=m.features.map(f=>feats[f]==null?null:+feats[f]),p=runs(m)?modelProba(m,v):null;
+    // ageGate: a model whose training population excludes this age is not run at all (owner's decision 2026-11-11)
+    const ageOk=m=>!m.ageGate||(age>=m.ageRange[0]&&age<(m.ageRange[0]===0?m.ageRange[1]:m.ageRange[1]+1e-9));
+    const res=ms.map(m=>{const v=m.features.map(f=>feats[f]==null?null:+feats[f]),p=runs(m)&&ageOk(m)?modelProba(m,v):null;
       const warn=[]; if(age<m.ageRange[0]||age>m.ageRange[1])warn.push(`age ${age} y is outside the training range (${m.ageRange[0]}–${m.ageRange[1]} y)`);
       const out=m.features.filter(f=>{const r=m.range[f],val=feats[f];return r&&val!=null&&r[0]!=null&&(val<r[0]||val>r[1])}); if(out.length)warn.push(`unusual compared with the training recordings: ${out.join(', ')}`);
       const miss=m.features.filter(f=>feats[f]==null); if(miss.length)warn.push(`not measurable on this recording: ${miss.join(', ')}`);
-      return {m,p,warn}});
-    window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn}));
+      return {m,p,warn,ageBlocked:runs(m)&&!ageOk(m)}});
+    window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn,ageBlocked:r.ageBlocked}));
     renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res); st.textContent='';
   }catch(e){st.textContent='Could not analyse: '+e.message}
   $('#anGo').disabled=false;
@@ -2283,6 +2286,7 @@ function expBlock(r,i){const m=r.m,t=m.test,top=r.p.indexOf(Math.max(...r.p)),pc
       <li>${m.classes.map((c,k)=>`${esc(c)} ${t.perClass[k].auc?t.perClass[k].auc.value:'—'}`).join(' · ')} <span class="hint">(per-group AUC)</span></li></ul>
       <p class="hint">Bars use the same flag levels as the validated models, but a flag from this model carries almost no information.</p></div></div></div>`}
 function resultBlock(r,i){const m=r.m,t=m.test;
+  if(r.ageBlocked)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: a ${esc(String(window.__analyze.age))}-year-old is outside the ages this model was trained on (${m.ageRange[0]===0?'under '+m.ageRange[1]:m.ageRange[0]+'–'+m.ageRange[1]} y).</span></div>`;
   if(!r.p)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: failed validation (${m.gate.reasons.map(esc).join('; ')}).</span></div>`;
   if(isExp(m))return expBlock(r,i);
   const flagged=m.classes.map((c,k)=>({c,k,p:r.p[k]})).filter(o=>o.p>=m.thresholds[o.k]&&!/^(normal|no murmur)$/.test(o.c));

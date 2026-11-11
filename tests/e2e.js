@@ -148,11 +148,21 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.setInputFiles('#anFile', lungClip.f); await pg.selectOption('#anType', 'lung'); await pg.fill('#anAge', String(lungClip.age));
     await pg.click('#anGo'); await pg.waitForFunction(id => window.__analyze && window.__analyze.type === 'lung' && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const lr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
+    // experimental (failed-validation) models run only framed by their failure, and only inside their training ages
     const exp = await pg.evaluate(() => MODELS.models.filter(m => !m.gate.deploy && m.override && m.override.on).map(m => m.id));
-    const ran = lr.r.filter(x => x.p).map(x => x.id), boxes = await pg.evaluate(() => document.querySelectorAll('#anOut .expModel').length);
-    // a model that failed validation may run only as experimental, framed by its failure, never as a plain result
-    check(exp.every(id => ran.includes(id)) && boxes === exp.filter(id => /lung/.test(id)).length && /Do not use this as a diagnosis/.test(lr.txt) && /experimental — failed validation/.test(lr.txt),
-      `lung clip SPRSound ${lungClip.id}: ran ${ran.join(', ')}; experimental (failed validation, owner's choice): ${exp.join(', ') || 'none'} — each framed by its held-out failure`);
+    const ran = lr.r.filter(x => x.p).map(x => x.id), blocked = lr.r.filter(x => x.ageBlocked).map(x => x.id);
+    const boxes = await pg.evaluate(() => document.querySelectorAll('#anOut .expModel').length);
+    check(lungClip.age < 12 && ran.includes('lung_pattern_child') && blocked.includes('lung_pattern_adult') && !ran.includes('lung_pattern_adult')
+      && boxes === 1 && /Do not use this as a diagnosis/.test(lr.txt) && /outside the ages this model was trained on/.test(lr.txt),
+      `lung clip SPRSound ${lungClip.id} (${lungClip.age} y): ran ${ran.join(', ')}; refused by age: ${blocked.join(', ')}; experimental framed by its failure`);
+    // the same recording declared as an adult: the children's model must now be refused and the adults' model run
+    await pg.fill('#anAge', '40'); await pg.click('#anGo');
+    await pg.waitForFunction(() => window.__analyze && window.__analyze.age === 40 && document.querySelector('#ar-0'), null, { timeout: 60000 });
+    const ad = await pg.evaluate(() => window.__analyze.results);
+    check(ad.find(x => x.id === 'lung_pattern_child').ageBlocked && ad.find(x => x.id === 'lung_pattern_adult').p,
+      'same clip at age 40: children\'s pattern model refused by age, adults\' model ran (experimental)');
+    await pg.fill('#anAge', String(lungClip.age)); await pg.click('#anGo');
+    await pg.waitForFunction(a => window.__analyze && window.__analyze.age === a && document.querySelector('#ar-0'), lungClip.age, { timeout: 60000 });
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
 

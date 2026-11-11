@@ -159,6 +159,11 @@ critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Researc
   they stay "failed validation", and the page shows each output inside a red box with its held-out accuracy against
   the always-the-commonest-class baseline and its per-group AUC. Do not lower the gate, and do not present their
   output like the validated models' output.
+- **Age gate (owner, 2026-11-11):** models with `ageGate` (both pattern models) are not run outside their training
+  ages — children's pattern under 18, adults' pattern 12–90 — and the page says why. Before it, the adults' model
+  answered "heart failure 100 %" for a 2-month-old. The validated models only warn on age.
+- `train_models.py` keeps `models.json['robustness']` when the retrained models are bit-identical; otherwise rerun
+  `node pipeline/codec_check.js`.
 - Compressed uploads (`codec_check.js`): median probability shift 0–1 pt, 95th pct 3–9 pts, a flag changes in
   1.5–4.6 % of decisions.
 - The page always says "not a diagnosis" and shows warnings for age outside the training range, features outside the
