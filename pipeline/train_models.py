@@ -206,7 +206,7 @@ def main():
     grp = {'Pneumonia (non-severe)': 'pneumonia', 'Pneumonia (severe)': 'pneumonia', 'Bronchitis': 'bronchitis', 'Asthma': 'asthma', 'Control Group': 'healthy'}
     D = Sd.assign(label=Sd.dx.map(grp))
     m, model, te, P = train('lung_pattern_child', D, LUNG, ['pneumonia', 'bronchitis', 'asthma', 'healthy'], rng, {
-        'title': 'Lung pattern — children', 'kind': 'lung', 'ageRange': [0, 18], 'data': 'SPRSound — children whose diagnosis is pneumonia, bronchitis, asthma or healthy control',
+        'title': 'Lung pattern — children', 'kind': 'lung', 'ageRange': [0, 18], 'ageGate': True, 'data': 'SPRSound — children whose diagnosis is pneumonia, bronchitis, asthma or healthy control',
         'question': 'Which diagnosis group do children with recordings like this one belong to?'})
     trD = D[D.label.notna() & ~D.pid.isin(set(te.pid))]
     rel_major = trD.groupby('release').label.agg(lambda s: s.mode().iloc[0])
@@ -217,7 +217,7 @@ def main():
     kg = {'Healthy adult (control)': 'healthy', 'Asthma': 'asthma', 'Heart failure': 'heart failure', 'Heart failure + COPD': 'heart failure', 'Heart failure + lung fibrosis': 'heart failure'}
     A = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'pid': r['pid'], 'label': kg.get(r['disease'])} for r in (json.loads(l) for l in open(FEATURES / 'kauh.jsonl'))]).astype({f: float for f in LUNG})
     m, *_ = train('lung_pattern_adult', A, LUNG, ['healthy', 'asthma', 'heart failure'], rng, {
-        'title': 'Lung pattern — adults (pilot)', 'kind': 'lung', 'ageRange': [12, 90], 'pilot': True, 'data': 'KAUH — adolescents and adults, Jordan, Littmann 3200 (all three filter modes)',
+        'title': 'Lung pattern — adults (pilot)', 'kind': 'lung', 'ageRange': [12, 90], 'ageGate': True, 'pilot': True, 'data': 'KAUH — adolescents and adults, Jordan, Littmann 3200 (all three filter modes)',
         'question': 'Which group — healthy, asthma or heart failure — do adults with recordings like this one belong to?'})
     models.append(m)
     for m in models:
@@ -225,6 +225,11 @@ def main():
         m['override'] = {'on': True, 'by': 'owner', 'date': '2026-11-11', 'note': 'switched on by the owner despite failing the gate; experimental'} if (m['id'] in OWNER_ON and not m['gate']['deploy']) else None
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'seed': SEED, 'testFrac': TEST_FRAC,
            'engine': 'scikit-learn 1.9 models; held-out statistics with Seismometer 0.5.0 (Agresti–Coull, Hanley–McNeil)', 'models': models}
+    # keep codec_check.js's robustness results across a retrain when every model is bit-identical (same seed + data)
+    old = json.loads((WEB_DATA / 'models.json').read_text()) if (WEB_DATA / 'models.json').exists() else {}
+    same = lambda: {m['id']: m['model'] for m in old.get('models', [])} == {m['id']: m['model'] for m in models}
+    if old.get('robustness') and same(): out['robustness'] = old['robustness']
+    elif old.get('robustness'): print('models changed: rerun node pipeline/codec_check.js')
     (WEB_DATA / 'models.json').write_text(json.dumps(out, separators=(',', ':'), ensure_ascii=False))
     for m in models:
         t = m['test']; a = t['accuracy']
