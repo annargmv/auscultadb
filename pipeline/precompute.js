@@ -43,27 +43,8 @@ const LOC = { p1: 'Left posterior chest', p2: 'Left lateral chest', p3: 'Right p
     window.roundFinding = f => ({ ...f, t0: r3(f.t0), t1: r3(f.t1), conf: +f.conf.toFixed(3), events: f.events.map(([a, b]) => [r3(a), r3(b)]) });
     window.loadWav = async url => normalisePeak(parseWav(await (await fetch(url)).arrayBuffer()));
     // discovery features from a full analysis
-    window.features = (A, events) => {
-      const F = A.F, nb = F.specs[0].length, k0 = Math.round(150 / binHz), k1 = Math.round(1500 / binHz);
-      const fl = Array.from(F.floor), srt = fl.slice().sort((a, b) => a - b), thr = srt[Math.floor(srt.length * 0.6)];
-      const ms = new Float64Array(nb); let n = 0;
-      for (let f = 0; f < F.nF; f++) if (F.floor[f] >= thr) { const s = F.specs[f]; for (let k = 0; k < nb; k++) ms[k] += s[k] * s[k]; n++ }
-      let tot = 0; for (let k = k0; k <= k1; k++) tot += ms[k]; let acc = 0, f50 = null, f75 = null, cen = 0;
-      for (let k = k0; k <= k1; k++) { acc += ms[k]; cen += ms[k] * k * binHz; if (f50 == null && acc >= tot * 0.5) f50 = k * binHz; if (f75 == null && acc >= tot * 0.75) f75 = k * binHz }
-      cen /= tot || 1;
-      const cand = A.transients.filter(e => e.hl > (e.fine ? HL_FINE : HL_COARSE));
-      const tonDur = A.tonal.reduce((a, s) => a + s.t1 - s.t0, 0);
-      // our pitch estimate inside expert continuous-sound events
-      const pitches = [];
-      for (const e of events) if (/Wheeze|Rhonchi|Stridor/.test(e.type)) {
-        const fr = []; for (let f = 0; f < F.nF; f++) { const t = F.t[f]; if (t >= e.start && t <= e.end && F.tonal[f].ratio > TONAL_THR) fr.push(F.tonal[f].freq) }
-        if (fr.length >= 5) { fr.sort((a, b) => a - b); pitches.push({ type: e.type, hz: Math.round(fr[fr.length >> 1]), n: fr.length }) }
-      }
-      return { dur: +A.dur.toFixed(2), f50, f75, cen: Math.round(cen), rr: A.rr && +A.rr.toFixed(1), est: A.cycles.some(c => c.estimated), period: A.period && +A.period.toFixed(2),
-        hr: A.heart.hr && +A.heart.hr.toFixed(1), crkRate: +(cand.length / A.dur).toFixed(3), fineRate: +(cand.filter(e => e.fine).length / A.dur).toFixed(3),
-        tonFrac: +(tonDur / A.dur).toFixed(4), tonHz: A.tonal.length ? Math.round(A.tonal.map(s => s.freq).sort((a, b) => a - b)[A.tonal.length >> 1]) : null,
-        ie: A.ie && +A.ie.toFixed(3), pitches };
-    };
+    // the feature definition lives in the page (recordingFeatures), shared with the Analyze page and its models
+    window.features = (A, events) => recordingFeatures(A, events);
   });
 
   if (MODE === 'kfeatures') {

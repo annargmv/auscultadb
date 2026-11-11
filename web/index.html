@@ -195,6 +195,7 @@ footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px
   <nav>
     <div class="navlabel">Clinical</div>
     <a href="#patients" id="nav-patients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1a4 4 0 0 0-3-3.9M15.5 4.1a3.5 3.5 0 0 1 0 6.8"/></svg>Patients</a>
+    <a href="#analyze" id="nav-analyze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h3l2-6 4 12 3-9 2 3h6"/></svg>Analyze a recording</a>
     <a href="#doctors" id="nav-doctors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-5h4v5"/><path d="M12 8v4M10 10h4"/></svg>Recording sites</a>
     <div class="navlabel">Research</div>
     <a href="#discover" id="nav-discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>Discoveries</a>
@@ -929,6 +930,7 @@ function route(scroll=true){
   $('#nav-doctors').classList.toggle('active',h.startsWith('doctor'));
   $('#nav-datasets').classList.toggle('active',h==='datasets');
   $('#nav-validation').classList.toggle('active',h==='validation');
+  $('#nav-analyze').classList.toggle('active',h==='analyze');
   $('#nav-longevity').classList.toggle('active',h==='longevity');
   $('#nav-discover').classList.toggle('active',h==='discover');
   if(scroll===false&&h.startsWith('patient-')&&current&&current.p.id===h.slice(8))return; // do not interrupt an open patient
@@ -936,6 +938,7 @@ function route(scroll=true){
   destroyDiscoverCharts();
   if(h==='datasets')renderDatasets();
   else if(h==='validation')renderValidation();
+  else if(h==='analyze')renderAnalyze();
   else if(h==='longevity')renderLongevity();
   else if(h==='discover')renderDiscover();
   else if(h==='doctors')renderDoctors();
@@ -2094,6 +2097,7 @@ async function renderValidation(){
     <div class="notice" style="margin-bottom:14px"><b>None of these detectors is validated for clinical decisions.</b> They are decision support for research and teaching. Read sensitivity as “of patients who have it, how many are flagged”, specificity as “of patients who do not, how many are left alone”, and the likelihood ratios as how much a result should move your pre-test probability (LR+ above 10 or LR− below 0.1 is a large, often decisive change; between 0.5 and 2 barely matters).</div>
     <div class="card tablecard vrep" style="margin-bottom:16px"><table><thead><tr><th>Finding</th><th>Evidence</th><th>Sensitivity (95 % CI)</th><th>Specificity (95 % CI)</th><th>LR+ / LR−</th><th>Verdict</th></tr></thead><tbody>${R.map(row).join('')}</tbody></table></div>
     <div class="grid">${R.map(reportCard).join('')}</div>
+    <div class="card" style="margin-top:16px"><h2>Models that analyse a new recording</h2><p class="hint" style="margin-top:0">The <a href="#analyze">Analyze a recording</a> page runs trained models on an uploaded recording. Their held-out accuracy, calibration, robustness to compressed audio and the deployment gate — including the two diagnosis models that failed it and are switched off — are reported on that page under “How the models were validated”.</p></div>
     ${VAL.ml?`<h2 style="margin:26px 0 6px;font-size:19px">Machine-learning models on this database</h2>
       <p class="sub">Research models trained on the platform’s features and validated with <a href="https://github.com/epic-open-source/seismometer" target="_blank" rel="noopener">Seismometer</a>, Epic’s open-source tool for validating healthcare AI on local data. Protocol fixed in advance: patient-level split (${Math.round(100*(1-VAL.ml.protocol.testFrac))} % train / ${Math.round(100*VAL.ml.protocol.testFrac)} % test, seed ${VAL.ml.protocol.seed}); model and operating point chosen on training patients only; held-out patients scored once. They do not change what the patient pages show.</p>
       <div class="grid">${VAL.ml.models.map(mlCard).join('')}</div>`:''}`;
@@ -2143,6 +2147,152 @@ async function renderLongevity(){
       <li>A pre-registered analysis: fit on one cohort, test on another, as for the age clock above.</li></ul></div>`;
   destroyDiscoverCharts(); if(A)ageCharts(A);
 }
+/* ---------- Analyze a new recording: the page's own analysis + the trained models (web/data/models.json) ----------
+   recordingFeatures / heartFeatures are THE feature definitions: pipeline/precompute.js and circor_validate.js
+   computed meta/features/*.jsonl with exactly this code, and pipeline/train_models.py trained on those tables.
+   modelProba reproduces scikit-learn's predict_proba (logistic regression or gradient-boosted trees); the e2e test
+   checks it against probabilities exported from Python. Nothing leaves the browser. */
+function recordingFeatures(A,events=[]){
+  const F=A.F, nb=F.specs[0].length, k0=Math.round(150/binHz), k1=Math.round(1500/binHz);
+  const fl=Array.from(F.floor), srt=fl.slice().sort((a,b)=>a-b), thr=srt[Math.floor(srt.length*0.6)];
+  const ms=new Float64Array(nb); let n=0;
+  for(let f=0;f<F.nF;f++)if(F.floor[f]>=thr){const s=F.specs[f];for(let k=0;k<nb;k++)ms[k]+=s[k]*s[k];n++}
+  let tot=0;for(let k=k0;k<=k1;k++)tot+=ms[k];let acc=0,f50=null,f75=null,cen=0;
+  for(let k=k0;k<=k1;k++){acc+=ms[k];cen+=ms[k]*k*binHz;if(f50==null&&acc>=tot*0.5)f50=k*binHz;if(f75==null&&acc>=tot*0.75)f75=k*binHz}
+  cen/=tot||1;
+  const cand=A.transients.filter(e=>e.hl>(e.fine?HL_FINE:HL_COARSE));
+  const tonDur=A.tonal.reduce((a,s)=>a+s.t1-s.t0,0);
+  const pitches=[];
+  for(const e of events)if(/Wheeze|Rhonchi|Stridor/.test(e.type)){
+    const fr=[];for(let f=0;f<F.nF;f++){const t=F.t[f];if(t>=e.start&&t<=e.end&&F.tonal[f].ratio>TONAL_THR)fr.push(F.tonal[f].freq)}
+    if(fr.length>=5){fr.sort((a,b)=>a-b);pitches.push({type:e.type,hz:Math.round(fr[fr.length>>1]),n:fr.length})}}
+  return {dur:+A.dur.toFixed(2),f50,f75,cen:Math.round(cen),rr:A.rr&&+A.rr.toFixed(1),est:A.cycles.some(c=>c.estimated),period:A.period&&+A.period.toFixed(2),
+    hr:A.heart.hr&&+A.heart.hr.toFixed(1),crkRate:+(cand.length/A.dur).toFixed(3),fineRate:+(cand.filter(e=>e.fine).length/A.dur).toFixed(3),
+    tonFrac:+(tonDur/A.dur).toFixed(4),tonHz:A.tonal.length?Math.round(A.tonal.map(s=>s.freq).sort((a,b)=>a-b)[A.tonal.length>>1]):null,
+    ie:A.ie&&+A.ie.toFixed(3),pitches};
+}
+function heartFeatures(A){const H=A.heart; // as pipeline/circor_validate.js records them
+  return {dur:+A.dur.toFixed(2),hr:H.hr&&+H.hr.toFixed(1),quietBeats:H.quietBeats,sysDia:H.sysDia==null?null:+H.sysDia.toFixed(3),
+    consistency:H.consistency==null?null:+H.consistency.toFixed(3),nBeats:H.beats.length,nS3:H.beats.filter(b=>b.s3).length}}
+function modelProba(M,x){const m=M.model, nan=v=>v==null||Number.isNaN(v);
+  if(m.kind==='logreg'){const z=x.map((v,i)=>((nan(v)?m.median[i]:v)-m.mean[i])/m.scale[i]);
+    const lin=m.coef.map((c,k)=>c.reduce((a,w,i)=>a+w*z[i],m.intercept[k]));
+    if(m.binary){const p=1/(1+Math.exp(-lin[0]));return [1-p,p]}
+    const mx=Math.max(...lin),e=lin.map(v=>Math.exp(v-mx)),s=e.reduce((a,b)=>a+b,0);return e.map(v=>v/s)}
+  const raw=m.baseline.slice();
+  for(const it of m.trees)it.forEach((nodes,k)=>{let i=0;while(!nodes[i][5]){const [f,t,ml,l,r]=nodes[i],v=x[f];i=nan(v)?(ml?l:r):(v<=t?l:r)}raw[k]+=nodes[i][6]});
+  if(m.binary){const p=1/(1+Math.exp(-raw[0]));return [1-p,p]}
+  const mx=Math.max(...raw),e=raw.map(v=>Math.exp(v-mx)),s=e.reduce((a,b)=>a+b,0);return e.map(v=>v/s)}
+let MODELS=null, anCharts=[], anWS=null;
+const HEART_SITES=[['AV','Aortic valve'],['PV','Pulmonary valve'],['TV','Tricuspid valve'],['MV','Mitral valve']];
+async function renderAnalyze(){
+  $('#view').innerHTML='<h1>Analyze a recording</h1><div class="empty">Loading models…</div>';
+  try{MODELS=MODELS||await cachedFetch('data/models.json','json')}catch(e){$('#view').innerHTML=`<h1>Analyze a recording</h1><div class="notice">Models not available: ${esc(e.message)}</div>`;return}
+  if(location.hash!=='#analyze')return;
+  const on=MODELS.models.filter(m=>m.gate.deploy), off=MODELS.models.filter(m=>!m.gate.deploy), exp=off.filter(m=>m.override&&m.override.on), dead=off.filter(m=>!(m.override&&m.override.on));
+  $('#view').innerHTML=`<h1>Analyze a recording</h1>
+    <p class="sub">Upload one auscultation recording. It is analysed in this browser with the platform’s own signal analysis, then compared with what the open datasets taught ${on.length} model${on.length===1?'':'s'}: <b>which labelled pattern does it resemble, and how often is that right on patients the model never saw</b>. The file never leaves your computer.</p>
+    <div class="notice" style="margin-bottom:14px"><b>This is not a diagnosis.</b> The models were trained on public research recordings; they report resemblance to labelled patterns, with their measured accuracy. ${exp.length?`<b>${exp.map(m=>esc(m.title)).join(' and ')} failed validation</b> (no better than simple guessing on held-out patients) and run only as <b>experimental</b>, by the owner’s choice — their output is shown with their failure next to it. `:''}${dead.length?`${dead.map(m=>esc(m.title)).join(', ')} failed validation and ${dead.length===1?'is':'are'} switched off. `:''}Details at the bottom of this page.</div>
+    <div class="card" id="anForm"><h2>1 · Recording</h2><div class="form-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:0 14px">
+      <div style="grid-column:1/3"><label class="f">Audio file (WAV, MP3, … — at least 5 s)</label><input class="f" id="anFile" type="file" accept="audio/*"></div>
+      <div><label class="f">Recorded over</label><select class="f" id="anType"><option value="lung">Chest wall — breath sounds</option><option value="heart">Heart valve area — heart sounds</option></select></div>
+      <div><label class="f">Site</label><select class="f" id="anSite"></select></div>
+      <div><label class="f">Age (years)</label><input class="f" id="anAge" type="number" min="0" max="120" step="0.1" placeholder="e.g. 6"></div>
+      <div style="grid-column:2/5;align-self:end" class="row"><button class="btn primary" id="anGo">Analyze</button><span class="hint" id="anStatus"></span></div></div></div>
+    <div id="anOut"></div>
+    <h2 style="margin:26px 0 6px;font-size:19px">How the models were validated</h2>
+    <p class="sub">Trained on ${Math.round(100*(1-MODELS.testFrac))} % of patients and scored once on the held-out ${Math.round(100*MODELS.testFrac)} % (no patient in both; seed ${MODELS.seed}). The model running here is exactly the one scored. A model is switched on only if, on held-out patients, its macro ROC AUC is at least 0.70, every class beats chance (95 % CI above 0.5), and it beats always answering the commonest class — a gate set after the first training run showed the diagnosis models fail. ${esc(MODELS.engine)}.</p>
+    <div class="grid">${MODELS.models.map(modelCard).join('')}</div>`;
+  const setSites=()=>{const t=$('#anType').value;$('#anSite').innerHTML=(t==='heart'?HEART_SITES:UP_SITES.map(x=>[x,x])).map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')};
+  $('#anType').onchange=setSites; setSites();
+  $('#anGo').onclick=runAnalyze;
+  anCharts.forEach(c=>{try{c.destroy()}catch(e){}});anCharts=[];
+  MODELS.models.forEach(drawModelCharts);
+}
+const isExp=m=>!m.gate.deploy&&!!(m.override&&m.override.on), runs=m=>m.gate.deploy||isExp(m);
+function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">switched on</span>':isExp(m)?'<span class="pill bad">failed validation — on as experimental (owner’s choice)</span>':'<span class="pill bad">failed validation — switched off</span>';
+  const pc=v=>v&&v.value!=null?`${v.value} % <span class="hint">(${v.lo}–${v.hi})</span>`:'—';
+  return `<div class="card vrep" id="m-${m.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 style="margin:0">${esc(m.title)}</h2>${st}</div>
+    <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr"><dt>Question</dt><dd>${esc(m.question)}</dd><dt>Trained on</dt><dd>${esc(m.data)} — ${m.nTrainPatients} patients (${m.nTrainRec} recordings)</dd>
+      <dt>Tested on</dt><dd><b>${m.nTestPatients} held-out patients</b> (${m.nTestRec} recordings)</dd><dt>Model</dt><dd>${esc(m.chosen)} — chosen by cross-validation on the training patients (${Object.entries(m.cv).map(([k,v])=>esc(k)+' '+v).join(' · ')})</dd>
+      ${m.gate.deploy?'':`<dt>${isExp(m)?'Why it failed':'Why it is off'}</dt><dd class="bad-t" style="font-weight:500">${m.gate.reasons.map(esc).join('; ')}</dd>`}
+      ${isExp(m)?`<dt>Status</dt><dd>Switched on by the owner on ${esc(m.override.date)} despite failing validation. Its output is research-only and is shown with these failures beside it.</dd>`:''}</dl>
+    <div class="grid g2" style="margin-top:8px"><div style="overflow-x:auto"><table><thead><tr><th>Held-out</th><th>Value (95 % CI)</th></tr></thead><tbody>
+      <tr><td>Top answer correct</td><td class="mono">${pc(t.accuracy)}</td></tr><tr><td>Baseline: always answering the commonest class</td><td class="mono">${pc(m.majority)}</td></tr>
+      ${m.confound?`<tr><td>${esc(m.confound.what)}</td><td class="mono">${pc(m.confound)}</td></tr>`:''}
+      <tr><td>Macro ROC AUC (0.5 = chance)</td><td class="mono">${t.macroAuc}</td></tr>${m.testPatient?`<tr><td>Top answer correct, per patient (recordings averaged)</td><td class="mono">${pc(m.testPatient.accuracy)}</td></tr>`:''}
+      ${m.external?`<tr><td>External: ${esc(m.external.data)} — macro AUC</td><td class="mono">${m.external.macroAuc}</td></tr>`:''}
+      ${(()=>{const rb=MODELS.robustness&&MODELS.robustness.models[m.id];if(!rb)return '';const w=rb.perClass.reduce((a,c)=>c.p95AbsShift>a.p95AbsShift?c:a),fl=rb.perClass.reduce((a,c)=>a+c.flagChanged,0);
+        return `<tr><td>Compressed audio (${rb.recordings} recordings as 32 kbps MP3 vs original WAV)</td><td class="mono">median shift ≤ ${Math.max(...rb.perClass.map(c=>c.medianAbsShift))} pts · 95th pct ${w.p95AbsShift} pts · a flag changed in ${fl} of ${rb.recordings*rb.perClass.length} class decisions</td></tr>`})()}</tbody></table>
+      <table style="margin-top:10px"><thead><tr><th>Class</th><th>AUC (95 % CI)</th><th>When flagged: sensitivity</th><th>specificity</th></tr></thead><tbody>${t.perClass.map((c,k)=>{const f=t.flags&&t.flags[k];return `<tr><td>${esc(c.class)} <span class="hint">n=${c.n}</span></td><td class="mono">${c.auc?`${c.auc.value} <span class="hint">(${c.auc.lo}–${c.auc.hi})</span>`:'—'}</td><td class="mono">${f?pc(f.sens):'—'}</td><td class="mono">${f?pc(f.spec):'—'}</td></tr>`}).join('')}</tbody></table>
+      <p class="hint">“Flagged” = score at or above a level fixed on the training patients so that 90 % of those without the class stay unflagged.</p></div>
+      <div><div style="position:relative;height:200px"><canvas id="mc-${m.id}"></canvas></div><p class="hint">Calibration on held-out recordings: when the model’s top answer has a given confidence (x), how often it is right (bars). Bars at the diagonal mean its probabilities can be taken at face value. Brier score ${t.brier}.</p></div></div></div>`}
+function drawModelCharts(m){const el=$('#mc-'+m.id); if(!el||!window.Chart)return; const b=m.test.calibration;
+  anCharts.push(new Chart(el,{type:'bar',data:{labels:b.map(x=>`${Math.round(100*x.range[0])}–${Math.round(100*x.range[1])} %`),datasets:[
+    {label:'how often right',data:b.map(x=>Math.round(1000*x.accuracy)/10),backgroundColor:'rgba(15,111,222,.55)'},
+    {label:'mean confidence',type:'line',data:b.map(x=>Math.round(1000*x.meanConf)/10),borderColor:'#0e1726',borderDash:[4,3],pointRadius:3}]},
+    options:{animation:false,responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'%'}},x:{title:{display:true,text:'model confidence'}}},
+      plugins:{legend:{labels:{boxWidth:10}},tooltip:{callbacks:{afterLabel:c=>'n = '+b[c.dataIndex].n}}}}}))}
+async function runAnalyze(){
+  const file=$('#anFile').files[0], type=$('#anType').value, site=$('#anSite').value, age=parseFloat($('#anAge').value), st=$('#anStatus');
+  if(!file){st.textContent='Choose a file first.';return} if(!(age>=0)){st.textContent='Enter the age — the models were trained on specific age ranges.';return}
+  st.textContent='Decoding and analysing…'; $('#anGo').disabled=true;
+  try{
+    const {x,srcDur}=await decodeToSR(file,MAX_ANALYSE_S); if(x.length<5*SR)throw new Error(`recording is ${(x.length/SR).toFixed(1)} s — at least 5 s is needed`);
+    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf};
+    window.__analyze={feats,type,age,results:[]};
+    const ms=MODELS.models.filter(m=>m.kind===type);
+    const res=ms.map(m=>{const v=m.features.map(f=>feats[f]==null?null:+feats[f]),p=runs(m)?modelProba(m,v):null;
+      const warn=[]; if(age<m.ageRange[0]||age>m.ageRange[1])warn.push(`age ${age} y is outside the training range (${m.ageRange[0]}–${m.ageRange[1]} y)`);
+      const out=m.features.filter(f=>{const r=m.range[f],val=feats[f];return r&&val!=null&&r[0]!=null&&(val<r[0]||val>r[1])}); if(out.length)warn.push(`unusual compared with the training recordings: ${out.join(', ')}`);
+      const miss=m.features.filter(f=>feats[f]==null); if(miss.length)warn.push(`not measurable on this recording: ${miss.join(', ')}`);
+      return {m,p,warn}});
+    window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn}));
+    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res); st.textContent='';
+  }catch(e){st.textContent='Could not analyse: '+e.message}
+  $('#anGo').disabled=false;
+}
+function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res){
+  const siteName=type==='heart'?(HEART_SITES.find(s=>s[0]===site)||[0,site])[1]:site, n1=v=>v==null?'—':v;
+  $('#anOut').innerHTML=`<div class="card" style="margin-top:16px"><h2>2 · The signal</h2><p class="hint" style="margin-top:0">${esc(file.name)} · ${siteName} · ${age} y · ${srcDur.toFixed(1)} s${srcDur>MAX_ANALYSE_S?` (first ${MAX_ANALYSE_S} s analysed)`:''} · resampled to ${SR/1000} kHz</p>
+      <div id="anWave" style="border:1px solid var(--line);border-radius:10px;padding:6px"></div><div class="row" style="margin-top:6px"><button class="btn small" id="anPlay">▶ Play</button></div>
+      <dl class="kv" style="margin-top:12px;grid-template-columns:200px 1fr">
+        ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd>`
+        :`<dt>Breathing rate</dt><dd>${f.rr==null?'—':f.rr+' /min'}${f.est?' <span class="hint">(phases estimated — approximate)</span>':''}</dd><dt>Crackle-like events</dt><dd>${f.crkRate} /s (${f.fineRate} /s fine)</dd><dt>Continuous (tonal) sound</dt><dd>${Math.round(100*f.tonFrac)} % of the time${f.tonHz?` · median ${f.tonHz} Hz`:''}</dd><dt>Spectral centroid / median frequency</dt><dd>${f.cen} Hz / ${n1(f.f50)} Hz</dd>`}
+      </dl></div>
+    <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${res.length?res.map((r,i)=>resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}
+      <div class="notice" style="margin-top:10px">Research output, not a diagnosis. A flag means “recordings like this were often labelled this way in the training data”; the numbers beside it say how often that was right on patients the model never saw. Interpret with the history, the examination and proper investigations.</div></div>`;
+  if(window.WaveSurfer){try{if(anWS)anWS.destroy()}catch(e){}
+    anWS=WaveSurfer.create({container:'#anWave',url:URL.createObjectURL(encodeWav(x)),height:64,sampleRate:SR,normalize:true,waveColor:'#8fb8ef',progressColor:'#0f6fde',cursorColor:'#0e1726',
+      plugins:[WaveSurfer.Spectrogram.create({height:110,labels:true,frequencyMin:0,frequencyMax:2000,fftSamples:256,noverlap:192,scale:'linear',colorMap:'roseus',sampleRate:SR})]});
+    anWS.on('ready',()=>{window.__anReady=true}); window.__anReady=false;
+    $('#anPlay').onclick=()=>anWS.playPause()}
+  res.forEach((r,i)=>{if(!r.p)return;const el=$('#ar-'+i);if(!el||!window.Chart)return;const m=r.m;
+    anCharts.push(new Chart(el,{type:'bar',data:{labels:m.classes,datasets:[{label:'probability',data:r.p.map(v=>Math.round(1000*v)/10),backgroundColor:r.p.map((v,k)=>v>=m.thresholds[k]?'rgba(214,69,69,.75)':'rgba(15,111,222,.45)')},
+      {label:'flag level',type:'scatter',data:m.thresholds.map((t,k)=>({x:100*t,y:m.classes[k]})),pointStyle:'line',pointRadius:9,borderColor:'#0e1726',borderWidth:2,rotation:90}]},
+      options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,scales:{x:{min:0,max:100,title:{display:true,text:'probability (%)'}}},plugins:{legend:{labels:{boxWidth:10}}}}}))});
+}
+function expBlock(r,i){const m=r.m,t=m.test,top=r.p.indexOf(Math.max(...r.p)),pc=t.perClass[top];
+  return `<div style="margin:6px 0 16px;border:2px solid #f3b4b4;border-radius:12px;padding:10px 12px;background:#fff7f7" class="expModel">
+    <div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(m.title)} <span class="pill bad">experimental — failed validation</span></h3><span class="hint">held-out AUC ${t.macroAuc} · ${m.nTestPatients} patients</span></div>
+    <p style="margin:8px 0;font-size:13px;color:#9f2b2b"><b>Do not use this as a diagnosis.</b> On patients it never saw, its top answer was right <b>${t.accuracy.value} %</b> of the time — against <b>${m.majority.value} %</b> for simply always answering the commonest group${m.confound?` and ${m.confound.value} % for guessing from the recording batch`:''}. ${m.gate.reasons.map(esc).join('; ')}.</p>
+    ${r.warn.length?`<div class="notice" style="margin:6px 0;padding:6px 10px"><b>Also:</b> ${r.warn.map(esc).join('; ')}.</div>`:''}
+    <div class="grid g2"><div style="position:relative;height:${60+m.classes.length*30}px"><canvas id="ar-${i}"></canvas></div>
+    <div><ul class="bedside"><li>Most similar group: <b>${esc(m.classes[top])}</b> (${Math.round(100*r.p[top])} %).</li>
+      <li>For “${esc(m.classes[top])}”, held-out AUC was <b>${pc.auc?pc.auc.value:'—'}</b>${pc.auc?` (95 % CI ${pc.auc.lo}–${pc.auc.hi})`:''} — 0.5 is a coin toss.</li>
+      <li>${m.classes.map((c,k)=>`${esc(c)} ${t.perClass[k].auc?t.perClass[k].auc.value:'—'}`).join(' · ')} <span class="hint">(per-group AUC)</span></li></ul>
+      <p class="hint">Bars use the same flag levels as the validated models, but a flag from this model carries almost no information.</p></div></div></div>`}
+function resultBlock(r,i){const m=r.m,t=m.test;
+  if(!r.p)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: failed validation (${m.gate.reasons.map(esc).join('; ')}).</span></div>`;
+  if(isExp(m))return expBlock(r,i);
+  const flagged=m.classes.map((c,k)=>({c,k,p:r.p[k]})).filter(o=>o.p>=m.thresholds[o.k]&&!/^(normal|no murmur)$/.test(o.c));
+  const top=r.p.indexOf(Math.max(...r.p));
+  const lines=flagged.map(o=>{const fl=t.flags[o.k];return `<li><b>${esc(o.c)}</b>: ${Math.round(100*o.p)} % (flag level ${Math.round(100*m.thresholds[o.k])} %). On held-out patients, recordings at this level caught <b>${fl.sens.value} %</b> of “${esc(o.c)}” recordings and left ${fl.spec.value} % of the others unflagged — ${fl.ppv.value} % of flags were right.</li>`});
+  return `<div style="margin:6px 0 16px"><div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(m.title)}</h3><span class="hint">held-out AUC ${t.macroAuc} · ${m.nTestPatients} patients</span></div>
+    ${r.warn.length?`<div class="notice" style="margin:6px 0;padding:6px 10px"><b>Use with caution:</b> ${r.warn.map(esc).join('; ')}.</div>`:''}
+    <div class="grid g2"><div style="position:relative;height:${60+m.classes.length*30}px"><canvas id="ar-${i}"></canvas></div>
+    <div><ul class="bedside">${lines.length?lines.join(''):`<li>No class is flagged. Most similar: <b>${esc(m.classes[top])}</b> (${Math.round(100*r.p[top])} %).</li>`}</ul>
+      <p class="hint">Red bars passed their flag level (black tick). ${m.external?`On adults recorded with a different stethoscope this model’s AUC was ${m.external.macroAuc} — it transfers only partly.`:''}</p></div></div></div>`}
 async function renderDatasets(){
   // the CB/emphysema card reports counts computed in discover.json; fetch it here rather than
   // relying on the Discoveries page having been visited (cachedFetch makes the repeat free)

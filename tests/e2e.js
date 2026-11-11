@@ -127,6 +127,35 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(lo.none && lo.icc && lo.refs && lo.charts, 'longevity page: markers with measured reliability, cited evidence, age clock, no longevity estimate');
     await pg.screenshot({ path: path.join(OUT, 'longevity.png'), fullPage: true });
 
+    // Analyze a new recording: the browser must reproduce Python's probabilities, then run end to end on real audio
+    await pg.goto(url('#analyze')); await pg.waitForSelector('#anGo', { timeout: 30000 });
+    const par = await pg.evaluate(() => { let worst = 0, n = 0; for (const m of MODELS.models) for (const v of m.parity) { const p = modelProba(m, v.x); p.forEach((q, k) => { worst = Math.max(worst, Math.abs(q - v.p[k])) }); n++ }
+      return { worst, n, on: MODELS.models.filter(m => m.gate.deploy).map(m => m.id), off: MODELS.models.filter(m => !m.gate.deploy).map(m => m.id) } });
+    check(par.n >= 40 && par.worst < 1e-6, `models in the browser reproduce scikit-learn on ${par.n} held-out vectors (max |Δp| ${par.worst.toExponential(1)}); on: ${par.on.join(', ')}; off (failed validation): ${par.off.join(', ')}`);
+    const tmp = path.join(OUT, 'tmp'); fs.mkdirSync(tmp, { recursive: true });
+    const realClip = (pick) => { const I = JSON.parse(fs.readFileSync(path.join(ROOT, 'web', 'data', 'index.json'))); const p = I.patients.find(pick);
+      const s = p.sites.find(x => x.audible) || p.sites.find(x => x.record !== 'Normal') || p.sites[0]; const [file, name] = s.file.split('#');
+      const b = JSON.parse(fs.readFileSync(path.join(ROOT, 'web', file)))[name]; const f = path.join(tmp, name); fs.writeFileSync(f, Buffer.from(b, 'base64'));
+      return { f, loc: s.loc, age: p.age ?? 6, id: p.pid } };
+    const heartClip = realClip(p => p.src === 'circor' && p.murmur === 'Present' && p.audible);
+    await pg.setInputFiles('#anFile', heartClip.f); await pg.selectOption('#anType', 'heart'); await pg.selectOption('#anSite', heartClip.loc); await pg.fill('#anAge', String(heartClip.age));
+    await pg.click('#anGo'); await pg.waitForFunction(() => window.__analyze && window.__analyze.results.length && document.querySelector('#ar-0'), null, { timeout: 60000 });
+    const hr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
+    check(hr.r[0].p && Math.abs(hr.r[0].p[0] + hr.r[0].p[1] - 1) < 1e-9 && /not a diagnosis/.test(hr.txt) && /held-out/.test(hr.txt), `heart clip CirCor ${heartClip.id} @${heartClip.loc}: murmur probability ${Math.round(100 * hr.r[0].p[1])} % with held-out accuracy and a not-a-diagnosis notice`);
+    await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
+    await pg.screenshot({ path: path.join(OUT, 'analyze-heart.png'), fullPage: true });
+    const lungClip = realClip(p => p.src === 'sprsound' && p.sites.some(s => s.record === 'DAS'));
+    await pg.setInputFiles('#anFile', lungClip.f); await pg.selectOption('#anType', 'lung'); await pg.fill('#anAge', String(lungClip.age));
+    await pg.click('#anGo'); await pg.waitForFunction(id => window.__analyze && window.__analyze.type === 'lung' && document.querySelector('#ar-0'), null, { timeout: 60000 });
+    const lr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
+    const exp = await pg.evaluate(() => MODELS.models.filter(m => !m.gate.deploy && m.override && m.override.on).map(m => m.id));
+    const ran = lr.r.filter(x => x.p).map(x => x.id), boxes = await pg.evaluate(() => document.querySelectorAll('#anOut .expModel').length);
+    // a model that failed validation may run only as experimental, framed by its failure, never as a plain result
+    check(exp.every(id => ran.includes(id)) && boxes === exp.filter(id => /lung/.test(id)).length && /Do not use this as a diagnosis/.test(lr.txt) && /experimental — failed validation/.test(lr.txt),
+      `lung clip SPRSound ${lungClip.id}: ran ${ran.join(', ')}; experimental (failed validation, owner's choice): ${exp.join(', ') || 'none'} — each framed by its held-out failure`);
+    await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
+    await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
+
     // no invented people: recording sites come from the datasets, with live counts
     await pg.goto(url('#doctors')); await pg.waitForTimeout(500);
     const rs = await pg.evaluate(() => ({ dr: /\bDr\.|555-01/.test(document.body.innerText), cards: document.querySelectorAll('#view .card').length,

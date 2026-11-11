@@ -24,6 +24,13 @@ What it does:
   machine-learning models trained on one patient split and scored on another, with a subgroup fairness audit.
   Statistics come from **Seismometer** (Epic Systems, open source, BSD-3-Clause, https://github.com/epic-open-source/seismometer).
   Rebuild with `npm run build:validation`.
+- an **Analyze a recording** page: upload one breath- or heart-sound recording; the browser runs the platform's own
+  analysis, then trained models report which labelled pattern it resembles (murmur at this valve; breath-sound type),
+  each with its held-out accuracy, calibration and robustness to compressed audio. **It does not diagnose.** Models
+  that fail a held-out gate are marked as failed — today both "which disease" models (children's
+  pneumonia / bronchitis / asthma / healthy, and adults' healthy / asthma / heart failure) fail it. By the owner's
+  choice they still run, as **experimental**: every output is shown with its failed held-out numbers beside it. The file never
+  leaves the browser. Rebuild with `npm run build:models`.
 - a **Longevity** page: the markers with a published mortality link that sound could carry, how reliably this platform
   measures each one, and the biological-age test. It states plainly that nothing here estimates longevity.
 - an apnea / AHI validation on real nights (Discoveries 12): the page's own flow scoring run unchanged on a pilot of
