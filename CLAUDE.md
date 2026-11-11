@@ -154,7 +154,11 @@ critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Researc
   above 0.5, and beating the majority-class (and recording-batch) baseline. Results (2026-11-11):
   heart_murmur AUC 0.80 — on; lung_sound AUC 0.72 (KAUH external 0.71) — on; **lung_pattern_child AUC 0.61, no better
   than always "pneumonia" or the release-only baseline — off; lung_pattern_adult AUC 0.60, heart failure 0.40 — off.**
-  Disease from these hand-made features does not work; do not switch these on by lowering the gate.
+  Disease from these hand-made features does not work. **Owner's decision 2026-11-11: both run anyway as
+  "experimental"** (`OWNER_ON` in `train_models.py` → `override` in models.json). The gate result is never altered:
+  they stay "failed validation", and the page shows each output inside a red box with its held-out accuracy against
+  the always-the-commonest-class baseline and its per-group AUC. Do not lower the gate, and do not present their
+  output like the validated models' output.
 - Compressed uploads (`codec_check.js`): median probability shift 0–1 pt, 95th pct 3–9 pts, a flag changes in
   1.5–4.6 % of decisions.
 - The page always says "not a diagnosis" and shows warnings for age outside the training range, features outside the

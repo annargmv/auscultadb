@@ -42,6 +42,9 @@ from paths import FEATURES, WEB_DATA
 SEED, TEST_FRAC = 20261111, 0.4
 FLAG_SPEC = 0.90          # per-class flag threshold: the score that leaves 90 % of TRAINING non-members unflagged
 GATE_AUC = 0.70           # deployment gate (see `gate`): set after the first run showed the diagnosis models fail
+# The owner switched these on on 2026-11-11 although they FAIL the gate. They run as "experimental": the page shows
+# their failed held-out numbers beside every output. The gate result itself is never altered.
+OWNER_ON = {'lung_pattern_child', 'lung_pattern_adult'}
 CI = PerformanceMetricConfidenceParam(0.95)
 LUNG = ['f50', 'f75', 'cen', 'rr', 'hr', 'crkRate', 'fineRate', 'tonFrac', 'ie', 'dur']
 HEART = ['sysDia', 'consistency', 'hr', 'quietBeats', 'nBeats', 'nS3', 'dur']
@@ -217,7 +220,9 @@ def main():
         'title': 'Lung pattern — adults (pilot)', 'kind': 'lung', 'ageRange': [12, 90], 'pilot': True, 'data': 'KAUH — adolescents and adults, Jordan, Littmann 3200 (all three filter modes)',
         'question': 'Which group — healthy, asthma or heart failure — do adults with recordings like this one belong to?'})
     models.append(m)
-    for m in models: m['gate'] = gate(m)
+    for m in models:
+        m['gate'] = gate(m)
+        m['override'] = {'on': True, 'by': 'owner', 'date': '2026-11-11', 'note': 'switched on by the owner despite failing the gate; experimental'} if (m['id'] in OWNER_ON and not m['gate']['deploy']) else None
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'seed': SEED, 'testFrac': TEST_FRAC,
            'engine': 'scikit-learn 1.9 models; held-out statistics with Seismometer 0.5.0 (Agresti–Coull, Hanley–McNeil)', 'models': models}
     (WEB_DATA / 'models.json').write_text(json.dumps(out, separators=(',', ':'), ensure_ascii=False))

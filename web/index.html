@@ -2182,10 +2182,10 @@ async function renderAnalyze(){
   $('#view').innerHTML='<h1>Analyze a recording</h1><div class="empty">Loading models…</div>';
   try{MODELS=MODELS||await cachedFetch('data/models.json','json')}catch(e){$('#view').innerHTML=`<h1>Analyze a recording</h1><div class="notice">Models not available: ${esc(e.message)}</div>`;return}
   if(location.hash!=='#analyze')return;
-  const on=MODELS.models.filter(m=>m.gate.deploy), off=MODELS.models.filter(m=>!m.gate.deploy);
+  const on=MODELS.models.filter(m=>m.gate.deploy), off=MODELS.models.filter(m=>!m.gate.deploy), exp=off.filter(m=>m.override&&m.override.on), dead=off.filter(m=>!(m.override&&m.override.on));
   $('#view').innerHTML=`<h1>Analyze a recording</h1>
     <p class="sub">Upload one auscultation recording. It is analysed in this browser with the platform’s own signal analysis, then compared with what the open datasets taught ${on.length} model${on.length===1?'':'s'}: <b>which labelled pattern does it resemble, and how often is that right on patients the model never saw</b>. The file never leaves your computer.</p>
-    <div class="notice" style="margin-bottom:14px"><b>This is not a diagnosis.</b> The models were trained on public research recordings; they report resemblance to labelled patterns, with their measured accuracy. ${off.length} diagnosis model${off.length===1?'':'s'} (${off.map(m=>esc(m.title)).join(', ')}) failed validation and ${off.length===1?'is':'are'} switched off — see the bottom of this page.</div>
+    <div class="notice" style="margin-bottom:14px"><b>This is not a diagnosis.</b> The models were trained on public research recordings; they report resemblance to labelled patterns, with their measured accuracy. ${exp.length?`<b>${exp.map(m=>esc(m.title)).join(' and ')} failed validation</b> (no better than simple guessing on held-out patients) and run only as <b>experimental</b>, by the owner’s choice — their output is shown with their failure next to it. `:''}${dead.length?`${dead.map(m=>esc(m.title)).join(', ')} failed validation and ${dead.length===1?'is':'are'} switched off. `:''}Details at the bottom of this page.</div>
     <div class="card" id="anForm"><h2>1 · Recording</h2><div class="form-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:0 14px">
       <div style="grid-column:1/3"><label class="f">Audio file (WAV, MP3, … — at least 5 s)</label><input class="f" id="anFile" type="file" accept="audio/*"></div>
       <div><label class="f">Recorded over</label><select class="f" id="anType"><option value="lung">Chest wall — breath sounds</option><option value="heart">Heart valve area — heart sounds</option></select></div>
@@ -2202,12 +2202,14 @@ async function renderAnalyze(){
   anCharts.forEach(c=>{try{c.destroy()}catch(e){}});anCharts=[];
   MODELS.models.forEach(drawModelCharts);
 }
-function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">switched on</span>':'<span class="pill bad">failed validation — switched off</span>';
+const isExp=m=>!m.gate.deploy&&!!(m.override&&m.override.on), runs=m=>m.gate.deploy||isExp(m);
+function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">switched on</span>':isExp(m)?'<span class="pill bad">failed validation — on as experimental (owner’s choice)</span>':'<span class="pill bad">failed validation — switched off</span>';
   const pc=v=>v&&v.value!=null?`${v.value} % <span class="hint">(${v.lo}–${v.hi})</span>`:'—';
   return `<div class="card vrep" id="m-${m.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 style="margin:0">${esc(m.title)}</h2>${st}</div>
     <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr"><dt>Question</dt><dd>${esc(m.question)}</dd><dt>Trained on</dt><dd>${esc(m.data)} — ${m.nTrainPatients} patients (${m.nTrainRec} recordings)</dd>
       <dt>Tested on</dt><dd><b>${m.nTestPatients} held-out patients</b> (${m.nTestRec} recordings)</dd><dt>Model</dt><dd>${esc(m.chosen)} — chosen by cross-validation on the training patients (${Object.entries(m.cv).map(([k,v])=>esc(k)+' '+v).join(' · ')})</dd>
-      ${m.gate.deploy?'':`<dt>Why it is off</dt><dd class="bad-t" style="font-weight:500">${m.gate.reasons.map(esc).join('; ')}</dd>`}</dl>
+      ${m.gate.deploy?'':`<dt>${isExp(m)?'Why it failed':'Why it is off'}</dt><dd class="bad-t" style="font-weight:500">${m.gate.reasons.map(esc).join('; ')}</dd>`}
+      ${isExp(m)?`<dt>Status</dt><dd>Switched on by the owner on ${esc(m.override.date)} despite failing validation. Its output is research-only and is shown with these failures beside it.</dd>`:''}</dl>
     <div class="grid g2" style="margin-top:8px"><div style="overflow-x:auto"><table><thead><tr><th>Held-out</th><th>Value (95 % CI)</th></tr></thead><tbody>
       <tr><td>Top answer correct</td><td class="mono">${pc(t.accuracy)}</td></tr><tr><td>Baseline: always answering the commonest class</td><td class="mono">${pc(m.majority)}</td></tr>
       ${m.confound?`<tr><td>${esc(m.confound.what)}</td><td class="mono">${pc(m.confound)}</td></tr>`:''}
@@ -2233,7 +2235,7 @@ async function runAnalyze(){
     const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf};
     window.__analyze={feats,type,age,results:[]};
     const ms=MODELS.models.filter(m=>m.kind===type);
-    const res=ms.map(m=>{const v=m.features.map(f=>feats[f]==null?null:+feats[f]),p=m.gate.deploy?modelProba(m,v):null;
+    const res=ms.map(m=>{const v=m.features.map(f=>feats[f]==null?null:+feats[f]),p=runs(m)?modelProba(m,v):null;
       const warn=[]; if(age<m.ageRange[0]||age>m.ageRange[1])warn.push(`age ${age} y is outside the training range (${m.ageRange[0]}–${m.ageRange[1]} y)`);
       const out=m.features.filter(f=>{const r=m.range[f],val=feats[f];return r&&val!=null&&r[0]!=null&&(val<r[0]||val>r[1])}); if(out.length)warn.push(`unusual compared with the training recordings: ${out.join(', ')}`);
       const miss=m.features.filter(f=>feats[f]==null); if(miss.length)warn.push(`not measurable on this recording: ${miss.join(', ')}`);
@@ -2263,8 +2265,19 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res){
       {label:'flag level',type:'scatter',data:m.thresholds.map((t,k)=>({x:100*t,y:m.classes[k]})),pointStyle:'line',pointRadius:9,borderColor:'#0e1726',borderWidth:2,rotation:90}]},
       options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,scales:{x:{min:0,max:100,title:{display:true,text:'probability (%)'}}},plugins:{legend:{labels:{boxWidth:10}}}}}))});
 }
+function expBlock(r,i){const m=r.m,t=m.test,top=r.p.indexOf(Math.max(...r.p)),pc=t.perClass[top];
+  return `<div style="margin:6px 0 16px;border:2px solid #f3b4b4;border-radius:12px;padding:10px 12px;background:#fff7f7" class="expModel">
+    <div class="row" style="justify-content:space-between"><h3 style="margin:0">${esc(m.title)} <span class="pill bad">experimental — failed validation</span></h3><span class="hint">held-out AUC ${t.macroAuc} · ${m.nTestPatients} patients</span></div>
+    <p style="margin:8px 0;font-size:13px;color:#9f2b2b"><b>Do not use this as a diagnosis.</b> On patients it never saw, its top answer was right <b>${t.accuracy.value} %</b> of the time — against <b>${m.majority.value} %</b> for simply always answering the commonest group${m.confound?` and ${m.confound.value} % for guessing from the recording batch`:''}. ${m.gate.reasons.map(esc).join('; ')}.</p>
+    ${r.warn.length?`<div class="notice" style="margin:6px 0;padding:6px 10px"><b>Also:</b> ${r.warn.map(esc).join('; ')}.</div>`:''}
+    <div class="grid g2"><div style="position:relative;height:${60+m.classes.length*30}px"><canvas id="ar-${i}"></canvas></div>
+    <div><ul class="bedside"><li>Most similar group: <b>${esc(m.classes[top])}</b> (${Math.round(100*r.p[top])} %).</li>
+      <li>For “${esc(m.classes[top])}”, held-out AUC was <b>${pc.auc?pc.auc.value:'—'}</b>${pc.auc?` (95 % CI ${pc.auc.lo}–${pc.auc.hi})`:''} — 0.5 is a coin toss.</li>
+      <li>${m.classes.map((c,k)=>`${esc(c)} ${t.perClass[k].auc?t.perClass[k].auc.value:'—'}`).join(' · ')} <span class="hint">(per-group AUC)</span></li></ul>
+      <p class="hint">Bars use the same flag levels as the validated models, but a flag from this model carries almost no information.</p></div></div></div>`}
 function resultBlock(r,i){const m=r.m,t=m.test;
   if(!r.p)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: failed validation (${m.gate.reasons.map(esc).join('; ')}).</span></div>`;
+  if(isExp(m))return expBlock(r,i);
   const flagged=m.classes.map((c,k)=>({c,k,p:r.p[k]})).filter(o=>o.p>=m.thresholds[o.k]&&!/^(normal|no murmur)$/.test(o.c));
   const top=r.p.indexOf(Math.max(...r.p));
   const lines=flagged.map(o=>{const fl=t.flags[o.k];return `<li><b>${esc(o.c)}</b>: ${Math.round(100*o.p)} % (flag level ${Math.round(100*m.thresholds[o.k])} %). On held-out patients, recordings at this level caught <b>${fl.sens.value} %</b> of “${esc(o.c)}” recordings and left ${fl.spec.value} % of the others unflagged — ${fl.ppv.value} % of flags were right.</li>`});

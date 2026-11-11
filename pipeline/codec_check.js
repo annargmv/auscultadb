@@ -26,7 +26,7 @@ const jsonl = f => fs.readFileSync(path.join(FEAT, f), 'utf8').trim().split('\n'
       const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
       const { x } = await decodeToSR(new File([bin], 'x.mp3', { type: 'audio/mpeg' }), MAX_ANALYSE_S);
       const A = analyzeSignal(x), f = { ...recordingFeatures(A), ...heartFeatures(A) };
-      return M.models.filter(m => m.gate.deploy && m.kind === kind).map(m => {
+      return M.models.filter(m => (m.gate.deploy || (m.override && m.override.on)) && m.kind === kind).map(m => {
         const v = o => m.features.map(k => o[k] == null ? null : +o[k]);
         const a = modelProba(m, v(wav)), b = modelProba(m, v(f));
         return { id: m.id, d: a.map((q, k) => b[k] - q), flipWav: a.map((q, k) => q >= m.thresholds[k]), flipMp3: b.map((q, k) => q >= m.thresholds[k]),

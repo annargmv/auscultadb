@@ -138,8 +138,11 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.setInputFiles('#anFile', lungClip.f); await pg.selectOption('#anType', 'lung'); await pg.fill('#anAge', String(lungClip.age));
     await pg.click('#anGo'); await pg.waitForFunction(id => window.__analyze && window.__analyze.type === 'lung' && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const lr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
-    const off = lr.r.filter(x => !x.p).map(x => x.id);
-    check(lr.r.some(x => x.p) && off.length >= 1 && /failed validation/.test(lr.txt), `lung clip SPRSound ${lungClip.id}: sound-type model ran; ${off.join(', ')} shown as switched off`);
+    const exp = await pg.evaluate(() => MODELS.models.filter(m => !m.gate.deploy && m.override && m.override.on).map(m => m.id));
+    const ran = lr.r.filter(x => x.p).map(x => x.id), boxes = await pg.evaluate(() => document.querySelectorAll('#anOut .expModel').length);
+    // a model that failed validation may run only as experimental, framed by its failure, never as a plain result
+    check(exp.every(id => ran.includes(id)) && boxes === exp.filter(id => /lung/.test(id)).length && /Do not use this as a diagnosis/.test(lr.txt) && /experimental — failed validation/.test(lr.txt),
+      `lung clip SPRSound ${lungClip.id}: ran ${ran.join(', ')}; experimental (failed validation, owner's choice): ${exp.join(', ') || 'none'} — each framed by its held-out failure`);
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
 
