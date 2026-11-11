@@ -80,6 +80,11 @@ npm run build:validation                 # clinical_validation.py -> ml_validate
 python3 pipeline/clinical_validation.py  #   web/data/validation.json['reports']: one STARD-style report per detector
 python3 pipeline/ml_validate.py          #   validation.json['ml']: sklearn models, patient split, Seismometer metrics + fairness
 
+# models behind "Analyze a recording" (upload one recording -> pattern probabilities, never a diagnosis)
+npm run build:models                     # train_models.py -> codec_check.js -> --bump
+python3 pipeline/train_models.py         #   web/data/models.json: 4 models, patient split, gate, thresholds, parity vectors
+node pipeline/codec_check.js             #   models.json['robustness']: site MP3 copies vs original WAV (~7 min)
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -137,6 +142,24 @@ the shipped rule scored on the same test patients, Seismometer fairness rule (la
 Current ML results (seed 20261108): murmur AUC 0.82, 54 % sens at 90 % spec vs shipped rule 42 % / 98.6 %, infants
 critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Research models — not used by the pages.
 
+## Analyze a recording — models on new audio
+- Feature code lives in the page: `recordingFeatures(A)` (lung) and `heartFeatures(A)` (heart). `precompute.js`
+  calls `recordingFeatures`; `circor_validate.js` records the same heart fields. Change a feature → the stored
+  `meta/features/*.jsonl` no longer match and the models must be retrained on recomputed features (raw/ needed).
+- `train_models.py`: patient split 60/40 (seed 20261111), LR vs gradient boosting chosen by grouped CV on train,
+  the deployed model is the train-only fit (the held-out numbers describe exactly what runs). Per-class flag
+  threshold = 90 % training out-of-fold specificity. Exported as JSON; `modelProba` in the page reproduces
+  scikit-learn to ~1e-9 (e2e parity check on exported vectors).
+- **Deployment gate** (set after the first run, say so when reporting): held-out macro AUC ≥ 0.70, every class AUC CI
+  above 0.5, and beating the majority-class (and recording-batch) baseline. Results (2026-11-11):
+  heart_murmur AUC 0.80 — on; lung_sound AUC 0.72 (KAUH external 0.71) — on; **lung_pattern_child AUC 0.61, no better
+  than always "pneumonia" or the release-only baseline — off; lung_pattern_adult AUC 0.60, heart failure 0.40 — off.**
+  Disease from these hand-made features does not work; do not switch these on by lowering the gate.
+- Compressed uploads (`codec_check.js`): median probability shift 0–1 pt, 95th pct 3–9 pts, a flag changes in
+  1.5–4.6 % of decisions.
+- The page always says "not a diagnosis" and shows warnings for age outside the training range, features outside the
+  training 1st–99th percentile, and unmeasurable features.
+
 ## No invented content
 There are no treating doctors in the open data, so none are shown. The former Doctors page is **Recording sites**
 (route `#doctors` kept): the three real institutions/devices, with every count, age range, release and diagnosis
@@ -164,7 +187,7 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
   - `cachedFetch` (Cache Storage `auscultadb-<version>`), `getDetail` (shards), `fetchAudioBytes` (bundles);
   - `loadRealDataset` (l.~734), `ensureSite` (l.~757);
   - `isPre(p)` = precomputed dataset patient (sources `sprsound`, `kauh`); `SRC_META` = per-source credit and citation.
-- §6 views: `renderValidation` (Validation page, `reportCard` / `mlCard`, CI charts), `renderLongevity` (Longevity page; reuses `ageCard` / `ageCharts`); app shell = fixed dark sidebar (`header`, collapses to a top bar < 900 px; neutral ink chrome so data colours stand out), patient list (filters `LF`, `AGE_GROUPS`), patient page (`.ptgrid`), `chestMapCard` / `kauhMapCard`, `fillHrAge` (CirCor heart rate for age), recording sites (`renderDoctors`), `ageCard`/`ageCharts` (Discoveries 16), `renderDiscover` (`DISCOVER_MAP` l.~1434), `renderDatasets` (l.~1583).
+- §6 views: `renderAnalyze` / `runAnalyze` / `modelCard` / `modelProba` (Analyze page), `renderValidation` (Validation page, `reportCard` / `mlCard`, CI charts), `renderLongevity` (Longevity page; reuses `ageCard` / `ageCharts`); app shell = fixed dark sidebar (`header`, collapses to a top bar < 900 px; neutral ink chrome so data colours stand out), patient list (filters `LF`, `AGE_GROUPS`), patient page (`.ptgrid`), `chestMapCard` / `kauhMapCard`, `fillHrAge` (CirCor heart rate for age), recording sites (`renderDoctors`), `ageCard`/`ageCharts` (Discoveries 16), `renderDiscover` (`DISCOVER_MAP` l.~1434), `renderDatasets` (l.~1583).
 - §7 live player: wavesurfer.js 7.12.12 (Regions, Spectrogram, Timeline, Minimap) plus AnalyserNode panels.
 - §8 flow / apnea:
   - `computeFlow` / `scoreFlow` implement the AASM rules: apnea ≥90 % drop, hypopnea ≥30 % drop, each against the 2 preceding breaths;
