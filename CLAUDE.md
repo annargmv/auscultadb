@@ -169,6 +169,20 @@ critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Researc
 - The page always says "not a diagnosis" and shows warnings for age outside the training range, features outside the
   training 1st–99th percentile, and unmeasurable features.
 
+## Presentation layer — Home, tooltips, glossary
+- **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)
+  and a "What you can trust today" table. Every number and every status pill is read from `index.json`,
+  `validation.json`, `models.json` and `discover.json` — never typed in.
+- **Tooltips**: `GLOSS` holds one clinical definition per term (category, title, text, surface forms). `tipify()` tags
+  the first mention of each term per card on every render (MutationObserver on `#view`, debounced); `#tipbox` shows it
+  on hover and keyboard focus; elements with `data-tip` show their own text (sidebar, example buttons).
+  Rules: definitions carry **clinical constants only, never dataset counts**; ambiguous words stay out of the surface
+  lists (e.g. "baseline" also means "majority baseline", so only "ghost lane" phrasing is tagged); live readouts
+  (`.livebox`), inputs, canvases, `.mono` and `[data-notip]` are never tagged.
+- **Glossary (`#glossary`)**: every `GLOSS` entry by category, with a filter.
+- **Held-out examples on Analyze**: `train_models.py` exports `testPids`; "Try a real example" loads a recording of a
+  patient the model never saw and shows the expert label beside the model output.
+
 ## No invented content
 There are no treating doctors in the open data, so none are shown. The former Doctors page is **Recording sites**
 (route `#doctors` kept): the three real institutions/devices, with every count, age range, release and diagnosis

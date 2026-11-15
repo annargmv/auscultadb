@@ -31,6 +31,9 @@ What it does:
   pneumonia / bronchitis / asthma / healthy, and adults' healthy / asthma / heart failure) fail it. By the owner's
   choice they still run, as **experimental**: every output is shown with its failed held-out numbers beside it. The file never
   leaves the browser. Rebuild with `npm run build:models`.
+- a **Home** page that tells the project in 30 seconds — live numbers, four clinical questions and a
+  "What you can trust today" table — plus **hover tooltips** on every clinical and statistical term (one glossary,
+  also browsable on the **Glossary** page), and one-click **held-out examples** on the Analyze page.
 - a **Longevity** page: the markers with a published mortality link that sound could carry, how reliably this platform
   measures each one, and the biological-age test. It states plainly that nothing here estimates longevity.
 - an apnea / AHI validation on real nights (Discoveries 12): the page's own flow scoring run unchanged on a pilot of

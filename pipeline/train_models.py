@@ -173,7 +173,8 @@ def train(task, df, feats, classes, rng, meta):
            'majority': prop(int((te.y == tr.y.mode().iloc[0]).sum()), len(te)),
            'range': {f: [None if np.isnan(v) else round(float(v), 4) for v in np.nanpercentile(tr[f].astype(float), [1, 99])] for f in feats},
            'parity': [{'x': [None if (isinstance(v, float) and math.isnan(v)) else float(v) for v in te.loc[i, feats]], 'p': [round(float(q), 9) for q in P[i]]}
-                      for i in range(0, len(te), max(1, len(te) // 25))][:25], **meta}
+                      for i in range(0, len(te), max(1, len(te) // 25))][:25],
+           'testPids': sorted(map(str, te.pid.unique())), **meta}   # who was held out: lets the page demo on unseen patients
     # per patient (average the patient's recordings), where patients have several
     if te.groupby('pid').size().max() > 1:
         g = pd.DataFrame(P).groupby(te.pid.values).mean(); yp = te.groupby('pid').y.first().loc[g.index].values
