@@ -166,6 +166,34 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
 
+    // Home: the 30-second story, every number from the data
+    await pg.goto(url('#home')); await pg.waitForSelector('.hero', { timeout: 30000 }); await pg.waitForTimeout(500);
+    const ho = await pg.evaluate(() => ({ tracks: document.querySelectorAll('.track').length, rows: document.querySelectorAll('#view table tbody tr').length,
+      failed: /failed — experimental/.test(document.body.innerText), validated: /validated/.test(document.body.innerText), pats: +document.querySelector('.kpi b').textContent }));
+    check(ho.tracks === 4 && ho.rows >= 7 && ho.failed && ho.validated && ho.pats === await pg.evaluate(() => __app.patients.length),
+      `home: 4 clinical tracks, trust table of ${ho.rows} capabilities (validated and failed both shown), live patient count`);
+    await pg.screenshot({ path: path.join(OUT, 'home.png'), fullPage: true });
+
+    // Tooltips: terms explain themselves on hover, from one glossary
+    await pg.goto(url('#validation')); await pg.waitForSelector('#v-murmur', { timeout: 30000 }); await pg.waitForTimeout(400);
+    const tp = await pg.evaluate(() => ({ n: document.querySelectorAll('#view .tip').length, keys: [...new Set([...document.querySelectorAll('#view .tip')].map(t => t.dataset.k))] }));
+    await pg.hover('#view .tip[data-k="lrn"]'); await pg.waitForTimeout(250);
+    const box = await pg.evaluate(() => { const b = document.querySelector('#tipbox'); return { on: b.classList.contains('on'), txt: b.innerText } });
+    check(tp.n >= 25 && tp.keys.includes('sens') && tp.keys.includes('auc') && box.on && /odds/.test(box.txt), `tooltips: ${tp.n} terms tagged on the validation page (${tp.keys.length} distinct); hovering LR− explains it`);
+    await pg.screenshot({ path: path.join(OUT, 'tooltip.png') });
+    await pg.goto(url('#glossary')); await pg.waitForSelector('#glList');
+    const gl = await pg.evaluate(() => { const n = document.querySelectorAll('.glrow').length; const q = document.querySelector('#glQ'); q.value = 'hypopnea'; q.dispatchEvent(new Event('input'));
+      return { n, shown: [...document.querySelectorAll('.glrow')].filter(r => r.style.display !== 'none').length } });
+    check(gl.n >= 60 && gl.shown >= 1 && gl.shown < gl.n, `glossary page: ${gl.n} terms, filter narrows to ${gl.shown}`);
+
+    // one-click example on a held-out patient, the expert label shown beside the model
+    await pg.goto(url('#analyze')); await pg.waitForSelector('#exHeart'); await pg.click('#exHeart');
+    await pg.waitForFunction(() => window.__example && window.__analyze && window.__analyze.type === 'heart' && document.querySelector('#ar-0'), null, { timeout: 60000 });
+    const ex = await pg.evaluate(() => ({ ex: window.__example, p: window.__analyze.results[0].p, held: /held out/.test(document.querySelector('#anExample').innerText) }));
+    check(ex.held && ex.ex.truth === 'Murmur' && ex.p, `held-out example ${ex.ex.id}: expert says Murmur, model says ${Math.round(100 * ex.p[1])} % murmur`);
+    await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(300);
+    await pg.screenshot({ path: path.join(OUT, 'analyze-example.png'), fullPage: true });
+
     // no invented people: recording sites come from the datasets, with live counts
     await pg.goto(url('#doctors')); await pg.waitForTimeout(500);
     const rs = await pg.evaluate(() => ({ dr: /\bDr\.|555-01/.test(document.body.innerText), cards: document.querySelectorAll('#view .card').length,

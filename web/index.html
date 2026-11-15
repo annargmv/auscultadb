@@ -186,6 +186,26 @@ footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px
 .ptgrid>div:first-child .kv dt:first-child{margin-top:0}
 .bedside{margin:6px 0 10px;padding-left:20px}
 .vrep td.mono{white-space:nowrap}.bedside li{margin:3px 0}
+.tip{border-bottom:1px dotted currentColor;text-decoration:none;cursor:help;outline:none}
+.tip:hover,.tip:focus{background:var(--accent-soft);border-radius:3px}
+#tipbox{position:fixed;z-index:200;max-width:330px;background:#0e1726;color:#e6ecf5;padding:10px 12px;border-radius:10px;font-size:12.5px;line-height:1.5;
+  box-shadow:0 10px 30px rgba(14,23,38,.28);pointer-events:none;opacity:0;transform:translateY(-2px);transition:opacity .12s,transform .12s;left:-9999px;top:0}
+#tipbox.on{opacity:1;transform:none}
+#tipbox b{display:block;color:#fff;font-size:13px;margin-bottom:3px}
+#tipbox .tipcat{float:right;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#9fb0c9;margin-left:8px}
+.gl{margin:0}.glrow{padding:8px 0;border-bottom:1px solid var(--line)}.glrow:last-child{border-bottom:0}
+.gl dt{font-weight:600;font-size:13.5px}.gl dd{margin:2px 0 0;color:var(--muted);font-size:13px}
+.hero{background:linear-gradient(135deg,#0b1220 0%,#13233f 60%,#0f6fde 140%);color:#e6ecf5;border-radius:18px;padding:28px 30px;box-shadow:var(--shadow)}
+.hero h1{font-size:28px;line-height:1.2;color:#fff;max-width:820px;margin:6px 0 10px}
+.hero p{max-width:760px;margin:0;color:#c3cfe2;font-size:14.5px}
+.hero-k{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#8fb3e8}
+.hero .btn:not(.primary){background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.25);color:#fff}
+.sec{font-size:18px;margin:26px 0 10px}
+.tracks{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.track{display:flex;flex-direction:column;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;color:var(--ink);box-shadow:var(--shadow);transition:transform .12s,box-shadow .12s}
+.track:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(14,23,38,.08)}
+.track h3{margin:2px 0 0;font-size:16px}.track p{margin:0 0 6px;color:var(--muted);font-size:13px}
+.trk-ic{color:var(--accent)}.trk-num{font-size:24px;font-weight:700;letter-spacing:-.02em}.trk-go{margin-top:auto;padding-top:8px;color:var(--accent);font-weight:600;font-size:13px}
 </style>
 </head>
 <body>
@@ -193,15 +213,18 @@ footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px
   <div class="brand"><div class="logo">∿</div><div>AuscultaDB<small>open auscultation research</small></div></div>
   <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search patients…" aria-label="Search patients (name, MRN, diagnosis)"></div>
   <nav>
+    <div class="navlabel">Start</div>
+    <a href="#home" id="nav-home" data-tip="The project in 30 seconds: what it does, live numbers, and what you can trust today."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</a>
     <div class="navlabel">Clinical</div>
-    <a href="#patients" id="nav-patients"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1a4 4 0 0 0-3-3.9M15.5 4.1a3.5 3.5 0 0 1 0 6.8"/></svg>Patients</a>
-    <a href="#analyze" id="nav-analyze"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h3l2-6 4 12 3-9 2 3h6"/></svg>Analyze a recording</a>
-    <a href="#doctors" id="nav-doctors"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-5h4v5"/><path d="M12 8v4M10 10h4"/></svg>Recording sites</a>
-    <div class="navlabel">Research</div>
-    <a href="#discover" id="nav-discover"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>Discoveries</a>
-    <a href="#validation" id="nav-validation"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>Validation</a>
-    <a href="#longevity" id="nav-longevity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>Longevity</a>
-    <a href="#datasets" id="nav-datasets"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Datasets &amp; licences</a>
+    <a href="#patients" id="nav-patients" data-tip="Browse real patients from the open datasets: each with a normal baseline, the current recording, findings and a live player."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 19v-1a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v1"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 19v-1a4 4 0 0 0-3-3.9M15.5 4.1a3.5 3.5 0 0 1 0 6.8"/></svg>Patients</a>
+    <a href="#analyze" id="nav-analyze" data-tip="Upload one breath- or heart-sound recording and see what the validated models say — with how often they are right."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12h3l2-6 4 12 3-9 2 3h6"/></svg>Analyze a recording</a>
+    <a href="#doctors" id="nav-doctors" data-tip="Where each dataset was recorded: institution, stethoscope, ages, releases and diagnoses."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M10 21v-5h4v5"/><path d="M12 8v4M10 10h4"/></svg>Recording sites</a>
+    <div class="navlabel">Evidence</div>
+    <a href="#validation" id="nav-validation" data-tip="How accurate every automatic finding is, written for clinicians: sensitivity, specificity, likelihood ratios with 95 % CIs."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 12l2 2 4-4"/><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/></svg>Validation</a>
+    <a href="#discover" id="nav-discover" data-tip="Cohort-level analyses across the datasets, each labelled as significant, weak or blocked."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-5 3 3 5-7"/></svg>Discoveries</a>
+    <a href="#longevity" id="nav-longevity" data-tip="What sound can and cannot say about lifespan — markers with a published mortality link and how reliably they are measured here."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h4l2-5 4 10 2-5h6"/></svg>Longevity</a>
+    <a href="#datasets" id="nav-datasets" data-tip="Every dataset used, with its licence and citation."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Datasets &amp; licences</a>
+    <a href="#glossary" id="nav-glossary" data-tip="Every clinical and statistical term on the site, in plain words."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"/><path d="M8 8h8M8 12h6"/></svg>Glossary</a>
   </nav>
   <button class="btn primary" id="btnAdd">+ New patient (upload)</button>
   <div class="spacer"></div>
@@ -925,8 +948,10 @@ function play(p, which, from=0, until=null){
    6. Views
    ===================================================================== */
 function route(scroll=true){
-  const h=(location.hash||'#patients').slice(1);
+  const h=(location.hash||'#home').slice(1);
   $('#nav-patients').classList.toggle('active',h==='patients'||h.startsWith('patient-'));
+  $('#nav-home').classList.toggle('active',h==='home');
+  $('#nav-glossary').classList.toggle('active',h==='glossary');
   $('#nav-doctors').classList.toggle('active',h.startsWith('doctor'));
   $('#nav-datasets').classList.toggle('active',h==='datasets');
   $('#nav-validation').classList.toggle('active',h==='validation');
@@ -936,7 +961,9 @@ function route(scroll=true){
   if(scroll===false&&h.startsWith('patient-')&&current&&current.p.id===h.slice(8))return; // do not interrupt an open patient
   stopPlayback(); destroyLive(); if(flowChart){try{flowChart.destroy()}catch(e){}flowChart=null;flowState=null}
   destroyDiscoverCharts();
-  if(h==='datasets')renderDatasets();
+  if(h==='home')renderHome();
+  else if(h==='glossary')renderGlossary();
+  else if(h==='datasets')renderDatasets();
   else if(h==='validation')renderValidation();
   else if(h==='analyze')renderAnalyze();
   else if(h==='longevity')renderLongevity();
@@ -1385,7 +1412,7 @@ function openPatientForm(){
     }catch(err){$('#pfStatus').textContent='Could not decode: '+err.message}};
 }
 $('#btnAdd').onclick=()=>openPatientForm(null);
-$('#q').addEventListener('input',()=>{if(!(location.hash||'#patients').startsWith('#patient-')&&location.hash!=='#doctors')renderPatients();else location.hash='#patients'});
+$('#q').addEventListener('input',()=>{if(location.hash==='#patients')renderPatients();else location.hash='#patients'});
 
 /* =====================================================================
    7. Live player — wavesurfer.js 7 (BSD-3-Clause): scrolling waveform + spectrogram lanes,
@@ -2147,6 +2174,180 @@ async function renderLongevity(){
       <li>A pre-registered analysis: fit on one cohort, test on another, as for the age clock above.</li></ul></div>`;
   destroyDiscoverCharts(); if(A)ageCharts(A);
 }
+/* ---------- Home: the project in 30 seconds, every number from the data ---------- */
+async function renderHome(){
+  $('#view').innerHTML='<div class="empty">Loading…</div>';
+  const get=async u=>{try{return await cachedFetch(u,'json')}catch(e){return null}};
+  const [V,Mo,D]=await Promise.all([get('data/validation.json'),get('data/models.json'),get('data/discover.json')]);
+  if(location.hash!=='#home'&&location.hash!=='')return;
+  window.__DISC=window.__DISC||D; MODELS=MODELS||Mo; VAL=VAL||V;
+  const ready=REAL.status==='ready', nRec=patients.reduce((a,p)=>a+(p.sites?p.sites.length:2),0);
+  const hours=[D&&D.n&&D.n.hours,D&&D.kauh&&D.kauh.n&&D.kauh.n.hours,D&&D.circor&&D.circor.n&&D.circor.n.hours,D&&D.cbemph&&D.cbemph.n&&D.cbemph.n.minutes/60,D&&D.apnea&&D.apnea.channels&&D.apnea.channels.trach&&D.apnea.channels.trach.hours].filter(x=>x>0);
+  const srcs=[...new Set(patients.map(p=>p.source))].filter(k=>SRC_META[k]).map(k=>SRC_META[k].tag).concat(D&&D.cbemph?['CB / emphysema']:[],D&&D.apnea?['PSG-Audio']:[]);
+  const rep=id=>V&&V.reports.find(r=>r.id===id), mod=id=>Mo&&Mo.models.find(m=>m.id===id), met=(r,l)=>r&&r.metrics.find(m=>m.label===l);
+  const mu=rep('murmur'),ap=rep('apnea'),rk=rep('resp_kauh'),rs=rep('resp_spr'),ag=rep('age'),hm=mod('heart_murmur'),ls=mod('lung_sound'),pc=mod('lung_pattern_child'),pa=mod('lung_pattern_adult');
+  const AP=D&&D.apnea&&D.apnea.channels&&D.apnea.channels.trach, AG=D&&D.age;
+  const pill={ok:'<span class="pill ok">validated</span>',lim:'<span class="pill warn">limited</span>',pilot:'<span class="pill warn">pilot</span>',bad:'<span class="pill bad">failed — experimental</span>',no:'<span class="pill">not possible yet</span>'};
+  const trust=[
+    hm&&['Heart','Murmur at a valve — trained model',`held-out AUC ${hm.test.macroAuc}`,hm.gate.deploy?pill.ok:pill.bad,hm.gate.deploy?'Finds most loud murmurs; misses soft ones.':hm.gate.reasons.join('; ')],
+    mu&&['Heart','Murmur — rule-based detector',`LR+ ${mu.lrPos.value} · LR− ${mu.lrNeg.value}`,mu.lrPos.value>=10&&mu.lrNeg.value>0.2?'<span class="pill ok">validated — rule-in only</span>':mu.lrPos.value>=10?pill.ok:pill.lim,mu.verdict],
+    ls&&['Lungs','Breath-sound type (wheeze / crackles) — trained model',`held-out AUC ${ls.test.macroAuc}${ls.external?` · other stethoscope ${ls.external.macroAuc}`:''}`,ls.gate.deploy?pill.ok:pill.bad,'Children best; transfers partly to adults on another device.'],
+    rk&&['Lungs','Adventitious sounds — rule-based, adults',`sens ${met(rk,'Sensitivity').value} % · spec ${met(rk,'Specificity').value} %`,pill.lim,rk.verdict],
+    pc&&['Lungs','Which disease, children — trained model',`held-out AUC ${pc.test.macroAuc}`,pc.gate.deploy?pill.ok:pill.bad,'No better than always answering the commonest diagnosis.'],
+    pa&&['Lungs','Which disease, adults — trained model',`held-out AUC ${pa.test.macroAuc}`,pa.gate.deploy?pill.ok:pill.bad,pa.gate.reasons.join('; ')],
+    ap&&['Sleep','Apnea / hypopnea and AHI, overnight',`finds ${met(ap,'Event sensitivity').value} % of events · AHI bias ${AP&&AP.ahi?AP.ahi.bias:'—'} /h`,pill.pilot,ap.verdict],
+    ag&&['Longevity','Biological-age signal / longevity',AG?`adult age error ${AG.adults.mae} y vs ${AG.adults.maeNull} y guessing`:'—',pill.no,'No open auscultation data follows patients over time.']].filter(Boolean);
+  const track=(icon,title,lead,num,cap,href,cta)=>`<a class="track" href="${href}"><div class="trk-ic">${icon}</div><h3>${title}</h3><p>${lead}</p><div class="trk-num">${num}</div><div class="hint">${cap}</div><span class="trk-go">${cta} →</span></a>`;
+  $('#view').innerHTML=`<div class="hero"><div class="hero-k">Open, real auscultation data · research and teaching</div>
+      <h1>Listen to the chest, measure what is there — and know how far to trust it.</h1>
+      <p>AuscultaDB analyses breath and heart sounds from ${srcs.length} open datasets in the browser, compares each recording with a normal one, and reports every automatic finding with its measured accuracy on patients it never saw.</p>
+      <div class="row" style="gap:10px;margin-top:14px"><a class="btn primary" href="#analyze">Analyze a recording</a><a class="btn" href="#patients">Browse patients</a><a class="btn" href="#validation">How accurate is it?</a></div></div>
+    <div class="kpis" style="margin-top:18px">
+      <div class="kpi" style="--k:var(--ink)"><b>${ready?patients.length:'…'}</b><span>real patients you can open and listen to</span></div>
+      <div class="kpi" style="--k:#0f6fde"><b>${ready?nRec.toLocaleString():'…'}</b><span>recordings on their pages</span></div>
+      <div class="kpi" style="--k:#1f9d55"><b>${hours.length?Math.round(hours.reduce((a,b)=>a+b,0)):'…'} h</b><span>of real audio analysed in all</span></div>
+      <div class="kpi" style="--k:#d6336c"><b>${srcs.length}</b><span>open datasets: ${srcs.map(esc).join(', ')}</span></div></div>
+    <h2 class="sec">Four clinical questions</h2>
+    <div class="tracks">
+      ${track(`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v8"/><path d="M12 12c-1.5 1-3 1-4 0"/><path d="M12 12c1.5 1 3 1 4 0"/><path d="M8 7c-3 1-5 5-5 9 0 2 1 3 3 3 3 0 4-2 4-5V8"/><path d="M16 7c3 1 5 5 5 9 0 2-1 3-3 3-3 0-4-2-4-5V8"/></svg>`,'Lungs','Wheezes and crackles, child and adult, against the patient’s own normal breathing.',ls?`AUC ${ls.test.macroAuc}`:'—','breath-sound type, held-out','#analyze','Try it')}
+      ${track(`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/><path d="M5 12h3l2-3 2 5 2-3h5"/></svg>`,'Heart','Murmurs at the four valve sites, graded against expert annotation.',mu?`LR+ ${mu.lrPos.value}`:'—','a flag is usually right; a miss does not rule out','#validation','See the evidence')}
+      ${track(`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg>`,'Sleep apnea','Apneas and hypopneas from overnight breath sound, scored by AASM rules against a sleep lab.',ap?`${met(ap,'Event sensitivity').value} %`:'—','of scored events found — pilot, under-counts','#discover','See the pilot')}
+      ${track(`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12M6 21h12"/><path d="M7 3c0 5 10 5 10 9s-10 4-10 9"/><path d="M17 3c0 5-10 5-10 9s10 4 10 9"/></svg>`,'Longevity','Which sound markers have a published mortality link, and whether this data can measure them.',AG?`${AG.adults.mae} vs ${AG.adults.maeNull} y`:'—','age error vs guessing: no age signal in adult breath','#longevity','Read the answer')}
+    </div>
+    <h2 class="sec">What you can trust today</h2>
+    <div class="card tablecard vrep"><table><thead><tr><th>Area</th><th>Capability</th><th>Measured on unseen patients</th><th>Status</th><th>Bottom line</th></tr></thead>
+      <tbody>${trust.map(r=>`<tr><td><b>${r[0]}</b></td><td>${esc(r[1])}</td><td class="mono">${esc(r[2])}</td><td>${r[3]}</td><td class="hint">${esc(r[4])}</td></tr>`).join('')}</tbody></table></div>
+    <div class="grid g3" style="margin-top:16px">
+      <div class="card"><h3>Hover to understand</h3><p class="hint" style="margin:0">Any dotted-underlined term — AHI, crackles, LR−, AUC — explains itself. All of them are on the <a href="#glossary">Glossary</a> page.</p></div>
+      <div class="card"><h3>Numbers come with doubt</h3><p class="hint" style="margin:0">Every accuracy figure carries a 95 % confidence interval and says whether its test data were independent of tuning.</p></div>
+      <div class="card"><h3>Red means failed</h3><p class="hint" style="margin:0">Models that did not beat simple guessing are marked as failed. Nothing here is a diagnosis; it is decision support for research and teaching.</p></div></div>`;
+}
+/* ---------- Glossary + hover tooltips ----------
+   One clinical definition per term, written for a physician. tipify() tags the FIRST mention of each term inside
+   every card on every render (a MutationObserver re-runs it), so new content explains itself with no extra markup.
+   Definitions hold clinical constants only — never dataset counts, which live on the pages, computed from the data. */
+const GLOSS={
+ // sleep
+ ahi:{c:'Sleep',t:'AHI — apnea–hypopnea index',d:'Apneas plus hypopneas per hour of sleep. Adults (AASM): under 5 normal, 5–14 mild, 15–29 moderate, 30 or more severe. Children: 1 or more is abnormal; this platform uses 1 / 5 / 10. Needs at least an hour of recording.',s:['AHI']},
+ apnea:{c:'Sleep',t:'Apnea',d:'Airflow falls by at least 90 % from the pre-event baseline for at least 10 s in adults (2 missed breaths in children). From sound alone, obstructive and central apneas cannot be told apart.',s:['apnea','apneas','Apnea','Apneas']},
+ hypopnea:{c:'Sleep',t:'Hypopnea',d:'Airflow falls by at least 30 % for at least 10 s (adults). AASM also requires a 3 % oxygen desaturation or an arousal; with no SpO₂ channel this platform scores the airflow drop only.',s:['hypopnea','hypopneas','Hypopnea','Hypopneas']},
+ obstructive:{c:'Sleep',t:'Obstructive vs central apnea',d:'Obstructive: the upper airway collapses while the chest keeps trying to breathe. Central: the brain stops sending the drive to breathe, so effort stops too. Separating them needs effort belts — breath sound alone cannot.',s:['obstructive','Obstructive','central apnea','Central apnea']},
+ psg:{c:'Sleep',t:'PSG — polysomnography',d:'The overnight sleep-lab study: EEG, airflow, chest and abdominal effort, SpO₂, ECG. The reference standard against which the acoustic AHI is checked.',s:['PSG','polysomnography','polysomnogram','polysomnograms','Polysomnography']},
+ spo2:{c:'Sleep',t:'SpO₂',d:'Oxygen saturation from a pulse oximeter. A drop of 3 % or more (a desaturation) is part of how hypopneas are scored in a sleep lab.',s:['SpO₂','SpO2']},
+ flowproxy:{c:'Sleep',t:'Acoustic flow proxy',d:'Loudness of breath sound in the 150–800 Hz band, used as a stand-in for airflow. It follows breathing but is not a calibrated flow measurement.',s:['flow proxy','Flow proxy']},
+ headroom:{c:'Sleep',t:'Headroom',d:'How far quiet breathing sits above the microphone’s own background noise. When it is small, a 30 % drop in breathing cannot be heard, so hypopneas are missed.',s:['headroom','Headroom']},
+ // lung sounds
+ advent:{c:'Lung sounds',t:'Adventitious sounds',d:'Extra sounds on top of normal breathing: continuous (wheeze, rhonchus, stridor) or discontinuous (crackles).',s:['adventitious','Adventitious']},
+ cas:{c:'Lung sounds',t:'CAS — continuous adventitious sound',d:'Musical sounds lasting more than about 100 ms: wheeze, rhonchus, stridor.',s:['CAS']},
+ das:{c:'Lung sounds',t:'DAS — discontinuous adventitious sound',d:'Crackles: brief, explosive sounds, each under about 20 ms.',s:['DAS']},
+ wheeze:{c:'Lung sounds',t:'Wheeze',d:'Continuous, musical, higher-pitched sound from narrowed airways, classically expiratory. Asthma, COPD, bronchiolitis; a one-sided fixed wheeze suggests a foreign body.',s:['wheeze','wheezes','Wheeze','wheezing']},
+ rhonchus:{c:'Lung sounds',t:'Rhonchus',d:'Low-pitched continuous sound with a snoring quality, usually from secretions in the larger airways; often changes or clears after coughing.',s:['rhonchi','rhonchus','Rhonchi','Rhonchus']},
+ stridor:{c:'Lung sounds',t:'Stridor',d:'Loud, high-pitched, mostly inspiratory sound from upper-airway (larynx, trachea) narrowing. In a child it is urgent: croup, epiglottitis, foreign body.',s:['stridor','Stridor']},
+ crackles:{c:'Lung sounds',t:'Crackles',d:'Short explosive sounds as closed small airways snap open. Fine, late-inspiratory: fibrosis, heart failure, early pneumonia. Coarse, early or expiratory: secretions — bronchitis, bronchiectasis.',s:['crackles','Crackles','crackle','Crackle']},
+ fine:{c:'Lung sounds',t:'Fine crackles',d:'High-pitched, short, late-inspiratory, “Velcro”-like; typical of pulmonary fibrosis and heart failure. Here: two-cycle duration under 6 ms at 8 kHz — a relative measure, not the CORSA cut-off.',s:['fine crackles','Fine crackles','Fine crackle','fine crackle']},
+ coarse:{c:'Lung sounds',t:'Coarse crackles',d:'Lower-pitched, longer, early inspiratory or expiratory; secretions in larger airways — bronchitis, bronchiectasis, pneumonia.',s:['coarse crackles','Coarse crackles','Coarse crackle','coarse crackle']},
+ bronchial:{c:'Lung sounds',t:'Bronchial breathing',d:'Loud, harsh breath sound with a long expiratory phase. Normal over the trachea; over the lung it suggests consolidation, as in pneumonia.',s:['bronchial breathing','Bronchial']},
+ ie:{c:'Lung sounds',t:'I:E ratio',d:'Duration of inspiration to expiration. Normal is about 1:2; expiration lengthens with airway obstruction (asthma, COPD).',s:['I:E']},
+ rr:{c:'Lung sounds',t:'Breathing rate',d:'Breaths per minute. Typical ranges: newborn 30–60, toddler 24–40, school child 18–30, adult 12–20. Short clips give unreliable rates.',s:['breathing rate','Breathing rate','Resp. rate']},
+ centroid:{c:'Lung sounds',t:'Spectral centroid',d:'The “centre of mass” of the sound’s frequencies — higher means brighter. It shifts with age, chest wall and, strongly, with the stethoscope and its filter.',s:['spectral centroid','Spectral centroid']},
+ filter:{c:'Lung sounds',t:'Bell, diaphragm and extended modes',d:'The Littmann 3200’s filters. Bell favours low frequencies (heart sounds, rumbles), diaphragm higher ones (most lung sounds); extended spans both. The same chest sounds different in each.',s:['diaphragm mode','bell mode','filter mode','filter modes']},
+ baseline:{c:'Platform',t:'Baseline and ghost lane',d:'Each recording is compared with a normal one: the child’s own normal site, or a matched healthy control. The ghost lane plays that baseline underneath, aligned breath by breath.',s:['ghost lane','Ghost lane','Baseline ghost','ghost','Ghost']},
+ // diseases
+ pneumonia:{c:'Conditions',t:'Pneumonia',d:'Infection of the lung tissue. Sounds: crackles, bronchial breathing or reduced breath sounds over the affected area — often on one side.',s:['pneumonia','Pneumonia']},
+ asthma:{c:'Conditions',t:'Asthma',d:'Reversible airway narrowing. Sounds: expiratory wheeze and a prolonged expiration, usually on both sides; a silent chest in a severe attack is an emergency.',s:['asthma','Asthma']},
+ copd:{c:'Conditions',t:'COPD',d:'Chronic, largely irreversible airflow limitation — chronic bronchitis and emphysema. Sounds: quiet breathing, prolonged expiration, wheeze, early coarse crackles.',s:['COPD']},
+ emphysema:{c:'Conditions',t:'Emphysema',d:'Destruction of alveolar walls with hyperinflation; breath sounds are quiet and distant.',s:['emphysema','Emphysema']},
+ bronchitis:{c:'Conditions',t:'Bronchitis',d:'Inflammation of the bronchi. Chronic bronchitis: productive cough for 3 months in each of 2 consecutive years. Sounds: rhonchi, coarse crackles.',s:['bronchitis','Bronchitis','chronic bronchitis','Chronic bronchitis']},
+ bronchiolitis:{c:'Conditions',t:'Bronchiolitis',d:'Viral infection of the small airways in infants, often RSV. Sounds: fine crackles and wheeze on both sides.',s:['bronchiolitis','Bronchiolitis']},
+ hf:{c:'Conditions',t:'Heart failure',d:'The heart cannot pump enough, and fluid backs up into the lungs. Sounds: fine crackles at both bases, sometimes wheeze (“cardiac asthma”), an S3 gallop.',s:['heart failure','Heart failure']},
+ fibrosis:{c:'Conditions',t:'Pulmonary fibrosis',d:'Scarring of the lung. Sounds: fine, end-inspiratory “Velcro” crackles at the bases.',s:['fibrosis','Lung fibrosis','lung fibrosis']},
+ effusion:{c:'Conditions',t:'Pleural effusion',d:'Fluid around the lung: reduced or absent breath sounds and dullness to percussion at the base.',s:['pleural effusion','Pleural effusion']},
+ bronchiectasis:{c:'Conditions',t:'Bronchiectasis',d:'Permanently widened airways filled with mucus; coarse crackles that change with coughing.',s:['bronchiectasis','Bronchiectasis','Bronchiectasia']},
+ // heart
+ murmur:{c:'Heart sounds',t:'Murmur',d:'Sound of turbulent blood flow. Systolic (between S1 and S2) or diastolic (after S2). Many systolic murmurs in children are innocent; a diastolic murmur is pathological until proven otherwise.',s:['murmur','murmurs','Murmur','Murmurs']},
+ levine:{c:'Heart sounds',t:'Levine grade I–VI',d:'Murmur loudness. I barely audible · II soft but clear · III moderately loud · IV loud with a palpable thrill · V heard with the stethoscope edge · VI heard with the stethoscope off the chest.',s:['Levine','I/VI','II/VI','III/VI']},
+ s1:{c:'Heart sounds',t:'S1',d:'First heart sound: mitral and tricuspid valves closing at the start of systole.',s:['S1']},
+ s2:{c:'Heart sounds',t:'S2',d:'Second heart sound: aortic and pulmonary valves closing at the end of systole. It normally splits on inspiration.',s:['S2']},
+ s3:{c:'Heart sounds',t:'S3',d:'Low-pitched early-diastolic sound. Normal in children and young adults; in older adults a sign of heart failure (ventricular gallop).',s:['S3']},
+ systole:{c:'Heart sounds',t:'Systole and diastole',d:'Systole: the ventricles contract, from S1 to S2. Diastole: they fill, from S2 to the next S1 — normally the longer phase, but it shortens as heart rate rises.',s:['systole','diastole','systolic','diastolic','Systolic','Diastolic']},
+ holo:{c:'Heart sounds',t:'Holosystolic murmur',d:'Lasts through all of systole, S1 to S2: mitral or tricuspid regurgitation, ventricular septal defect.',s:['Holosystolic','holosystolic']},
+ valves:{c:'Heart sounds',t:'Valve auscultation sites',d:'Aortic: 2nd right intercostal space. Pulmonary: 2nd left. Tricuspid: 4th–5th left, at the sternal border. Mitral: apex, 5th intercostal space, mid-clavicular line.',s:['AV','PV','TV','MV','valve sites','Aortic valve','Pulmonary valve','Tricuspid valve','Mitral valve']},
+ hr:{c:'Heart sounds',t:'Heart rate',d:'Beats per minute. Typical resting ranges: newborn 100–160, toddler 90–150, school child 70–120, adult 60–100.',s:['heart rate','Heart rate']},
+ // statistics
+ sens:{c:'Statistics',t:'Sensitivity',d:'Of the patients who HAVE the finding, the share the test flags. High sensitivity makes a negative result useful for ruling out.',s:['sensitivity','Sensitivity','sens']},
+ spec:{c:'Statistics',t:'Specificity',d:'Of the patients who do NOT have the finding, the share the test leaves unflagged. High specificity makes a positive result useful for ruling in.',s:['specificity','Specificity','spec']},
+ ppv:{c:'Statistics',t:'PPV — positive predictive value',d:'Of the flags, the share that were right. Unlike sensitivity it depends on how common the finding is: the same test has a lower PPV where the condition is rare.',s:['PPV']},
+ npv:{c:'Statistics',t:'NPV — negative predictive value',d:'Of the negative results, the share that were right. Depends on prevalence.',s:['NPV']},
+ prev:{c:'Statistics',t:'Prevalence',d:'How common the finding is in the tested group. PPV and NPV change with it; sensitivity and specificity do not.',s:['prevalence','Prevalence']},
+ lrp:{c:'Statistics',t:'LR+ — positive likelihood ratio',d:'How much a positive result multiplies the odds of the finding. Above 10: large, often decisive. 5–10 moderate, 2–5 small, under 2 barely matters.',s:['LR+']},
+ lrn:{c:'Statistics',t:'LR− — negative likelihood ratio',d:'How much a negative result multiplies the odds. Below 0.1: large, often decisive for ruling out. 0.1–0.2 moderate, 0.2–0.5 small, above 0.5 barely matters.',s:['LR−','LR-']},
+ auc:{c:'Statistics',t:'ROC AUC',d:'Chance that the model scores a random patient WITH the finding above a random one WITHOUT it. 0.5 = coin toss, 0.7 fair, 0.8 good, 0.9 excellent, 1 perfect. Threshold-free.',s:['AUC','ROC AUC','macro AUC','Macro ROC AUC']},
+ ci:{c:'Statistics',t:'95 % confidence interval',d:'The range the true value plausibly lies in, given how many patients were tested. Wide intervals mean the data cannot pin the number down.',s:['95 % CI','CI']},
+ icc:{c:'Statistics',t:'ICC — intraclass correlation',d:'Agreement between two measurements of the same patient. Above 0.75 good, 0.5–0.75 moderate, below 0.5 poor. A marker that disagrees with itself cannot predict anything.',s:['ICC']},
+ heldout:{c:'Statistics',t:'Held-out test',d:'Patients kept aside while the model was built and scored once at the end. Their result is the honest estimate of how the model does on new patients.',s:['held-out','Held-out']},
+ cv:{c:'Statistics',t:'Cross-validation',d:'The training patients are split into folds; each fold is predicted by a model fitted on the others. Used to choose a model without touching the held-out test.',s:['cross-validation','cross-validated','Cross-validation']},
+ calib:{c:'Statistics',t:'Calibration',d:'Whether the stated probabilities can be taken at face value: of the cases called “70 %”, about 70 % should be right.',s:['calibration','Calibration']},
+ brier:{c:'Statistics',t:'Brier score',d:'Average squared error of the predicted probabilities; 0 is perfect. Rewards being both right and appropriately confident.',s:['Brier']},
+ ext:{c:'Statistics',t:'External vs development validation',d:'External: thresholds were fixed before the data were seen — honest. Development: tuned on the same data — optimistic. Pilot: external but small.',s:['external validation','development data','External validation']},
+ rho:{c:'Statistics',t:'Spearman ρ',d:'Rank correlation from −1 to 1: do higher values of one measure go with higher values of the other? 0 means no monotonic relation.',s:['ρ','Spearman']},
+ pval:{c:'Statistics',t:'p-value',d:'How surprising the result would be if there were truly no effect. Below 0.05 is the usual bar; it says nothing about the size of the effect.',s:['p-value','p-values']},
+ ba:{c:'Statistics',t:'Bland–Altman limits of agreement',d:'Mean difference (bias) between two methods, ±1.96 standard deviations: where the error for one patient will fall 95 % of the time.',s:['Bland–Altman','limits of agreement','95 % limits']},
+ fair:{c:'Statistics',t:'Fairness audit',d:'Seismometer’s check: a subgroup’s metric is compared with the largest subgroup’s; outside ×0.80–1.25 it is flagged, outside ×0.67–1.50 it is critical.',s:['Fairness audit','fairness audit']},
+ flag:{c:'Statistics',t:'Flag level',d:'The score above which a model flags a class, fixed on the training patients so that 90 % of training patients WITHOUT the class stay unflagged.',s:['flag level','Flag level']},
+ majority:{c:'Statistics',t:'Majority-class baseline',d:'The accuracy of always answering the most common group. A model that cannot beat it has learnt nothing useful.',s:['commonest class','commonest group']},
+ confound:{c:'Statistics',t:'Confound',d:'A third factor that moves both the sound and the label — here recording batch, age and stethoscope. It can make a model look clever for the wrong reason.',s:['confound','confounded','Confound']},
+ release:{c:'Platform',t:'Release (recording batch)',d:'The batch a recording came from: an SPRSound release, a CirCor screening campaign. Labels and devices drift between batches, a known confound.',s:['release','Release','recording batch']},
+ // longevity
+ rhr:{c:'Longevity',t:'Resting heart rate and mortality',d:'In adult population studies, a higher resting heart rate goes with higher all-cause and cardiovascular mortality (meta-analysis: about 9 % higher risk per 10 bpm). An association, not proof that lowering it helps.',s:['Resting heart rate','resting heart rate']},
+ bioage:{c:'Longevity',t:'Biological-age gap',d:'A model predicts age from a physiological signal; a predicted age above the real one has been linked to mortality for the ECG. No validated auscultation equivalent exists.',s:['biological age','Biological age','Biological-age','biological-age','“Biological age” gap']},
+ hrv:{c:'Longevity',t:'Heart-rate variability',d:'Beat-to-beat variation of the heart rate; lower variability predicts mortality in several populations. It needs minutes of clean beats — seconds-long clips are too short.',s:['heart-rate variability','HRV']},
+};
+const GLOSS_MAP={}; for(const [k,g] of Object.entries(GLOSS))for(const w of g.s)GLOSS_MAP[w]=k;
+const GLOSS_RE=new RegExp('(?<![\\w\\-/])('+Object.keys(GLOSS_MAP).sort((a,b)=>b.length-a.length).map(w=>w.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')).join('|')+')(?![\\w\\-])','g');
+const TIP_SKIP='script,style,textarea,input,select,option,button,canvas,svg,.tip,[data-notip],.livebox,#tipbox,.mono,h1';
+const tipSeen=new WeakMap();
+function tipify(root){
+  if(!root)return;
+  const tw=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode:n=>!n.nodeValue.trim()||(n.parentElement&&n.parentElement.closest(TIP_SKIP))?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT});
+  const nodes=[];let n;while((n=tw.nextNode()))nodes.push(n);
+  for(const node of nodes){
+    const box=node.parentElement.closest('.card,.kpi,.notice,.finding,.sub')||root; let seen=tipSeen.get(box); if(!seen){seen=new Set();tipSeen.set(box,seen)}
+    const txt=node.nodeValue; GLOSS_RE.lastIndex=0; let m, last=0, frag=null;
+    while((m=GLOSS_RE.exec(txt))){const k=GLOSS_MAP[m[1]]; if(!k||seen.has(k))continue; seen.add(k);
+      frag=frag||document.createDocumentFragment(); frag.appendChild(document.createTextNode(txt.slice(last,m.index)));
+      const sp=document.createElement('span'); sp.className='tip'; sp.dataset.k=k; sp.tabIndex=0; sp.textContent=m[1]; frag.appendChild(sp); last=m.index+m[1].length}
+    if(frag){frag.appendChild(document.createTextNode(txt.slice(last))); node.parentNode.replaceChild(frag,node)}
+  }
+}
+(function tipEngine(){
+  const box=document.createElement('div'); box.id='tipbox'; box.setAttribute('role','tooltip'); document.body.appendChild(box);
+  let cur=null;
+  const show=el=>{let h;
+    if(el.dataset.k){const g=GLOSS[el.dataset.k]; if(!g)return; h=`<span class="tipcat">${esc(g.c)}</span><b>${esc(g.t)}</b><div>${esc(g.d)}</div>`}
+    else h=`<div>${esc(el.dataset.tip)}</div>`;
+    box.innerHTML=h; box.classList.add('on'); cur=el;
+    const r=el.getBoundingClientRect(), bw=box.offsetWidth, bh=box.offsetHeight, W=innerWidth, H=innerHeight;
+    let x=Math.min(Math.max(8,r.left+r.width/2-bw/2),W-bw-8), y=r.bottom+8; if(y+bh>H-8)y=r.top-bh-8;
+    box.style.left=x+'px'; box.style.top=Math.max(8,y)+'px'};
+  const hide=()=>{box.classList.remove('on');cur=null};
+  const target=e=>e.target&&e.target.closest&&e.target.closest('.tip,[data-tip]');
+  document.addEventListener('mouseover',e=>{const t=target(e);if(t&&t!==cur)show(t);else if(!t&&cur)hide()});
+  document.addEventListener('focusin',e=>{const t=target(e);if(t)show(t)});
+  document.addEventListener('focusout',hide); window.addEventListener('scroll',hide,true);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')hide()});
+  let pending=null; const view=document.getElementById('view');
+  new MutationObserver(recs=>{
+    if(!recs.some(r=>[...r.addedNodes].some(x=>x.nodeType===1)&&!(r.target.closest&&r.target.closest('[data-notip],.livebox,.tip'))))return;
+    clearTimeout(pending); pending=setTimeout(()=>tipify(view),60)}).observe(view,{childList:true,subtree:true});
+})();
+/* ---------- Glossary page ---------- */
+function renderGlossary(){
+  const cats=[...new Set(Object.values(GLOSS).map(g=>g.c))];
+  $('#view').innerHTML=`<h1>Glossary</h1><p class="sub">Every term the platform uses, in one place. The same definitions appear when you hover a dotted-underlined word anywhere on the site.</p>
+    <div class="filters"><input class="f" id="glQ" placeholder="Filter terms…" style="max-width:320px" data-notip></div>
+    <div class="grid g2" id="glList" data-notip>${cats.map(c=>`<div class="card"><h2>${esc(c)}</h2><dl class="gl">${Object.values(GLOSS).filter(g=>g.c===c).map(g=>`<div class="glrow"><dt>${esc(g.t)}</dt><dd>${esc(g.d)}</dd></div>`).join('')}</dl></div>`).join('')}</div>`;
+  $('#glQ').oninput=e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('#glList .glrow').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?'':'none')};
+}
 /* ---------- Analyze a new recording: the page's own analysis + the trained models (web/data/models.json) ----------
    recordingFeatures / heartFeatures are THE feature definitions: pipeline/precompute.js and circor_validate.js
    computed meta/features/*.jsonl with exactly this code, and pipeline/train_models.py trained on those tables.
@@ -2198,14 +2399,19 @@ async function renderAnalyze(){
       <div><label class="f">Recorded over</label><select class="f" id="anType"><option value="lung">Chest wall — breath sounds</option><option value="heart">Heart valve area — heart sounds</option></select></div>
       <div><label class="f">Site</label><select class="f" id="anSite"></select></div>
       <div><label class="f">Age (years)</label><input class="f" id="anAge" type="number" min="0" max="120" step="0.1" placeholder="e.g. 6"></div>
-      <div style="grid-column:2/5;align-self:end" class="row"><button class="btn primary" id="anGo">Analyze</button><span class="hint" id="anStatus"></span></div></div></div>
+      <div style="grid-column:2/5;align-self:end" class="row"><button class="btn primary" id="anGo">Analyze</button><span class="hint" id="anStatus"></span></div></div>
+      <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span class="hint">No file at hand? Try a real recording from a patient the models <b>never saw</b> during training:</span>
+        <button class="btn small" id="exHeart" data-tip="A held-out child whose expert annotation has a murmur at this valve — compare the model with the expert.">♥ Heart murmur example</button>
+        <button class="btn small" id="exLung" data-tip="A held-out child whose expert label for this site is crackles — compare the model with the expert.">Breath sounds with crackles</button></div></div>
+    <div id="anExample"></div>
     <div id="anOut"></div>
     <h2 style="margin:26px 0 6px;font-size:19px">How the models were validated</h2>
     <p class="sub">Trained on ${Math.round(100*(1-MODELS.testFrac))} % of patients and scored once on the held-out ${Math.round(100*MODELS.testFrac)} % (no patient in both; seed ${MODELS.seed}). The model running here is exactly the one scored. A model is switched on only if, on held-out patients, its macro ROC AUC is at least 0.70, every class beats chance (95 % CI above 0.5), and it beats always answering the commonest class — a gate set after the first training run showed the diagnosis models fail. ${esc(MODELS.engine)}.</p>
     <div class="grid">${MODELS.models.map(modelCard).join('')}</div>`;
   const setSites=()=>{const t=$('#anType').value;$('#anSite').innerHTML=(t==='heart'?HEART_SITES:UP_SITES.map(x=>[x,x])).map(([v,l])=>`<option value="${esc(v)}">${esc(l)}</option>`).join('')};
   $('#anType').onchange=setSites; setSites();
-  $('#anGo').onclick=runAnalyze;
+  $('#anGo').onclick=()=>runAnalyze();
+  $('#exHeart').onclick=()=>loadExample('heart'); $('#exLung').onclick=()=>loadExample('lung');
   anCharts.forEach(c=>{try{c.destroy()}catch(e){}});anCharts=[];
   MODELS.models.forEach(drawModelCharts);
 }
@@ -2234,8 +2440,30 @@ function drawModelCharts(m){const el=$('#mc-'+m.id); if(!el||!window.Chart)retur
     {label:'mean confidence',type:'line',data:b.map(x=>Math.round(1000*x.meanConf)/10),borderColor:'#0e1726',borderDash:[4,3],pointRadius:3}]},
     options:{animation:false,responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'%'}},x:{title:{display:true,text:'model confidence'}}},
       plugins:{legend:{labels:{boxWidth:10}},tooltip:{callbacks:{afterLabel:c=>'n = '+b[c.dataIndex].n}}}}}))}
-async function runAnalyze(){
-  const file=$('#anFile').files[0], type=$('#anType').value, site=$('#anSite').value, age=parseFloat($('#anAge').value), st=$('#anStatus');
+// A real recording of a held-out patient (never seen in training), with the expert's label shown beside the model.
+async function loadExample(kind){
+  const st=$('#anStatus'); if(REAL.status!=='ready'){st.textContent='Recordings are still loading…';return}
+  const m=MODELS.models.find(x=>x.id===(kind==='heart'?'heart_murmur':'lung_sound')), held=new Set(m.testPids||[]);
+  const pidOf=p=>p.name.split('-').slice(1).join('-');
+  const cand=patients.filter(p=>p.age!=null).filter(p=>kind==='heart'?(p.source==='circor'&&p.murmur==='Present'&&p.audible&&held.has(pidOf(p)))
+    :(p.source==='sprsound'&&p.sites.some(x=>x.record==='DAS')&&held.has(pidOf(p)))).sort((a,b)=>a.name.localeCompare(b.name));
+  if(!cand.length){st.textContent='No held-out example among the browsable patients.';return}
+  const p=cand[0], site=kind==='heart'?(p.sites.find(x=>x.loc===p.audible)||p.sites[0]):p.sites.find(x=>x.record==='DAS');
+  st.textContent='Loading the example recording…';
+  try{
+    const buf=await fetchAudioBytes(site.file), name=site.file.split('#')[1];
+    const file=new File([buf],name,{type:'audio/mpeg'});
+    $('#anType').value=kind; $('#anType').onchange(); const opt=[...$('#anSite').options].find(o=>o.value===(kind==='heart'?site.loc:site.site)); if(opt)$('#anSite').value=opt.value;
+    $('#anAge').value=p.age??''; 
+    const truth=kind==='heart'?`expert annotation at this valve: <b>${esc(site.record)}</b>${p.sys&&p.sys.grading?` (grade ${esc(p.sys.grading)}, ${esc((p.sys.timing||'').toLowerCase())})`:''}`:`expert label for this site: <b>${esc(site.record)}</b> — ${esc(site.record==='DAS'?'crackles':site.record)}`;
+    $('#anExample').innerHTML=`<div class="notice" style="margin-top:12px;background:#eef6ff;border-color:#bcd5f6;color:#0b4ea0"><b>Example:</b> ${esc(p.name)}, ${esc(p.ageLabel||'')} — ${esc(kind==='heart'?(HEART_SITES.find(h=>h[0]===site.loc)||[0,site.loc])[1]:site.site)}. This patient was <b>held out</b>: the model never saw them in training. ${truth}. <a href="#patient-${p.id}">Open the patient →</a></div>`;
+    window.__example={id:p.id,kind,truth:site.record};
+    await runAnalyze(file);
+  }catch(e){st.textContent='Could not load the example: '+e.message}
+}
+async function runAnalyze(fileOverride){
+  if(!fileOverride)$('#anExample').innerHTML='';
+  const file=fileOverride||$('#anFile').files[0], type=$('#anType').value, site=$('#anSite').value, age=parseFloat($('#anAge').value), st=$('#anStatus');
   if(!file){st.textContent='Choose a file first.';return} if(!(age>=0)){st.textContent='Enter the age — the models were trained on specific age ranges.';return}
   st.textContent='Decoding and analysing…'; $('#anGo').disabled=true;
   try{
