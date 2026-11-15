@@ -183,6 +183,13 @@ critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Researc
 - **Held-out examples on Analyze**: `train_models.py` exports `testPids`; "Try a real example" loads a recording of a
   patient the model never saw and shows the expert label beside the model output.
 
+## Writing style for site copy (owner, 2026-11-15)
+Plain, factual clinical prose. No slogans, rhetorical questions, aphorisms or asides ("which is the point").
+No novelty claims ("new", "first", "unique") — they cannot be verified; describe the analysis type instead
+(exploratory, hypothesis, replication, validation). Avoid "honest", "simply", "powerful", "seamless", "robust",
+"at a glance", "in 30 seconds". Safety statements stay explicit ("not a diagnosis", "failed validation").
+Text colour `--soft` is kept at ≥ 4.5:1 contrast on every background (WCAG 2.2 AA).
+
 ## No invented content
 There are no treating doctors in the open data, so none are shown. The former Doctors page is **Recording sites**
 (route `#doctors` kept): the three real institutions/devices, with every count, age range, release and diagnosis

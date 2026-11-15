@@ -15,7 +15,7 @@ Agresti–Coull intervals for proportions and Hanley–McNeil intervals for the 
 standard log-method interval (Simel et al. 1991).
 
 How a physician should read "evidence level":
-  external     thresholds were fixed before this dataset was seen — an honest estimate for similar patients
+  external     thresholds were fixed before this dataset was seen; the estimate applies to similar patients
   development  thresholds were tuned on this same dataset — optimistic, expect worse on new patients
   pilot        external but small — direction is informative, the precise number is not
 
@@ -133,7 +133,7 @@ def resp_spr(I):
         'population': {'n': I['validation']['n'], 'text': f'{I["validation"]["n"]} expert-annotated breath events in {I["validation"]["nRec"]} recordings of the {len({r["key"] for r in I["validation"]["rows"]})} browsable SPRSound children (Shanghai Children’s Medical Center, Yunting stethoscope).'},
         'reference': 'Per-event labels (normal, wheeze, rhonchi, stridor, fine/coarse crackle) by SPRSound physicians.',
         'indexTest': 'Automatic tonality (wheeze/rhonchus) and transient (crackle) detectors against the patient’s own normal site, shipped thresholds.',
-        'independence': '<b>Development data:</b> these thresholds were tuned on SPRSound. The figures are optimistic — the KAUH result below is the honest estimate on new patients.',
+        'independence': '<b>Development data:</b> these thresholds were tuned on SPRSound. The figures are optimistic; the KAUH result below estimates performance on new patients.',
         'metrics': metrics + [cas, das], **L, 'subgroups': [],
         'bedside': [per100(metrics[0]['value'], metrics[1]['value']),
                     f'A flag {ri} (LR+ {L["lrPos"]["value"]}); a clean result {ro} (LR− {L["lrNeg"]["value"]}).',
