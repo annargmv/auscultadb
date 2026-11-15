@@ -81,6 +81,22 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(await pg.evaluate(() => document.querySelectorAll('canvas').length) >= 4, 'discoveries charts rendered');
     const h = await pg.evaluate(() => { const c = document.querySelector('#d-heart'); return c && { chart: !!c.querySelector('#c-heart'), rows: c.querySelectorAll('table tr').length } });
     check(h && h.chart && h.rows > 5, `cardiac validation section rendered (${h ? h.rows : 0} rows, grade chart ${h && h.chart})`);
+    // The home trust table must not claim performance a model was never measured on. The trained
+    // murmur model has no grade subgroup, so a loud-vs-soft claim there would be borrowed from the
+    // rule-based detector, which is a different model.
+    await pg.goto(url('')); await pg.waitForTimeout(1200);
+    const trust = await pg.evaluate(async () => {
+      const M = await (await fetch('data/models.json')).json();
+      const ms = M.models || M; const list = Array.isArray(ms) ? ms : Object.values(ms);
+      const hm = list.find(x => x && x.id === 'heart_murmur');
+      // look for a real murmur-GRADE subgroup (Levine I/VI..VI/VI), not the substring "grad"
+      // — "gradient boosting" is the model name and made this check vacuous.
+      const hasGrade = !!(hm && /\b(I{1,3}|IV|V|VI)\/VI\b/.test(JSON.stringify(hm)));
+      const row = [...document.querySelectorAll('#view table tr')].find(t => /trained model/.test(t.textContent) && /Murmur at a valve/.test(t.textContent));
+      return { hasGrade, txt: row ? row.textContent.replace(/\s+/g, ' ') : null };
+    });
+    check(trust.txt && (trust.hasGrade || !/loud|soft|grade I|III\/VI/i.test(trust.txt)),
+      `home trust table claims no grade performance the murmur model lacks (grade data: ${trust.hasGrade})`);
     // the validation summary must never print a metric under the wrong column heading
     await pg.goto(url('#validation')); await pg.waitForTimeout(1200);
     const vs = await pg.evaluate(() => {

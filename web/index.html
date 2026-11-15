@@ -2189,7 +2189,14 @@ async function renderHome(){
   const AP=D&&D.apnea&&D.apnea.channels&&D.apnea.channels.trach, AG=D&&D.age;
   const pill={ok:'<span class="pill ok">validated</span>',lim:'<span class="pill warn">limited</span>',pilot:'<span class="pill warn">pilot</span>',bad:'<span class="pill bad">failed — experimental</span>',no:'<span class="pill">not possible yet</span>'};
   const trust=[
-    hm&&['Heart','Murmur at a valve — trained model',`held-out AUC ${hm.test.macroAuc}`,hm.gate.deploy?pill.ok:pill.bad,hm.gate.deploy?'Finds most loud murmurs; misses soft ones.':hm.gate.reasons.join('; ')],
+    hm&&['Heart','Murmur at a valve — trained model',`held-out AUC ${hm.test.macroAuc}`,hm.gate.deploy?pill.ok:pill.bad,hm.gate.deploy?(()=>{
+      // Derive the bottom line from what THIS model actually measured. It was never evaluated by
+      // murmur grade — there is no grade subgroup in models.json — so the loud/soft split that
+      // holds for the rule-based detector (grade I/VI 18 % vs III/VI 89 %, Discoveries 13) must
+      // not be asserted of it. Report its own murmur-class recall and precision instead.
+      const mc=(hm.test.perClass||[]).find(c=>/murmur/i.test(c.class)&&!/no /i.test(c.class));
+      return mc?`Flags ${Math.round(mc.sens.value)} % of murmur recordings; ${Math.round(mc.ppv.value)} % of its flags are right. Not evaluated by murmur grade.`
+               :'Validated on held-out patients; not evaluated by murmur grade.';})():hm.gate.reasons.join('; ')],
     mu&&['Heart','Murmur — rule-based detector',`LR+ ${mu.lrPos.value} · LR− ${mu.lrNeg.value}`,mu.lrPos.value>=10&&mu.lrNeg.value>0.2?'<span class="pill ok">validated — rule-in only</span>':mu.lrPos.value>=10?pill.ok:pill.lim,mu.verdict],
     ls&&['Lungs','Breath-sound type (wheeze / crackles) — trained model',`held-out AUC ${ls.test.macroAuc}${ls.external?` · other stethoscope ${ls.external.macroAuc}`:''}`,ls.gate.deploy?pill.ok:pill.bad,'Children best; transfers partly to adults on another device.'],
     rk&&['Lungs','Adventitious sounds — rule-based, adults',`sens ${met(rk,'Sensitivity').value} % · spec ${met(rk,'Specificity').value} %`,pill.lim,rk.verdict],
