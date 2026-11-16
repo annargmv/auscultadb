@@ -421,7 +421,10 @@ arousal channel exists; Levine I–VI used properly.
 - The artifact hosts at most **512 files**.
 - One publish call takes **≤256 paths** (files + removals) and **≤64 MB**.
 - Only text and HTML/JSON extensions are served (no `.bin`, no `.mp3`), which is why audio is base64 JSON and the analysis is sharded.
-- Existing artifact: claude.ai/artifact/JawqvH3vX7cXXqbo94SXDB (slug `8e68b339-2080-481b-822f-6581919abf92`).
+- Current artifact: claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW (published 2026-11-16 from `web/`, all 451 files: page, 27 data
+  files, 423 audio bundles; 4 publishes of ≤ 58 MB). Republish the same way after data changes.
+- Older artifact claude.ai/artifact/JawqvH3vX7cXXqbo94SXDB (slug `8e68b339-2080-481b-822f-6581919abf92`) holds a
+  pre-CirCor build from before the first commit; it is stale and was left untouched.
 - Publish `web/` only. Never publish `raw/`, `build/`, `meta/` or `tests/`.
 
 ## Cloud environment
