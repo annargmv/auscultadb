@@ -197,8 +197,21 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       'same clip at age 40: children\'s pattern model refused by age, adults\' model ran (experimental)');
     await pg.fill('#anAge', String(lungClip.age)); await pg.click('#anGo');
     await pg.waitForFunction(a => window.__analyze && window.__analyze.age === a && document.querySelector('#ar-0'), lungClip.age, { timeout: 60000 });
+    // ICBHI-trained models: per-cycle sound probabilities, illness models only if they passed their gate, a clinical summary
+    await pg.waitForFunction(() => document.querySelector('#icbhiCard') && document.querySelector('#icNote').textContent.length > 50, null, { timeout: 30000 });
+    const ic = await pg.evaluate(() => { const S = ICBHI.models.find(m => m.id === 'icbhi_sound'); let mx = 0;
+      S.parity.forEach(v => modelProba(S, v.x).forEach((q, k) => { mx = Math.max(mx, Math.abs(q - v.p[k])) }));
+      return { mx, n: window.__analyze.icbhi.nCycles, ill: window.__analyze.icbhi.ill, gates: Object.fromEntries(ICBHI.models.filter(m => m.unit === 'recording').map(m => [m.id, m.gate.deploy])),
+               note: document.querySelector('#icNote').textContent, chart: !!document.querySelector('#c-icCyc'), txt: document.querySelector('#icbhiCard').innerText } });
+    check(ic.mx < 1e-6 && ic.n > 0 && ic.chart && ic.ill.every(r => r.run === (r.inAge && ic.gates[r.id]) && (r.p != null) === r.run)
+      && /not a diagnosis/.test(ic.note) && /Bohadana 2014/.test(ic.txt) && (Object.values(ic.gates).some(Boolean) || /failed validation — not run/.test(ic.txt)),
+      `ICBHI models on the upload: ${ic.n} breath cycles scored, page = scikit-learn (max |Δp| ${ic.mx.toExponential(1)}); illness models follow their gate (${Object.entries(ic.gates).map(([k, v]) => k + (v ? ' on' : ' off')).join(', ')}); clinical summary written`);
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
+    // datasets page: ICBHI listed with its licence and the no-audio rule
+    await pg.goto(url('#datasets')); await pg.waitForFunction(() => /ICBHI 2017 Respiratory Sound Database \(Rocha/.test(document.body.innerText), null, { timeout: 15000 });
+    check(await pg.evaluate(() => /no ICBHI audio is published on this site/.test(document.body.innerText) && /1361-6579\/ab03ea/.test(document.body.innerText)), 'datasets page lists ICBHI with its licence, DOI and the no-audio rule');
+    await pg.goto(url('#analyze')); await pg.waitForSelector('#anFile');
 
     // Home: the 30-second story, every number from the data
     await pg.goto(url('#home')); await pg.waitForSelector('.hero', { timeout: 30000 }); await pg.waitForTimeout(500);

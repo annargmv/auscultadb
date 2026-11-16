@@ -25,7 +25,8 @@
     "validate:circor": "node pipeline/circor_validate.js",
     "build:merge": "python3 pipeline/merge.py",
     "build:discover": "python3 pipeline/discover.py && python3 pipeline/person_probe.py && python3 pipeline/kauh_discover.py && python3 pipeline/circor_discover.py && python3 pipeline/cbemph_discover.py && python3 pipeline/age_discover.py && python3 pipeline/merge.py --bump",
-    "build": "npm run build:index && npm run build:kauh && npm run build:circor && npm run build:cbemph && npm run build:audio && npm run build:precompute && npm run build:merge && npm run build:discover"
+    "build": "npm run build:index && npm run build:kauh && npm run build:circor && npm run build:cbemph && npm run build:audio && npm run build:precompute && npm run build:merge && npm run build:discover",
+    "build:icbhi": "python3 pipeline/icbhi_prep.py && node pipeline/icbhi_features.js && python3 pipeline/train_icbhi.py && python3 pipeline/clinical_validation.py && python3 pipeline/merge.py --bump"
   },
   "devDependencies": {
     "chart.js": "4.6.1",
