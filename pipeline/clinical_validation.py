@@ -227,9 +227,46 @@ def age(D):
         'verdict': 'No clinical meaning; research only.'}
 
 
+PLURAL = {'Neonate': 'neonates', 'Infant': 'infants', 'Child': 'children', 'Adolescent': 'adolescents'}
+
+
 def hrv(D):
     H = D.get('hrv')
     if not H or not H.get('agreement'): return None
+    G = H.get('segmenter')
+    if not G or not G.get('agreement'): return hrv_detector(H)
+    g = G['agreement']; P = G.get('paired', {}); d, s = G['det'], G['seg']; rep = H.get('repeatability', {})
+    return {
+        'id': 'hrv', 'title': 'Heart-rate variability (RMSSD) from heart sounds', 'discover': 'd-age', 'evidence': 'external',
+        'question': 'Can beat-to-beat variability be measured from a heart-sound recording as accurately as from hand-marked beats?',
+        'intendedUse': 'Research: a candidate longevity-related marker. Shown on pages only if it agrees with expert-marked beats on patients the beat finder never saw (pre-set rule: ICC ≥ 0.75 and |bias| ≤ 10 ms).',
+        'population': {'n': g['n'], 'text': f"{G['n']['recordings']:,} expert-annotated CirCor recordings from {G['n']['patients']} held-out children and adolescents (Brazil) — the same held-out patients the murmur model is scored on; {g['n']:,} had enough clean beats for RMSSD from both the beat finder and the experts."},
+        'reference': 'RMSSD computed from the S1 onsets the CirCor annotators marked in the .tsv segmentation, on the same annotated stretch and with the same artefact rule (intervals within 20 % of the median).',
+        'indexTest': (f"RMSSD from the S1 onsets of a learned beat finder: band energies every 10 ms, a gradient-boosted frame classifier (S1 / systole / S2 / diastole) and a cyclic duration model, "
+                      f"trained on {G['trained']['recordings']:,} recordings of the other CirCor patients. At least 8 successive differences required (Munoz 2015)."),
+        'independence': 'External: trained only on other patients, settings fixed before scoring, the pass rule written before the first HRV result. The previous beat finder had already failed the rule on all recordings.',
+        'metrics': [], 'subgroups': [],
+        'extra': [{'label': 'Agreement with expert-marked beats (ICC 2,1)', 'value': g['icc'], 'lo': g['iccCI'][0], 'hi': g['iccCI'][1], 'n': g['n'], 'explain': f"required ≥ {H['rule']['iccMin']}; 0.75 is “good” agreement"},
+                  {'label': 'Mean bias, beat finder − experts (ms)', 'value': g['bias'], 'lo': g['loa'][0], 'hi': g['loa'][1], 'n': g['n'], 'explain': f"95 % limits of agreement; {g['within10ms']} % of recordings within ±10 ms"},
+                  {'label': 'Previous beat finder on the same recordings (ICC)', 'value': P.get('det', {}).get('icc'), 'lo': (P.get('det', {}).get('iccCI') or [None])[0], 'hi': (P.get('det', {}).get('iccCI') or [None, None])[1], 'n': P.get('det', {}).get('n'),
+                   'explain': f"learned finder on these {P.get('seg', {}).get('n')} recordings: ICC {P.get('seg', {}).get('icc')}"},
+                  {'label': 'Expert S1 sounds found within ±50 ms (%)', 'value': s['s1Sens'], 'lo': None, 'hi': None, 'n': s['tp'] + s['fn'],
+                   'explain': f"{s['s1Ppv']} % of detected S1 are real; median timing error {s['medAbsErrMs']} ms. Previous finder: {d['s1Sens']} % found, {d['s1Ppv']} % real"},
+                  {'label': 'Heart rate agreement (ICC)', 'value': s.get('hr', {}).get('icc'), 'lo': None, 'hi': None, 'n': s.get('hr', {}).get('n'), 'explain': f"bias {s.get('hr', {}).get('bias')} bpm; {s.get('hr', {}).get('within5bpm')} % within ±5 bpm"}]
+                 + [{'label': f"Age band {b['band']}: agreement (ICC)", 'value': b['icc'], 'lo': None, 'hi': None, 'n': b['n'],
+                     'explain': f"bias {b['bias']} ms, limits {b['loa'][0]} to {b['loa'][1]} — {'shown' if b['pass'] else 'below the rule, not shown'}"} for b in G.get('byBand', [])],
+        'bedside': [f"On children it never saw, the learned beat finder’s RMSSD agrees with RMSSD from hand-marked beats at ICC {g['icc']}; one recording can still differ from it by {g['loa'][0]:.0f} to +{g['loa'][1]:.0f} ms.",
+                    f"It finds {s['s1Sens']:.0f} of 100 expert-marked first heart sounds within 50 ms (previous finder: {d['s1Sens']:.0f}).",
+                    f"Shown for {' and '.join(PLURAL.get(b, b) for b in G['showBands'])}; " + ', '.join(f"{PLURAL.get(b['band'], b['band'])} (ICC {b['icc']}, n {b['n']})" for b in G.get('byBand', []) if not b['pass']) + ' did not pass and get no number.' if G['pass'] else '<b>HRV is not shown.</b>'],
+        'limits': ['Children and adolescents only; the mortality evidence for HRV is from older adults, and no dataset here links HRV to outcome.',
+                   'Clips of 5–65 s: RMSSD only; SDNN needs 30 s or more of clean beats.',
+                   f"The experts’ own RMSSD repeats across two valves of the same child at ICC {rep.get('expert', {}).get('icc')}: short clips limit even perfect beat marking.",
+                   'Validated on the original WAV files; uploads that are compressed were not tested for HRV.',
+                   'In the Framingham cohort the predictive HRV measures were SDNN and spectral power, not RMSSD (Tsuji 1994).'],
+        'verdict': ('Passed its pre-set agreement rule on held-out patients; measurement only, no clinical claim.' if G['pass'] else 'Failed its pre-set agreement rule — not shown.')}
+
+
+def hrv_detector(H):
     g = H['agreement']; rep = H.get('repeatability', {}); hr = H.get('hrAgreement', {})
     return {
         'id': 'hrv', 'title': 'Heart-rate variability (RMSSD) from heart sounds', 'discover': 'd-age', 'evidence': 'external',

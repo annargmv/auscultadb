@@ -53,6 +53,55 @@ def boot(f, n, B=2000, seed=20261116):
     return [round(float(np.percentile(v, 2.5)), 3), round(float(np.percentile(v, 97.5)), 3)] if v else None
 
 
+def agree(a, b):
+    a = np.asarray(a, float); b = np.asarray(b, float); d = a - b; icc = icc21(a, b)
+    return {'n': int(len(a)), 'icc': round(icc, 3), 'iccCI': boot(lambda i: icc21(a[i], b[i]), len(a)), 'bias': round(float(d.mean()), 1),
+            'loa': [round(float(d.mean() - 1.96 * d.std(ddof=1)), 1), round(float(d.mean() + 1.96 * d.std(ddof=1)), 1)],
+            'within10ms': round(100 * float(np.mean(np.abs(d) <= 10)), 1), 'pass': bool(icc >= ICC_MIN and abs(d.mean()) <= BIAS_MAX)}
+
+
+def segmenter_section():
+    """Learned segmenter (train_segmenter.py) vs the shipped beat finder, scored on the HELD-OUT patients only
+    (meta/features/seg_validate.jsonl). Same pass rule, unchanged. Recordings where both methods AND the experts give an
+    RMSSD are compared, so both methods are judged on identical recordings."""
+    f = FEATURES / 'seg_validate.jsonl'
+    if not f.exists(): return None
+    R = [json.loads(l) for l in open(f)]; R = [r for r in R if 'err' not in r]
+    M = json.load(open(WEB_DATA / 'segmenter.json'))
+    o = {'what': 'Learned S1/S2 segmenter vs the shipped beat finder, held-out CirCor patients only (never used in training)',
+         'trained': M.get('train'), 'tolMs': 50, 'n': {'recordings': len(R), 'patients': len({r['pid'] for r in R})}}
+    for k, key in (('det', 'mDet'), ('seg', 'mSeg')):
+        tp = sum(r[key]['tp'] for r in R); fn = sum(r[key]['fn'] for r in R); fp = sum(r[key]['fp'] for r in R)
+        err = np.array([e for r in R for e in r[key]['err']]) if tp else np.array([0.0])
+        o[k] = {'s1Sens': round(100 * tp / max(1, tp + fn), 1), 's1Ppv': round(100 * tp / max(1, tp + fp), 1), 'tp': tp, 'fn': fn, 'fp': fp,
+                'medAbsErrMs': round(float(np.median(np.abs(err))), 1), 'medErrMs': round(float(np.median(err)), 1),
+                'coverage': round(100 * sum(1 for r in R if r['hrv' + k.capitalize()]['rmssd'] is not None) / max(1, len(R)), 1)}
+        hb = [r for r in R if r['hrv' + k.capitalize()]['hr'] and r['hrvExp']['hr']]
+        if len(hb) >= 20:
+            x = np.array([r['hrv' + k.capitalize()]['hr'] for r in hb]); y = np.array([r['hrvExp']['hr'] for r in hb])
+            o[k]['hr'] = {'n': len(hb), 'icc': round(icc21(x, y), 3), 'bias': round(float((x - y).mean()), 1), 'within5bpm': round(100 * float(np.mean(np.abs(x - y) <= 5)), 1)}
+    both = [r for r in R if r['hrvDet']['rmssd'] is not None and r['hrvSeg']['rmssd'] is not None and r['hrvExp']['rmssd'] is not None]
+    segAll = [r for r in R if r['hrvSeg']['rmssd'] is not None and r['hrvExp']['rmssd'] is not None]
+    if len(both) >= 20:
+        o['paired'] = {'det': agree([r['hrvDet']['rmssd'] for r in both], [r['hrvExp']['rmssd'] for r in both]),
+                       'seg': agree([r['hrvSeg']['rmssd'] for r in both], [r['hrvExp']['rmssd'] for r in both])}
+    if len(segAll) >= 20:
+        o['agreement'] = agree([r['hrvSeg']['rmssd'] for r in segAll], [r['hrvExp']['rmssd'] for r in segAll])
+        o['agreement']['points'] = [[r['hrvExp']['rmssd'], r['hrvSeg']['rmssd']] for r in segAll][:1500]
+        by = []
+        for band in BANDS:
+            B = [r for r in segAll if r['ageBand'] == band]
+            if len(B) >= 20: by.append({'band': band, **{k: v for k, v in agree([r['hrvSeg']['rmssd'] for r in B], [r['hrvExp']['rmssd'] for r in B]).items() if k != 'iccCI'}})
+        o['byBand'] = by
+    o['pass'] = bool(o.get('agreement', {}).get('pass'))
+    # shown only in the age bands that pass on their own (>= 20 held-out recordings); others say why
+    o['showBands'] = [b['band'] for b in o.get('byBand', []) if b['pass']] if o['pass'] else []
+    fc = FEATURES / 'seg_cohort.jsonl'
+    if o['pass'] and fc.exists():   # whole-recording values for the browsable patients (original WAV), read by patient pages
+        o['perRecording'] = {r['name']: {k: r['hrvSeg'].get(k) for k in ('rmssd', 'hr', 'n', 'cleanFrac', 'sdnn')} for r in map(json.loads, open(fc))}
+    return o
+
+
 def main():
     R = [json.loads(l) for l in open(FEATURES / 'circor_ext.jsonl')]; R = [r for r in R if 'err' not in r]
     ann = [r for r in R if r.get('hrvExp')]
@@ -102,6 +151,8 @@ def main():
     names = {st['name'] for p in C for st in p['sites'].values()}
     out['perRecording'] = {r['name']: {'rmssd': r['hrvAll']['rmssd'], 'hr': r['hrvAll']['hr'], 'n': r['hrvAll']['n'], 'cleanFrac': r['hrvAll'].get('cleanFrac')}
                            for r in R if r['name'] in names}
+    seg = segmenter_section()
+    if seg: out['segmenter'] = seg
     DJ = WEB_DATA / 'discover.json'; disc = json.load(open(DJ)); disc['hrv'] = out
     DJ.write_text(json.dumps(disc, separators=(',', ':')))
     g = out.get('agreement', {})
@@ -110,6 +161,11 @@ def main():
     print(f"HR agreement {out.get('hrAgreement')}")
     print(f"repeatability across valves {rep}")
     print(f"PASS (ICC >= {ICC_MIN} and |bias| <= {BIAS_MAX} ms): {out['pass']}")
+    if seg:
+        print(f"SEGMENTER held-out {seg['n']}: S1 sens/PPV det {seg['det']['s1Sens']}/{seg['det']['s1Ppv']} seg {seg['seg']['s1Sens']}/{seg['seg']['s1Ppv']}")
+        print(f"  RMSSD paired det {seg.get('paired', {}).get('det')}\n  RMSSD paired seg {seg.get('paired', {}).get('seg')}")
+        print(f"  segmenter all {({k: v for k, v in seg.get('agreement', {}).items() if k != 'points'})}  PASS {seg['pass']}")
+        print(f"  by band {seg.get('byBand')}  shown for {seg.get('showBands')}, cohort values {len(seg.get('perRecording', {}))}")
     print('-> discover.json[hrv]   (then merge.py --bump)')
 
 
