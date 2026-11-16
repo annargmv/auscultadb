@@ -49,6 +49,9 @@ What it does:
   General Hospital, Athens. Read from the public Hugging Face mirror `dust-systems/psg-audio`. Rebuild with `npm run build:apnea`
   (downloads ~0.7 GB per patient-hour, keeps only the two microphones at 8 kHz in `raw/psg_audio/`). **No PSG-Audio audio is
   published** — overnight bedroom audio can contain speech; only the statistics reach `web/`.
+- a **Batch analysis** page: many recordings analysed at once in the browser; with a labels CSV it measures each validated
+  model on your own recordings (sensitivity, specificity, PPV/NPV, likelihood ratios, AUC with 95 % CIs, per patient when
+  IDs are given) and writes each number out in words, including the post-test probability for a chosen pre-test estimate.
 - models trained on **ICBHI 2017** (Rocha et al., *Physiol Meas* 2019): a breath-cycle sound model (normal / crackles /
   wheezes / both) and illness-pattern models inside each age group, run on the Analyze page with a plain-language
   explanation and a copyable clinical summary. Illness models run only if they pass the same gate as the other models,

@@ -209,6 +209,30 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
     await (await pg.$('#icbhiCard')).screenshot({ path: path.join(OUT, 'analyze-icbhi.png') });
+    // batch analysis + local validation: 20 real CirCor valve recordings with a labels file (10 murmur, 10 without)
+    {
+      const I = JSON.parse(fs.readFileSync(path.join(ROOT, 'web', 'data', 'index.json'))); const pos = [], neg = [];
+      for (const p of I.patients.filter(p => p.src === 'circor')) for (const st of p.sites) {
+        if (st.record === 'Murmur' && pos.length < 10) pos.push({ p, st }); else if (st.record === 'Normal' && p.murmur === 'Absent' && neg.length < 10) neg.push({ p, st }) }
+      const files = [], csv = ['file,label,type,age'];
+      for (const { p, st } of [...pos, ...neg]) { const [file, name] = st.file.split('#'); const f = path.join(tmp, 'b_' + name);
+        fs.writeFileSync(f, Buffer.from(JSON.parse(fs.readFileSync(path.join(ROOT, 'web', file)))[name], 'base64')); files.push(f);
+        csv.push(`${'b_' + name},${st.record === 'Murmur' ? 'murmur' : 'no murmur'},heart,${p.age ?? 6}`) }
+      const lab = path.join(tmp, 'labels.csv'); fs.writeFileSync(lab, csv.join('\n'));
+      await pg.goto(url('#batch')); await pg.waitForSelector('#bFiles');
+      await pg.setInputFiles('#bFiles', files); await pg.setInputFiles('#bLabels', lab); await pg.click('#bGo');
+      await pg.waitForFunction(() => window.__batch && window.__batch.done, null, { timeout: 180000 });
+      const b = await pg.evaluate(() => ({ q: window.__batch.questions, txt: document.querySelector('#bOut').innerText, csv: batchCsv().split('\n').length, sum: document.querySelector('#bSum').textContent }));
+      const mq = b.q.find(q => q.id === 'murmur');
+      check(b.q.length === 1 && mq && mq.enough && mq.P === 10 && mq.N === 10 && /Of 100 recordings with a murmur, it flags about/.test(b.txt) && /LR\+/.test(b.txt)
+        && /before listening/.test(b.txt) && /Compared with/.test(b.txt) && /Counted per recording/.test(b.txt) && b.csv === 21 && /not a diagnosis/.test(b.sum),
+        `batch: 20 labelled CirCor recordings analysed; murmur accuracy measured (10 with / 10 without) and put into words; CSV has ${b.csv - 1} rows`);
+      await pg.screenshot({ path: path.join(OUT, 'batch.png'), fullPage: true });
+      await pg.setInputFiles('#bFiles', files.slice(0, 4)); await pg.evaluate(() => { window.__batch = null }); await pg.click('#bGo');
+      await pg.waitForFunction(() => window.__batch && window.__batch.done, null, { timeout: 120000 });
+      const s2 = await pg.evaluate(() => document.querySelector('#bOut').innerText);
+      check(/Too few cases to measure/.test(s2) && !/Of 100 recordings with a murmur/.test(s2), 'batch with too few labelled cases shows no percentages and says why');
+    }
     // datasets page: ICBHI listed with its licence and the no-audio rule
     await pg.goto(url('#datasets')); await pg.waitForFunction(() => /ICBHI 2017 Respiratory Sound Database \(Rocha/.test(document.body.innerText), null, { timeout: 15000 });
     check(await pg.evaluate(() => /no ICBHI audio is published on this site/.test(document.body.innerText) && /1361-6579\/ab03ea/.test(document.body.innerText)), 'datasets page lists ICBHI with its licence, DOI and the no-audio rule');
