@@ -290,10 +290,78 @@ def hrv_detector(H):
         'verdict': 'Failed its pre-set agreement rule — not shown.' if not H['pass'] else 'Passed its pre-set agreement rule.'}
 
 
+# ------------------------------------------------------------------------------------ ICBHI 2017 (research licence)
+ICBHI_CITE = 'Rocha BM et al., Physiol Meas 2019;40:035001 (PMID 30708353)'
+
+
+def icbhi_rules():
+    """The SHIPPED crackle / wheeze rules scored on held-out ICBHI cycles: external (thresholds fixed before ICBHI)."""
+    f = WEB_DATA / 'icbhi_models.json'
+    if not f.exists(): return None
+    M = json.load(open(f)); S = next(m for m in M['models'] if m['id'] == 'icbhi_sound'); R = S['rules']
+    c, w = R['crackles'], R['wheezes']; tp, P = c['sens']['k'], c['sens']['n']; tn, N = c['spec']['k'], c['spec']['n']
+    metrics, L = two_by_two(tp, P - tp, N - tn, tn, 'breath cycles with crackles', 'breath cycles')
+    ri, ro = lr_words(L)
+    sub = [{'group': 'Wheeze rule (same cycles)', 'rows': [{**prop(w['sens']['k'], w['sens']['n'], 'wheezes'), 'kind': 'sensitivity', 'spec': prop(w['spec']['k'], w['spec']['n'], 'wheezes')}]},
+           {'group': 'ICBHI-trained sound model on the same cycles (threshold 0.5)', 'rows': [
+               {**prop(S['rules']['model']['crackles']['sens']['k'], S['rules']['model']['crackles']['sens']['n'], 'crackles'), 'kind': 'sensitivity', 'spec': prop(S['rules']['model']['crackles']['spec']['k'], S['rules']['model']['crackles']['spec']['n'], 'crackles')},
+               {**prop(S['rules']['model']['wheezes']['sens']['k'], S['rules']['model']['wheezes']['sens']['n'], 'wheezes'), 'kind': 'sensitivity', 'spec': prop(S['rules']['model']['wheezes']['spec']['k'], S['rules']['model']['wheezes']['spec']['n'], 'wheezes')}]}]
+    return {
+        'id': 'resp_icbhi', 'title': 'Crackle / wheeze detectors per breath cycle — ICBHI 2017', 'discover': None, 'evidence': 'external',
+        'question': 'Does this breath cycle contain crackles (or wheezes)?',
+        'intendedUse': 'Research and teaching only.',
+        'population': {'n': S['nTestCycles'], 'text': f"{S['nTestCycles']:,} expert-annotated breath cycles from {S['nTestPatients']} held-out ICBHI patients (children and adults, Portugal and Greece; four stethoscopes/microphones). Diagnoses: COPD, bronchiectasis, pneumonia, bronchiolitis, URTI, healthy. {ICBHI_CITE}."},
+        'reference': 'Per-cycle crackle and wheeze labels from the ICBHI respiratory experts (start and end of every cycle annotated).',
+        'indexTest': 'The shipped rules, unchanged: any crackle candidate (transient above the half-level threshold) in the cycle; any tonal segment overlapping the cycle.',
+        'independence': 'External: the rules and thresholds were set on SPRSound before ICBHI was available. The ICBHI-trained model in the subgroup rows is internal (same database, held-out patients).',
+        'metrics': metrics, **L, 'subgroups': sub,
+        'bedside': [per100(metrics[0]['value'], metrics[1]['value']),
+                    f'A crackle flag {ri} (LR+ {L["lrPos"]["value"]}); no flag {ro} (LR− {L["lrNeg"]["value"]}).',
+                    f"Wheeze rule: finds {w['sens']['value']} % of wheeze cycles, leaves {w['spec']['value']} % of others unflagged."],
+        'limits': ['ICBHI recordings are noisy (stethoscope rubbing, speech, heart sounds) and labels are per cycle, not per event.',
+                   'Diagnosis, age and device are entangled in ICBHI (all healthy patients are children on one stethoscope).',
+                   'Research licence: no ICBHI audio is shown on this site.'],
+        'verdict': f"ICBHI score of the shipped rules {R['icbhi']['score']} % vs {S['icbhi']['score']} % for the ICBHI-trained model on the same held-out cycles."}
+
+
+def icbhi_models():
+    """ICBHI-trained sound and illness models: internal validation (held-out patients / repeated patient-grouped CV)."""
+    f = WEB_DATA / 'icbhi_models.json'
+    if not f.exists(): return None
+    M = json.load(open(f)); S = next(m for m in M['models'] if m['id'] == 'icbhi_sound'); b = S['binary']
+    ex = [{'label': 'Crackles per cycle (AUC)', 'value': b['crackles']['value'], 'lo': b['crackles']['lo'], 'hi': b['crackles']['hi'], 'n': S['nTestCycles'], 'explain': 'held-out patients; 0.5 = coin toss'},
+          {'label': 'Wheezes per cycle (AUC)', 'value': b['wheezes']['value'], 'lo': b['wheezes']['lo'], 'hi': b['wheezes']['hi'], 'n': S['nTestCycles'], 'explain': 'held-out patients'},
+          {'label': 'ICBHI score (%)', 'value': S['icbhi']['score'], 'lo': None, 'hi': None, 'n': S['nTestCycles'], 'explain': f"mean of sensitivity {S['icbhi']['se']} % and specificity {S['icbhi']['sp']} %; stethoscope alone {S['deviceOnly']['icbhi']['score']} %"},
+          {'label': 'Recording has crackles — page’s own cycles (AUC)', 'value': S['deploy']['crackles']['value'] if S['deploy']['crackles'] else None, 'lo': S['deploy']['crackles']['lo'] if S['deploy']['crackles'] else None,
+           'hi': S['deploy']['crackles']['hi'] if S['deploy']['crackles'] else None, 'n': S['deploy']['recordings'], 'explain': 'no expert cycle boundaries: what an upload gets'},
+          {'label': 'Recording has wheezes — page’s own cycles (AUC)', 'value': S['deploy']['wheezes']['value'] if S['deploy']['wheezes'] else None, 'lo': S['deploy']['wheezes']['lo'] if S['deploy']['wheezes'] else None,
+           'hi': S['deploy']['wheezes']['hi'] if S['deploy']['wheezes'] else None, 'n': S['deploy']['recordings'], 'explain': 'no expert cycle boundaries'}]
+    bed = [f"On patients it never saw, the sound model separates crackle cycles from others with AUC {b['crackles']['value']} and wheeze cycles with AUC {b['wheezes']['value']}."]
+    for m in M['models']:
+        if m['unit'] != 'recording': continue
+        t = m['test']
+        ex.append({'label': f"{m['title']} (macro AUC)", 'value': t['macroAuc'], 'lo': None, 'hi': None, 'n': m['nPatients'],
+                   'explain': f"{m['scheme']}; age alone {m['ageOnly']['macroAuc']}, stethoscope alone {m['deviceOnly']['macroAuc'] if m['deviceOnly']['macroAuc'] is not None else '— (one stethoscope)'}, sound without age {m['soundOnly']['macroAuc']} — {'passed' if m['gate']['deploy'] else 'failed: ' + '; '.join(m['gate']['reasons'])}"})
+        bed.append(f"{m['title']}: {'passes its gate and runs on the Analyze page' if m['gate']['deploy'] else 'fails its gate and is not run'} (macro AUC {t['macroAuc']} vs age alone {m['ageOnly']['macroAuc']}).")
+    return {
+        'id': 'icbhi_models', 'title': 'Sound-type and illness models trained on ICBHI 2017', 'discover': None, 'evidence': 'development',
+        'question': 'Which adventitious sound does each breath cycle contain, and which illness pattern does the recording resemble?',
+        'intendedUse': 'Research and teaching: the Analyze page shows the per-cycle sound probabilities and, only for models that pass the gate, the illness pattern, each with its explanation. Not a diagnosis.',
+        'population': {'n': M['data']['patients'], 'text': f"ICBHI 2017: {M['data']['patients']} patients, {M['data']['recordings']} recordings, {M['data']['cycles']:,} annotated breath cycles. {ICBHI_CITE}."},
+        'reference': 'Per-cycle crackle/wheeze labels from the ICBHI experts; per-patient clinical diagnosis from the database.',
+        'indexTest': f"Sound model: {S['chosen']} on 27 per-cycle measurements of the page's detectors, chosen by grouped CV on {S['nTrainPatients']} training patients. Illness: logistic regression (fixed beforehand) on the per-cycle sound probabilities, recording features and age, one model per age group.",
+        'independence': 'Internal: held-out patients of the same database (sound model) and patient-grouped 5-fold cross-validation repeated 10 times (illness models, too few patients for a split). Same centres and devices as training, so external accuracy will be lower.',
+        'metrics': [], 'subgroups': [], 'extra': ex, 'bedside': bed,
+        'limits': ['126 patients from two centres; diagnoses are entangled with age (all healthy patients are children) and device, hence separate age groups and age-only / stethoscope-only baselines.',
+                   'Rare diagnoses (asthma 1, LRTI 2 patients) are grouped; nothing here can tell asthma from COPD.',
+                   'Uploads are scored on the cycles the page finds itself; the deployment rows show what that costs.'],
+        'verdict': 'Sound type per cycle: usable for research. Illness pattern: see each model’s gate.'}
+
+
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), resp_spr(I), resp_kauh(I), apnea(), hrv(D), age(D)) if r]
+    reports = [r for r in (murmur(I), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models()) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}

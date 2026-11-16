@@ -180,7 +180,7 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.screenshot({ path: path.join(OUT, 'analyze-heart.png'), fullPage: true });
     const lungClip = realClip(p => p.src === 'sprsound' && p.sites.some(s => s.record === 'DAS'));
     await pg.setInputFiles('#anFile', lungClip.f); await pg.selectOption('#anType', 'lung'); await pg.fill('#anAge', String(lungClip.age));
-    await pg.click('#anGo'); await pg.waitForFunction(id => window.__analyze && window.__analyze.type === 'lung' && document.querySelector('#ar-0'), null, { timeout: 60000 });
+    await pg.click('#anGo'); await pg.waitForFunction(id => window.__analyze && window.__analyze.type === 'lung' && window.__analyze.done && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const lr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
     // experimental (failed-validation) models run only framed by their failure, and only inside their training ages
     const exp = await pg.evaluate(() => MODELS.models.filter(m => !m.gate.deploy && m.override && m.override.on).map(m => m.id));
@@ -191,14 +191,28 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       `lung clip SPRSound ${lungClip.id} (${lungClip.age} y): ran ${ran.join(', ')}; refused by age: ${blocked.join(', ')}; experimental framed by its failure`);
     // the same recording declared as an adult: the children's model must now be refused and the adults' model run
     await pg.fill('#anAge', '40'); await pg.click('#anGo');
-    await pg.waitForFunction(() => window.__analyze && window.__analyze.age === 40 && document.querySelector('#ar-0'), null, { timeout: 60000 });
+    await pg.waitForFunction(() => window.__analyze && window.__analyze.age === 40 && window.__analyze.done && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const ad = await pg.evaluate(() => window.__analyze.results);
     check(ad.find(x => x.id === 'lung_pattern_child').ageBlocked && ad.find(x => x.id === 'lung_pattern_adult').p,
       'same clip at age 40: children\'s pattern model refused by age, adults\' model ran (experimental)');
     await pg.fill('#anAge', String(lungClip.age)); await pg.click('#anGo');
-    await pg.waitForFunction(a => window.__analyze && window.__analyze.age === a && document.querySelector('#ar-0'), lungClip.age, { timeout: 60000 });
+    await pg.waitForFunction(a => window.__analyze && window.__analyze.age === a && window.__analyze.done && document.querySelector('#ar-0'), lungClip.age, { timeout: 60000 });
+    // ICBHI-trained models: per-cycle sound probabilities, illness models only if they passed their gate, a clinical summary
+    await pg.waitForFunction(() => document.querySelector('#icbhiCard') && document.querySelector('#icNote').textContent.length > 50, null, { timeout: 30000 });
+    const ic = await pg.evaluate(() => { const S = ICBHI.models.find(m => m.id === 'icbhi_sound'); let mx = 0;
+      S.parity.forEach(v => modelProba(S, v.x).forEach((q, k) => { mx = Math.max(mx, Math.abs(q - v.p[k])) }));
+      return { mx, n: window.__analyze.icbhi.nCycles, ill: window.__analyze.icbhi.ill, gates: Object.fromEntries(ICBHI.models.filter(m => m.unit === 'recording').map(m => [m.id, m.gate.deploy])),
+               note: document.querySelector('#icNote').textContent, chart: !!document.querySelector('#c-icCyc'), txt: document.querySelector('#icbhiCard').innerText } });
+    check(ic.mx < 1e-6 && ic.n > 0 && ic.chart && ic.ill.every(r => r.run === (r.inAge && ic.gates[r.id]) && (r.p != null) === r.run)
+      && /not a diagnosis/.test(ic.note) && /Bohadana 2014/.test(ic.txt) && (Object.values(ic.gates).some(Boolean) || /failed validation — not run/.test(ic.txt)),
+      `ICBHI models on the upload: ${ic.n} breath cycles scored, page = scikit-learn (max |Δp| ${ic.mx.toExponential(1)}); illness models follow their gate (${Object.entries(ic.gates).map(([k, v]) => k + (v ? ' on' : ' off')).join(', ')}); clinical summary written`);
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-lung.png'), fullPage: true });
+    await (await pg.$('#icbhiCard')).screenshot({ path: path.join(OUT, 'analyze-icbhi.png') });
+    // datasets page: ICBHI listed with its licence and the no-audio rule
+    await pg.goto(url('#datasets')); await pg.waitForFunction(() => /ICBHI 2017 Respiratory Sound Database \(Rocha/.test(document.body.innerText), null, { timeout: 15000 });
+    check(await pg.evaluate(() => /no ICBHI audio is published on this site/.test(document.body.innerText) && /1361-6579\/ab03ea/.test(document.body.innerText)), 'datasets page lists ICBHI with its licence, DOI and the no-audio rule');
+    await pg.goto(url('#analyze')); await pg.waitForSelector('#anFile');
 
     // Home: the 30-second story, every number from the data
     await pg.goto(url('#home')); await pg.waitForSelector('.hero', { timeout: 30000 }); await pg.waitForTimeout(500);

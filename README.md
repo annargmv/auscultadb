@@ -49,6 +49,11 @@ What it does:
   General Hospital, Athens. Read from the public Hugging Face mirror `dust-systems/psg-audio`. Rebuild with `npm run build:apnea`
   (downloads ~0.7 GB per patient-hour, keeps only the two microphones at 8 kHz in `raw/psg_audio/`). **No PSG-Audio audio is
   published** — overnight bedroom audio can contain speech; only the statistics reach `web/`.
+- models trained on **ICBHI 2017** (Rocha et al., *Physiol Meas* 2019): a breath-cycle sound model (normal / crackles /
+  wheezes / both) and illness-pattern models inside each age group, run on the Analyze page with a plain-language
+  explanation and a copyable clinical summary. Illness models run only if they pass the same gate as the other models,
+  including beating age alone and stethoscope alone. ICBHI is licensed for research: **no ICBHI audio is published**.
+  Rebuild with `npm run build:icbhi` (needs `raw/icbhi`, e.g. a clone of `github.com/aashnajoshi/Respiratory_Sound_Dataset`).
 
 *Decision support for research and teaching — not a diagnosis.*
 
@@ -95,6 +100,8 @@ python3 pipeline/merge.py --add circor   # append to web/data, leaving the other
 - **KAUH** — CC BY 4.0. M. Fraiwan, L. Fraiwan, B. Khassawneh, A. Ibnian, "A dataset of lung sounds recorded from the chest wall using an electronic stethoscope," *Data in Brief* 35:106913, 2021. https://data.mendeley.com/datasets/jwyy9np4gv/3
 - **Chronic bronchitis / emphysema** — CC BY 4.0. M. Fraiwan, N. S. Haider, B. Khassawneh, "Respiratory Sound Dataset of Chronic Bronchitis and Emphysema Patients," *Mendeley Data* v1, 2026. doi:10.17632/9hdrddjpny.1
 - **CirCor DigiScope** — ODC-By 1.0 (Open Data Commons Attribution). J. Oliveira et al., "The CirCor DigiScope Dataset: From Murmur Detection to Murmur Classification," *IEEE J. Biomed. Health Inform.* 26(6):2524–2535, 2022. https://physionet.org/content/circor-heart-sound/1.0.3/
+- **ICBHI 2017 Respiratory Sound Database** — research use (ICBHI challenge); analysed only, audio not published. B. M. Rocha et al., "An open access database for the evaluation of respiratory sound classification algorithms," *Physiological Measurement* 40:035001, 2019. doi:10.1088/1361-6579/ab03ea
+- **PSG-Audio** — CC BY 4.0; analysed only, audio not published (see above).
 - **Libraries** (loaded from CDN, pinned): wavesurfer.js 7.12.12 (BSD-3-Clause), Meyda 5.6.3 (MIT), Chart.js 4.6.1 (MIT).
 
 `web/audio` and `web/data` contain derived copies of the CC BY and ODC-By recordings and labels. Keep the attribution when you share the site.
