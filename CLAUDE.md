@@ -86,7 +86,7 @@ python3 pipeline/train_models.py         #   web/data/models.json: 4 models, pat
 node pipeline/codec_check.js             #   models.json['robustness']: site MP3 copies vs original WAV (~7 min)
 
 # CirCor extended features + HRV validation (needs raw/circor: PhysioNet zip, physionet.org allowed)
-npm run build:hrv                        # circor_ext.js (~30 min) -> hrv_discover.py -> clinical_validation.py -> --bump
+npm run build:hrv                        # circor_ext.js (~30 min) -> learned beat finder (frames, train, held-out validate, cohort) -> hrv_discover.py -> clinical_validation.py -> --bump
 node pipeline/circor_ext.js              #   meta/features/circor_ext.jsonl: heartFeatures + heartFeaturesExt + HRV detector vs expert .tsv
 python3 pipeline/hrv_discover.py         #   discover.json['hrv']: agreement, repeatability, by band, per-recording values
 
@@ -181,16 +181,34 @@ critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Researc
 - The page always says "not a diagnosis" and shows warnings for age outside the training range, features outside the
   training 1st–99th percentile, and unmeasurable features.
 
-## HRV (heart-rate variability) — validated, failed, not shown (2026-11-16)
+## HRV (heart-rate variability) — shipped beat finder failed; learned beat finder passed (2026-11-16)
 `hrvFromBeats` / `hrvFromTimes` (page): RMSSD from S1 intervals, intervals > 20 % from the median dropped, ≥ 8 successive
-differences; SDNN only with ≥ 30 s of clean intervals. `circor_ext.js` computes it from the detector AND from the CirCor
-experts' S1 onsets (.tsv) on the same annotated window. **Pre-set rule (written before results): ICC ≥ 0.75 and
-|bias| ≤ 10 ms.** Result on 1,666 recordings: **ICC 0.516 (0.47–0.56), bias +8.8 ms, LoA −30 to +48 → failed**; pages
-say so and show no number. Heart rate from the same beats is good (ICC 0.81). Experts' own RMSSD repeats across
-valves at ICC 0.71; detector 0.49. Expert RMSSD by band (reference): infant ~23, child ~36, adolescent ~43 ms.
+differences; SDNN only with ≥ 30 s of clean intervals. **Pre-set rule (written before any result): ICC ≥ 0.75 and
+|bias| ≤ 10 ms against RMSSD from the CirCor experts' S1 onsets (.tsv) on the same annotated window.**
+- **Shipped beat finder (`detectHeart`) — failed.** `circor_ext.js`, 1,666 recordings: ICC 0.516 (0.47–0.56), bias
+  +8.8 ms, LoA −30 to +48. It constrains beats to ±12 % of the period and misplaces onsets (40.8 % of expert S1 within
+  ±50 ms on held-out patients). Heart rate from it is fine (ICC 0.81). `detectHeart` is unchanged (feeds precomputed data).
+- **Learned beat finder — passed; this is what the pages show.** Additive code in the page: `segBands` (log power in
+  25–60/60–120/120–250/250–500/500–1000 Hz per 10-ms frame) → `segFeatures` (robust per-recording z, 9 context offsets
+  + slope = 50 features) → gradient-boosted frame classifier S1/systole/S2/diastole (`modelProba`, gbtree) → `segViterbi`
+  (cyclic 4-state, minimum durations = training 10th percentile, geometric tail to the mean) → `segmentHeartSounds(x).s1`.
+  Model in `web/data/segmenter.json`, loaded by `ensureSeg()`.
+  - Pipeline: `node pipeline/circor_frames.js` (page's `segBands` on all 3,118 recordings → `build/seg/`, ~7 min) →
+    `python3 pipeline/train_segmenter.py` (seed 20261116, fixed settings, **trained only on patients outside
+    models.json heart_murmur `testPids`**: 1,933 recordings, 1.13 M frames) → `node pipeline/seg_validate.js` (held-out
+    patients only, ~12 min; also checks page–Python parity) → `node pipeline/seg_validate.js --cohort` (whole-recording
+    RMSSD for the browsable patients) → `hrv_discover.py` (`discover.json['hrv']['segmenter']`) → `clinical_validation.py`.
+  - Held-out result (349 patients, 1,185 recordings): S1 within ±50 ms **94.6 %** found, PPV 94.2 % (old: 40.8 / 46.7).
+    RMSSD on 909 recordings: **ICC 0.849 (0.818–0.875), bias −1.7 ms, LoA −24 to +21 → passed.** Same 663 recordings
+    for both: learned 0.797 vs shipped 0.485. Heart rate ICC 0.95.
+  - **By band:** child 0.853 (n 727), adolescent 0.844 (n 73) — shown; **infant 0.297 (n 29) — not shown**; neonates
+    and unknown age too few — not shown. `showBands` in discover.json drives this; adults never (no adult data).
+  - Not measured: compressed uploads (Analyze page says so). Experts' own RMSSD repeats across valves at ICC 0.71, so
+    short clips limit even perfect beats. Expert RMSSD by band (reference): infant ~23, child ~36, adolescent ~43 ms.
+  - Changing `segBands`/`segFeatures` means rerunning circor_frames → train_segmenter → seg_validate.
 Refs (PubMed-checked): Munoz 2015 PMID 26414314 (10-s RMSSD valid); Tsuji 1994 PMID 8044959 (reduced HRV → mortality in
 older adults; SDNN/spectral, not RMSSD); Punjabi 2009 PMID 19688045 (severe SDB AHI ≥ 30: HR 1.46 for all-cause mortality).
-To pass, the S1 timing must improve (the detector constrains beats to ±12 % of the period and misplaces onsets).
+No dataset here links HRV to outcome in children — never present it as a risk.
 
 ## Presentation layer — Home, tooltips, glossary
 - **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)

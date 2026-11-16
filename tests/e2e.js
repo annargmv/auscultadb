@@ -66,9 +66,22 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(/bpm/.test(ha.t) && (ha.chart || /No heart rate|No healthy reference/.test(ha.t)) && /not a risk score|No heart rate|No healthy/.test(ha.t), `heart rate for age: ${ha.t.slice(18, 90)}`);
     // HRV appears as a number only if it passed its pre-set agreement rule against expert-marked beats
     await pg.waitForFunction(() => /Heart-rate variability/.test(document.querySelector('#hrAgeCard').innerText), null, { timeout: 15000 });
-    const hv = await pg.evaluate(() => ({ pass: !!(window.__DISC.hrv && window.__DISC.hrv.pass), txt: document.querySelector('#hrAgeCard').innerText }));
-    check(hv.pass ? /ms RMSSD|Too few clean beats/.test(hv.txt) : (/Not shown/.test(hv.txt) && !/ms RMSSD/.test(hv.txt)),
-      `HRV on the patient card follows its validation (${hv.pass ? 'passed: value shown' : 'failed: no number shown, reason given'})`);
+    const hv = await pg.evaluate(id => { const G = window.__DISC.hrv && window.__DISC.hrv.segmenter, p = __app.patients.find(x => x.id === id);
+      return { pass: !!(G && G.pass), band: p.ageBand, shown: G && G.pass && (G.showBands || []).includes(p.ageBand), txt: document.querySelector('#hrAgeCard').innerText } }, heart.id);
+    check(hv.shown ? /ms RMSSD|Too few clean beats/.test(hv.txt) : (/Not shown/.test(hv.txt) && !/ms RMSSD/.test(hv.txt)),
+      `HRV on the patient card follows its validation (${hv.band}: ${hv.shown ? 'passed: value shown' : 'not validated here: no number shown, reason given'})`);
+    // the learned beat finder in the page reproduces the Python classifier exactly (parity sample in segmenter.json)
+    const sp = await pg.evaluate(async () => { await ensureSeg(); const P = SEG.parity, B = Float32Array.from(P.bands), rows = segFeatures({ nF: B.length / P.nb, nb: P.nb, B }); let mx = 0;
+      P.frames.forEach((f, i) => modelProba(SEG, rows[f]).forEach((q, c) => { mx = Math.max(mx, Math.abs(q - P.p[i][c])) })); return mx });
+    check(sp < 1e-6, `learned beat finder matches scikit-learn (max |Δp| ${sp.toExponential(1)})`);
+    // a child whose band passed: a number is shown
+    const kid = await pg.evaluate(() => { const G = window.__DISC.hrv.segmenter, pr = G && G.perRecording || {};
+      const p = __app.patients.find(x => x.source === 'circor' && (G.showBands || []).includes(x.ageBand) && x.sites.every(s => pr[s.name] && pr[s.name].rmssd != null)); return p && p.id });
+    if (kid) { await pg.evaluate(id => { location.hash = '#patient-' + id }, kid);
+      await pg.waitForFunction(() => { const c = document.querySelector('#hrAgeCard'); return c && /Heart-rate variability/.test(c.innerText) }, null, { timeout: 20000 });
+      const t = await pg.evaluate(() => document.querySelector('#hrAgeCard').innerText);
+      check(/ms RMSSD/.test(t) && /held-out/.test(t), `HRV shown for ${kid}: ${(t.match(/Heart-rate variability\s*([\d.]+)/) || ['', '?'])[1]} ms RMSSD`);
+      await pg.evaluate(id => { location.hash = '#patient-' + id }, heart.id); await liveReady(pg) }
     const rel = await pg.evaluate(() => [...document.querySelectorAll('dt')].find(d => d.textContent === 'Release').nextElementSibling.textContent);
     check(/CC201[45]/.test(rel), `CirCor release from the data: ${rel}`);
     await pg.screenshot({ path: path.join(OUT, 'circor.png'), fullPage: true });
@@ -212,9 +225,9 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.waitForFunction(() => window.__example && window.__analyze && window.__analyze.type === 'heart' && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const ex = await pg.evaluate(() => ({ ex: window.__example, p: window.__analyze.results[0].p, held: /held out/.test(document.querySelector('#anExample').innerText) }));
     check(ex.held && ex.ex.truth === 'Murmur' && ex.p, `held-out example ${ex.ex.id}: expert says Murmur, model says ${Math.round(100 * ex.p[1])} % murmur`);
-    const an = await pg.evaluate(() => ({ out: document.querySelector('#anOut').innerText, card: document.querySelector('#m-heart_murmur').innerText, pass: !!(window.__DISC.hrv && window.__DISC.hrv.pass), vs: !!MODELS.models[0].vsPrevious }));
-    check((an.pass || (/failed validation against expert-annotated beats/.test(an.out) && !/RMSSD \d/.test(an.out))) && (!an.vs || /Previous version/.test(an.card)),
-      `analyze: HRV line follows its validation; murmur card ${an.vs ? 'compares with the previous version on the same patients' : 'has no previous version'}`);
+    const an = await pg.evaluate(() => ({ out: document.querySelector('#anOut').innerText, card: document.querySelector('#m-heart_murmur').innerText, shown: hrvGate().pass && hrvGate().bands.includes(hrvBandOf(window.__analyze.age)), band: hrvBandOf(window.__analyze.age), vs: !!MODELS.models[0].vsPrevious }));
+    check((an.shown ? /RMSSD \d|too few clean beats/.test(an.out) : (/not shown — /.test(an.out) && !/RMSSD \d/.test(an.out))) && (!an.vs || /Previous version/.test(an.card)),
+      `analyze: HRV line follows its validation (${an.band}: ${an.shown ? 'value from the learned beat finder' : 'no number, reason given'}); murmur card ${an.vs ? 'compares with the previous version on the same patients' : 'has no previous version'}`);
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(300);
     await pg.screenshot({ path: path.join(OUT, 'analyze-example.png'), fullPage: true });
 

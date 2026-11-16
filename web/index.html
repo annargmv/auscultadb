@@ -1175,13 +1175,21 @@ function renderPatient(id){
 // child's age band, fit by pipeline/age_discover.py on training-split patients. Reference only — Discoveries 16
 // shows that the deviation does not predict clinical outcome, so it is never presented as a risk.
 let hrAgeChart=null;
-// HRV is shown with a number only if pipeline/hrv_discover.py found the beat finder agrees with the experts' annotated
-// beats (pre-set rule: ICC ≥ 0.75 and |bias| ≤ 10 ms). Otherwise the page says it failed validation.
-function hrvGate(){const H=window.__DISC&&window.__DISC.hrv;return H?{pass:!!H.pass,H}:{pass:false,H:null}}
-function hrvText(hrv){const {pass,H}=hrvGate();
+// HRV is shown with a number only if pipeline/hrv_discover.py found that the beats agree with the experts' annotated
+// beats on HELD-OUT patients (pre-set rule: ICC ≥ 0.75 and |bias| ≤ 10 ms). The shipped beat finder failed that rule;
+// the learned segmenter (segmentHeartSounds, data/segmenter.json) passed it, so HRV comes from the segmenter, and only
+// in the age bands that pass on their own (H.segmenter.showBands). Otherwise the page says why and shows no number.
+function hrvGate(){const H=window.__DISC&&window.__DISC.hrv, G=H&&H.segmenter;
+  return H?{pass:!!(G&&G.pass),H,G,bands:G&&G.showBands||[]}:{pass:false,H:null,G:null,bands:[]}}
+const hrvBandOf=y=>y==null||!(y>=0)?null:y<1/12?'Neonate':y<1?'Infant':y<12?'Child':y<=18?'Adolescent':'Adult';
+function hrvWhyNot(band){const {G}=hrvGate(), b=G&&(G.byBand||[]).find(x=>x.band===band);
+  return band==='Adult'?'validated in children and adolescents only (CirCor)':!band?'age unknown; validated only for children 1–18 years'
+    :b?`in the ${band.toLowerCase()} band it did not agree well enough on held-out patients (ICC ${b.icc}, ${b.n} recordings)`:`too few held-out ${band.toLowerCase()} recordings to validate`}
+function hrvText(hrv,ageY){const {pass,H,G,bands}=hrvGate();
   if(!H)return '<span class="hint">validation not computed</span>';
   if(!pass)return `<span class="hint">not shown — failed validation against expert-annotated beats (agreement ICC ${H.agreement?H.agreement.icc:'—'}, required ${H.rule.iccMin})</span>`;
-  return hrv&&hrv.rmssd!=null?`RMSSD ${hrv.rmssd} ms <span class="hint">(${hrv.n} beat-to-beat differences)</span>`:'<span class="hint">too few clean beats for RMSSD (need 8 successive differences)</span>'}
+  const band=hrvBandOf(ageY); if(!bands.includes(band))return `<span class="hint">not shown — ${hrvWhyNot(band)}</span>`;
+  return hrv&&hrv.rmssd!=null?`RMSSD ${hrv.rmssd} ms <span class="hint">(${hrv.n} beat-to-beat differences, learned beat finder; validated on original WAV files, the effect of compression was not measured)</span>`:'<span class="hint">too few clean beats for RMSSD (need 8 successive differences)</span>'}
 async function fillHrAge(p,r){
   const el=$('#hrAgeCard'); if(!el)return;
   let A=null; try{A=(window.__DISC||(window.__DISC=await cachedFetch('data/discover.json','json'))).age}catch(e){}
@@ -1196,10 +1204,11 @@ async function fillHrAge(p,r){
     <div class="hint" style="margin:2px 0 8px">${where} of ${R.n} healthy ${({Neonate:'neonates',Infant:'infants',Child:'children',Adolescent:'adolescents'})[band]||esc(band)} (median ${Math.round(R.p50)} bpm) · z = ${z>=0?'+':''}${z.toFixed(1)}</div>
     <div style="position:relative;height:120px"><canvas id="c-hrAge"></canvas></div>
     <p class="hint">Measured from this recording by the page’s own S1/S2 detector; reference from CirCor patients with no murmur and a normal outcome. A reference, not a risk score: on held-out data the deviation does not separate normal from abnormal outcome (<a href="#discover" data-jump="d-age" class="toAge">Discoveries ${n}</a>).</p>`;
-  {const {pass,H}=hrvGate(), st=p.sites.find(x=>x.loc===p.curLoc), v=H&&H.perRecording&&st&&H.perRecording[st.name], bb=H&&(H.byBand||[]).find(x=>x.band===band);
+  {const {pass,H,G,bands}=hrvGate(), st=p.sites.find(x=>x.loc===p.curLoc), v=G&&G.perRecording&&st&&G.perRecording[st.name], bb=H&&(H.byBand||[]).find(x=>x.band===band);
    el.insertAdjacentHTML('beforeend',`<h3 style="margin-top:14px">Heart-rate variability</h3>${!H?'<div class="hint">Not computed yet.</div>':!pass
-     ?`<div class="hint">Not shown: the beat finder’s RMSSD did not agree well enough with the experts’ annotated beats (ICC ${H.agreement?H.agreement.icc:'—'}, required ${H.rule.iccMin}; bias ${H.agreement?H.agreement.bias:'—'} ms). See <a href="#longevity">Longevity</a>.</div>`
-     :v&&v.rmssd!=null?`<div class="row" style="align-items:baseline;gap:8px"><b style="font-size:22px">${v.rmssd}</b><span class="hint">ms RMSSD · ${v.n} beat-to-beat differences</span></div><div class="hint">${bb?`Children in the ${esc(band.toLowerCase())} band, expert-annotated beats: median ${Math.round(bb.p50)} ms (middle half ${Math.round(bb.p25)}–${Math.round(bb.p75)}). `:''}Lower HRV predicts mortality in older adults (Tsuji 1994); no outcome link exists for children.</div>`
+     ?`<div class="hint">Not shown: RMSSD did not agree well enough with the experts’ annotated beats (ICC ${H.agreement?H.agreement.icc:'—'}, required ${H.rule.iccMin}; bias ${H.agreement?H.agreement.bias:'—'} ms). See <a href="#longevity">Longevity</a>.</div>`
+     :!bands.includes(band)?`<div class="hint">Not shown: ${hrvWhyNot(band)}. See <a href="#longevity">Longevity</a>.</div>`
+     :v&&v.rmssd!=null?`<div class="row" style="align-items:baseline;gap:8px"><b style="font-size:22px">${v.rmssd}</b><span class="hint">ms RMSSD · ${v.n} beat-to-beat differences · learned beat finder</span></div><div class="hint">${bb?`Children in the ${esc(band.toLowerCase())} band, expert-annotated beats: median ${Math.round(bb.p50)} ms (middle half ${Math.round(bb.p25)}–${Math.round(bb.p75)}). `:''}On held-out patients this RMSSD agreed with expert-marked beats at ICC ${G.agreement.icc}; one recording can differ by ${Math.abs(G.agreement.loa[0]).toFixed(0)} to ${G.agreement.loa[1].toFixed(0)} ms. Lower HRV predicts mortality in older adults (Tsuji 1994); no outcome link exists for children.</div>`
      :'<div class="hint">Too few clean beats in this recording for RMSSD.</div>'}`)}
 
   if(hrAgeChart){try{hrAgeChart.destroy()}catch(e){}}
@@ -2174,10 +2183,10 @@ async function renderLongevity(){
           <td>An age clock on breath-sound features, tested on held-out patients (Discoveries ${n16}).</td>
           <td>${A?`Adults: error ${A.adults.mae} y vs ${A.adults.maeNull} y for guessing the average — <b>no age signal</b> (p = ${A.adults.pPerm.toFixed(2)}).`:'—'}</td>
           <td>Not possible with the current sound features.</td></tr>
-        ${(()=>{const H=D.hrv,g=H&&H.agreement,rep=H&&H.repeatability||{};return `<tr><td><b>Heart-rate variability</b></td><td>Reduced HRV (SDNN and spectral power from 2-hour ECGs) predicted all-cause mortality in older adults — ${esc(H?H.refs[1].cite:'Tsuji et al., Circulation 1994')}, PMID ${H?H.refs[1].pmid:'8044959'}. RMSSD, the measure that stays valid in 10-s recordings (${esc(H?H.refs[0].cite:'Munoz et al., PLoS One 2015')}, PMID ${H?H.refs[0].pmid:'26414314'}), was not among its significant predictors.</td>
-          <td>RMSSD from the beat-to-beat intervals the S1 detector finds in heart-sound recordings (CirCor children).</td>
-          <td>${g?`Against the experts’ annotated beats on ${H.n.both.toLocaleString()} recordings: ICC <b>${g.icc}</b> ${rel(g.icc)}, bias ${g.bias} ms (limits ${g.loa[0]} to ${g.loa[1]}).`:'Not computed.'}${rep.detector?` Two valves of the same child: ICC ${f2(rep.detector.icc)} (experts’ beats: ${rep.expert?f2(rep.expert.icc):'—'}).`:''}</td>
-          <td>${H&&H.pass?'Shown on heart-sound pages; children only, no outcome link.':'<b>Failed validation — not shown.</b> The beat finder does not reproduce the experts’ beat-to-beat variability.'}</td></tr>`})()}
+        ${(()=>{const H=D.hrv,g=H&&H.agreement,G=H&&H.segmenter;return `<tr><td><b>Heart-rate variability</b></td><td>Reduced HRV (SDNN and spectral power from 2-hour ECGs) predicted all-cause mortality in older adults — ${esc(H?H.refs[1].cite:'Tsuji et al., Circulation 1994')}, PMID ${H?H.refs[1].pmid:'8044959'}. RMSSD, the measure that stays valid in 10-s recordings (${esc(H?H.refs[0].cite:'Munoz et al., PLoS One 2015')}, PMID ${H?H.refs[0].pmid:'26414314'}), was not among its significant predictors.</td>
+          <td>RMSSD from the beat-to-beat intervals between S1 sounds in heart-sound recordings (CirCor children). Beats from a learned beat finder trained on the CirCor experts’ segmentation.</td>
+          <td>${G&&G.agreement?`Held-out patients only (${G.n.patients} patients, ${G.agreement.n} recordings), against the experts’ annotated beats: ICC <b>${G.agreement.icc}</b> (${G.agreement.iccCI[0]}–${G.agreement.iccCI[1]}) ${rel(G.agreement.icc)}, bias ${G.agreement.bias} ms (limits ${G.agreement.loa[0]} to ${G.agreement.loa[1]}). The shipped beat finder on the same recordings: ICC ${G.paired?G.paired.det.icc:'—'}. ${(G.byBand||[]).filter(b=>!b.pass).map(b=>`${esc(b.band)}: ICC ${b.icc} (n ${b.n}) — not shown.`).join(' ')}`:g?`Against the experts’ annotated beats on ${H.n.both.toLocaleString()} recordings: ICC <b>${g.icc}</b> ${rel(g.icc)}, bias ${g.bias} ms (limits ${g.loa[0]} to ${g.loa[1]}).`:'Not computed.'}</td>
+          <td>${G&&G.pass?`<b>Passed its pre-set rule.</b> Shown on heart-sound pages for ${G.showBands.map(b=>({Child:'children',Adolescent:'adolescents',Infant:'infants',Neonate:'neonates'})[b]||b).join(' and ')}; no outcome link in children.`:'<b>Failed validation — not shown.</b> The beat finder does not reproduce the experts’ beat-to-beat variability.'}</td></tr>`})()}
         ${(()=>{const Ap=D.apnea&&D.apnea.channels&&D.apnea.channels.trach;return `<tr><td><b>Sleep apnea severity (AHI)</b></td><td>In the Sleep Heart Health Study (6,441 adults, 8.2 years), severe sleep-disordered breathing (AHI ≥ 30) carried a fully adjusted hazard ratio of 1.46 (95 % CI 1.14–1.86) for all-cause mortality — Punjabi et al., PLoS Med 2009, PMID 19688045.</td>
           <td>Acoustic AHI from overnight breath sound, AASM rules (Discoveries 12).</td>
           <td>${Ap&&Ap.ahi?`PSG-Audio pilot, ${Ap.patients} adults: under-counts by ${Math.abs(Ap.ahi.bias)} events/h (limits ${Ap.ahi.loa[0]} to ${Ap.ahi.loa[1]}); severity class correct in ${Ap.severity.agree} of ${Ap.severity.n}.`:'Not computed.'}</td>
@@ -2328,7 +2337,7 @@ const GLOSS={
  // longevity
  rhr:{c:'Longevity',t:'Resting heart rate and mortality',d:'In adult population studies, a higher resting heart rate goes with higher all-cause and cardiovascular mortality (meta-analysis: about 9 % higher risk per 10 bpm). An association, not proof that lowering it helps.',s:['Resting heart rate','resting heart rate']},
  bioage:{c:'Longevity',t:'Biological-age gap',d:'A model predicts age from a physiological signal; a predicted age above the real one has been linked to mortality for the ECG. No validated auscultation equivalent exists.',s:['biological age','Biological age','Biological-age','biological-age','“Biological age” gap']},
- hrv:{c:'Longevity',t:'Heart-rate variability',d:'Beat-to-beat variation of the heart rate; lower variability predicts mortality in several populations. It needs minutes of clean beats — seconds-long clips are too short.',s:['heart-rate variability','Heart-rate variability','heart rate variability','Heart rate variability','HRV','RMSSD']},
+ hrv:{c:'Longevity',t:'Heart-rate variability',d:'Beat-to-beat variation of the heart rate; lower variability predicts mortality in several populations. RMSSD (successive beat differences) is valid from about 10 s of beats; SDNN and spectral measures need minutes.',s:['heart-rate variability','Heart-rate variability','heart rate variability','Heart rate variability','HRV','RMSSD']},
 };
 const GLOSS_MAP={}; for(const [k,g] of Object.entries(GLOSS))for(const w of g.s)GLOSS_MAP[w]=k;
 const GLOSS_RE=new RegExp('(?<![\\w\\-/])('+Object.keys(GLOSS_MAP).sort((a,b)=>b.length-a.length).map(w=>w.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')).join('|')+')(?![\\w\\-])','g');
@@ -2586,7 +2595,7 @@ async function runAnalyze(fileOverride){
   st.textContent='Decoding and analysing…'; $('#anGo').disabled=true;
   try{
     const {x,srcDur}=await decodeToSR(file,MAX_ANALYSE_S); if(x.length<5*SR)throw new Error(`recording is ${(x.length/SR).toFixed(1)} s — at least 5 s is needed`);
-    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}, hrv=hrvFromBeats(A);
+    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}; await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){} const G=segmentHeartSounds(x), hrv=G?hrvFromTimes(G.s1):null;
     window.__analyze={feats,type,age,hrv,results:[]};
     const ms=MODELS.models.filter(m=>m.kind===type);
     // ageGate: a model whose training population excludes this age is not run at all (owner's decision 2026-11-11)
@@ -2606,7 +2615,7 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv){
   $('#anOut').innerHTML=`<div class="card" style="margin-top:16px"><h2>2 · The signal</h2><p class="hint" style="margin-top:0">${esc(file.name)} · ${siteName} · ${age} y · ${srcDur.toFixed(1)} s${srcDur>MAX_ANALYSE_S?` (first ${MAX_ANALYSE_S} s analysed)`:''} · resampled to ${SR/1000} kHz</p>
       <div id="anWave" style="border:1px solid var(--line);border-radius:10px;padding:6px"></div><div class="row" style="margin-top:6px"><button class="btn small" id="anPlay">▶ Play</button></div>
       <dl class="kv" style="margin-top:12px;grid-template-columns:200px 1fr">
-        ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd><dt>Heart-rate variability</dt><dd>${hrvText(hrv)}</dd>`
+        ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd><dt>Heart-rate variability</dt><dd>${hrvText(hrv,age)}</dd>`
         :`<dt>Breathing rate</dt><dd>${f.rr==null?'—':f.rr+' /min'}${f.est?' <span class="hint">(phases estimated — approximate)</span>':''}</dd><dt>Crackle-like events</dt><dd>${f.crkRate} /s (${f.fineRate} /s fine)</dd><dt>Continuous (tonal) sound</dt><dd>${Math.round(100*f.tonFrac)} % of the time${f.tonHz?` · median ${f.tonHz} Hz`:''}</dd><dt>Spectral centroid / median frequency</dt><dd>${f.cen} Hz / ${n1(f.f50)} Hz</dd>`}
       </dl></div>
     <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${res.length?res.map((r,i)=>resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}

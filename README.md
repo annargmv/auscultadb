@@ -33,8 +33,10 @@ What it does:
   leaves the browser. Rebuild with `npm run build:models`.
 - **Model and longevity update:** the murmur model gained richer systole-vs-diastole measurements (held-out AUC
   0.804 → 0.825, a small, borderline gain on the same patients). Heart-rate variability from heart sounds was checked against the
-  CirCor experts' hand-marked beats and **failed** its pre-set agreement rule (ICC 0.52 vs 0.75), so it is not shown as a
-  number. Sleep apnea severity is listed as a mortality-linked marker (Punjabi et al., PLoS Med 2009) with the acoustic
+  CirCor experts' hand-marked beats with a pre-set rule (ICC ≥ 0.75, |bias| ≤ 10 ms). The original beat finder
+  **failed** (ICC 0.52). A learned beat finder, trained on the experts' segmentation of other patients, **passed** on
+  349 held-out patients (ICC 0.85, bias −1.7 ms; 95 % of expert S1 sounds found within 50 ms), so RMSSD is shown for
+  children and adolescents. Infants did not pass (ICC 0.30) and get no number. Sleep apnea severity is listed as a mortality-linked marker (Punjabi et al., PLoS Med 2009) with the acoustic
   AHI's measured limits. Rebuild with `npm run build:hrv` then `npm run build:models` (CirCor raw from PhysioNet, ODC-By).
 - a **Home** page that tells the project in 30 seconds — live numbers, four clinical questions and a
   "What you can trust today" table — plus **hover tooltips** on every clinical and statistical term (one glossary,

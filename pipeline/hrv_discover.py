@@ -94,6 +94,11 @@ def segmenter_section():
             if len(B) >= 20: by.append({'band': band, **{k: v for k, v in agree([r['hrvSeg']['rmssd'] for r in B], [r['hrvExp']['rmssd'] for r in B]).items() if k != 'iccCI'}})
         o['byBand'] = by
     o['pass'] = bool(o.get('agreement', {}).get('pass'))
+    # shown only in the age bands that pass on their own (>= 20 held-out recordings); others say why
+    o['showBands'] = [b['band'] for b in o.get('byBand', []) if b['pass']] if o['pass'] else []
+    fc = FEATURES / 'seg_cohort.jsonl'
+    if o['pass'] and fc.exists():   # whole-recording values for the browsable patients (original WAV), read by patient pages
+        o['perRecording'] = {r['name']: {k: r['hrvSeg'].get(k) for k in ('rmssd', 'hr', 'n', 'cleanFrac', 'sdnn')} for r in map(json.loads, open(fc))}
     return o
 
 
@@ -160,7 +165,7 @@ def main():
         print(f"SEGMENTER held-out {seg['n']}: S1 sens/PPV det {seg['det']['s1Sens']}/{seg['det']['s1Ppv']} seg {seg['seg']['s1Sens']}/{seg['seg']['s1Ppv']}")
         print(f"  RMSSD paired det {seg.get('paired', {}).get('det')}\n  RMSSD paired seg {seg.get('paired', {}).get('seg')}")
         print(f"  segmenter all {({k: v for k, v in seg.get('agreement', {}).items() if k != 'points'})}  PASS {seg['pass']}")
-        print(f"  by band {seg.get('byBand')}")
+        print(f"  by band {seg.get('byBand')}  shown for {seg.get('showBands')}, cohort values {len(seg.get('perRecording', {}))}")
     print('-> discover.json[hrv]   (then merge.py --bump)')
 
 
