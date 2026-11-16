@@ -2412,6 +2412,53 @@ function modelProba(M,x){const m=M.model, nan=v=>v==null||Number.isNaN(v);
   for(const it of m.trees)it.forEach((nodes,k)=>{let i=0;while(!nodes[i][5]){const [f,t,ml,l,r]=nodes[i],v=x[f];i=nan(v)?(ml?l:r):(v<=t?l:r)}raw[k]+=nodes[i][6]});
   if(m.binary){const p=1/(1+Math.exp(-raw[0]));return [1-p,p]}
   const mx=Math.max(...raw),e=raw.map(v=>Math.exp(v-mx)),s=e.reduce((a,b)=>a+b,0);return e.map(v=>v/s)}
+// ---------- Learned heart-sound segmenter (additive: detectHeart is unchanged) ----------
+// Trained by pipeline/train_segmenter.py on the CirCor experts' .tsv segmentation (training patients only) and loaded
+// from data/segmenter.json. Per 10-ms frame: log power in 5 bands → robust per-recording normalisation → context window
+// → gradient-boosted frame classifier (S1 / systole / S2 / diastole) → Viterbi over a cyclic 4-state model with
+// minimum durations. Python builds the features with the same formulas (parity-checked in the e2e test).
+const SEG_BANDS=[[25,60],[60,120],[120,250],[250,500],[500,1000]], SEG_OFFS=[-20,-12,-6,-3,0,3,6,12,20];
+let SEG=null;
+function segBands(x){
+  const nF=Math.max(0,Math.floor((x.length-FR.N)/FR.HOP)+1), nb=SEG_BANDS.length, B=new Float32Array(nF*nb), re=new Float64Array(FR.N);
+  const kb=SEG_BANDS.map(([lo,hi])=>[Math.max(1,Math.round(lo/binHz)),Math.round(hi/binHz)]);
+  for(let f=0;f<nF;f++){const o=f*FR.HOP;for(let i=0;i<FR.N;i++)re[i]=x[o+i]*HANN[i];const m=fftMag(re);
+    for(let j=0;j<nb;j++){let p=0;for(let k=kb[j][0];k<=kb[j][1];k++)p+=m[k]*m[k];B[f*nb+j]=Math.log10(p+1e-10)}}
+  return {nF,nb,B,t0:FR.N/2/SR,hop:FR.HOP/SR};
+}
+const segQ=(sorted,p)=>sorted[Math.floor(p*(sorted.length-1))];
+function segFeatures(S){ // robust z per band, then context frames + local slope
+  const {nF,nb,B}=S, Z=new Float32Array(nF*nb);
+  for(let j=0;j<nb;j++){const v=new Array(nF);for(let f=0;f<nF;f++)v[f]=B[f*nb+j];const s=v.slice().sort((a,b)=>a-b),md=segQ(s,0.5),iq=Math.max(1e-6,segQ(s,0.75)-segQ(s,0.25));
+    for(let f=0;f<nF;f++)Z[f*nb+j]=(v[f]-md)/iq}
+  const z=(f,j)=>Z[Math.min(nF-1,Math.max(0,f))*nb+j], rows=new Array(nF);
+  for(let f=0;f<nF;f++){const r=[];for(const o of SEG_OFFS)for(let j=0;j<nb;j++)r.push(z(f+o,j));for(let j=0;j<nb;j++)r.push(z(f+1,j)-z(f-1,j));rows[f]=r}
+  return rows;
+}
+function segViterbi(logE,hmm){ // logE[f][c] = log p(x|state c) up to a constant; states expanded for minimum durations
+  const nF=logE.length, C=4, mins=hmm.minDur, stay=hmm.stayLog, leave=hmm.leaveLog, idx=[];
+  for(let c=0;c<C;c++)for(let k=0;k<mins[c];k++)idx.push([c,k]);
+  const S=idx.length, st=[0,1,2,3].map(c=>idx.findIndex(([cc,k])=>cc===c&&k===0)), start=c=>st[c];
+  let V=new Float64Array(S).fill(-Infinity); const back=new Array(nF);
+  for(let s=0;s<S;s++)if(idx[s][1]===0)V[s]=logE[0][idx[s][0]];
+  for(let f=1;f<nF;f++){const W=new Float64Array(S).fill(-Infinity),bk=new Int32Array(S).fill(-1);
+    for(let s=0;s<S;s++){if(V[s]===-Infinity)continue;const [c,k]=idx[s];
+      if(k<mins[c]-1){const n=s+1;if(V[s]>W[n]){W[n]=V[s];bk[n]=s}}
+      else{const a=V[s]+stay[c];if(a>W[s]){W[s]=a;bk[s]=s} const n=start((c+1)%C),b=V[s]+leave[c];if(b>W[n]){W[n]=b;bk[n]=s}}}
+    for(let s=0;s<S;s++)if(W[s]>-Infinity)W[s]+=logE[f][idx[s][0]];
+    V=W;back[f]=bk}
+  let s=0;for(let i=1;i<S;i++)if(V[i]>V[s])s=i; const path=new Int8Array(nF);
+  for(let f=nF-1;f>=0;f--){path[f]=idx[s][0];if(f>0)s=back[f][s]}
+  return path;
+}
+async function ensureSeg(){ if(!SEG){try{SEG=await cachedFetch('data/segmenter.json','json')}catch(e){SEG=null}} return SEG }
+function segmentHeartSounds(x){
+  if(!SEG)return null; const S=segBands(x); if(S.nF<50)return null;
+  const rows=segFeatures(S), logE=rows.map(r=>modelProba(SEG,r).map((p,c)=>Math.log(Math.max(p,1e-9))-Math.log(SEG.priors[c])));
+  const path=segViterbi(logE,SEG.hmm), s1=[];
+  for(let f=1;f<path.length;f++)if(path[f]===0&&path[f-1]!==0)s1.push(+(S.t0+f*S.hop).toFixed(3));
+  return {s1,path,t0:S.t0,hop:S.hop};
+}
 // Heart-rate variability from the detected S1 times. Standard artefact rule: drop beat-to-beat intervals more than
 // 20 % from the median interval (missed or extra beats). RMSSD needs ≥ 8 successive differences (≈ 10 s; a single 10-s
 // ECG gives a valid RMSSD — Munoz 2015); SDNN needs ≥ 30 s of clean intervals. NOTE: the beat finder only accepts beats
