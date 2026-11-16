@@ -30,7 +30,7 @@ Owner: Anna, a HealthTech software engineer (Python/React).
 ## Layout
 ```
 web/            the static site — this is what gets served/published
-  index.html    the whole app (≈180 KB): UI + all signal analysis (see "Code map")
+  index.html    the whole app (≈370 KB): UI + all signal analysis (see "Code map")
   data/index.json      patients, sites, labels, findings summary, validation; `version` = cache key
   data/d/<n>.json      per-patient precomputed analysis, 20 patients per shard
   data/discover.json   Discoveries results
@@ -245,6 +245,22 @@ age alone and stethoscope alone.
 - Not obtainable / not usable (2026-11-16): COVID-19 Sounds (NeurIPS 2021 D&B) needs a signed data-transfer agreement and is
   phone audio, not auscultation; the JASA-EL 2024 PKU auscultation set (doi 10.1121/10.0025851) — publisher blocks automated
   access, data URL unknown; BIGR COPD (bigr.nl) is chest-CT features, research/education only, no redistribution.
+
+## Batch analysis and local validation (`#batch`, 2026-11-17)
+`renderBatch` / `runBatch` / `batchQuestions` / `batchEval` / `batchWords` (page). Many files (multi-select or a folder) are
+analysed in the browser with exactly the Analyze code and models; nothing is uploaded. Optional labels CSV (`parseLabels`):
+`file` (required), `label`, `type`, `age`, `site`, `patient`; vocabulary in `LAB_HEART` / `LAB_LUNG` / `LAB_DX`.
+- Questions (validated models only, each compared with its published held-out result): murmur (heart_murmur flag),
+  abnormal breath sound (lung_sound: not flagged normal), crackles and wheeze (lung_sound per-class flags), crackles / wheeze in
+  any cycle (ICBHI cycle model, ≥ 0.5; compared by AUC only). Experimental models: per-class AUC in a red box, framed as failed.
+- Statistics in JS, same methods as the Validation page: Agresti–Coull CIs, LR± with log CIs (0.5 correction), Mann–Whitney AUC
+  with Hanley–McNeil CI, two-proportion z-test against the published sensitivity/specificity. **Fewer than 10 positives or
+  10 negatives → "too few cases", no percentage.** With a `patient` column everything is counted per patient (positive if any
+  recording is; flagged if any recording is); without it the page says intervals are too narrow.
+- Words (`batchWords`): natural frequencies, CI width in words, LR bands (Jaeschke 1994), post-test probability from the user's
+  pre-test estimate (default: the batch's own rate), AUC in words, comparison with the published result. Copy summary /
+  copy CSV (downloads are blocked inside the claude.ai artifact, so copy is the export). Thresholds are never refit (rule 4).
+- e2e: 20 real CirCor valve recordings + labels → measured and worded; 4 recordings → "too few cases".
 
 ## Presentation layer — Home, tooltips, glossary
 - **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)
