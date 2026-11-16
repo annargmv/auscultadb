@@ -10,11 +10,13 @@ const jsonl = f => fs.readFileSync(path.join(FEAT, f), 'utf8').trim().split('\n'
 (async () => {
   const I = JSON.parse(fs.readFileSync(path.join(WEB, 'data', 'index.json')));
   const ref = {};   // recording name -> WAV features
-  for (const r of jsonl('circor.jsonl')) ref[r.name] = { kind: 'heart', f: r };
+  // heart reference: circor_ext.jsonl (original WAV, same page code, incl. extended features) when present
+  const hsrc = fs.existsSync(path.join(FEAT, 'circor_ext.jsonl')) ? 'circor_ext.jsonl' : 'circor.jsonl';
+  for (const r of jsonl(hsrc)) ref[r.name] = { kind: 'heart', f: { ...r, ...(r.ext || {}) } };
   for (const f of fs.readdirSync(FEAT).filter(f => /^spr\.\d+\.jsonl$/.test(f))) for (const r of jsonl(f)) ref[r.name] = { kind: 'lung', f: r };
   const jobs = [];
   for (const p of I.patients) if (p.src === 'circor' || p.src === 'sprsound') for (const s of p.sites) {
-    const [file, mp3] = s.file.split('#'), name = mp3.replace(/\.mp3$/, ''); if (ref[name]) jobs.push({ file, mp3, name, ...ref[name] });
+    const [file, mp3] = s.file.split('#'), name = mp3.replace(/\.mp3$/, ''); if (ref[name]) jobs.push({ file, mp3, name, age: p.age ?? null, ...ref[name] });
   }
   const { page: pg, url, close } = await open({ port: 8773 });
   await pg.goto(url('#none')); await pg.waitForFunction(() => window.Meyda && typeof recordingFeatures === 'function');
@@ -22,17 +24,17 @@ const jsonl = f => fs.readFileSync(path.join(FEAT, f), 'utf8').trim().split('\n'
   const rows = []; let last = null, bundle = null;
   for (const j of jobs) {
     if (j.file !== last) { bundle = JSON.parse(fs.readFileSync(path.join(WEB, j.file))); last = j.file }
-    const r = await pg.evaluate(async ({ b64, kind, wav }) => {
+    const r = await pg.evaluate(async ({ b64, kind, wav, age }) => {
       const bin = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
       const { x } = await decodeToSR(new File([bin], 'x.mp3', { type: 'audio/mpeg' }), MAX_ANALYSE_S);
-      const A = analyzeSignal(x), f = { ...recordingFeatures(A), ...heartFeatures(A) };
+      const A = analyzeSignal(x), f = { ...recordingFeatures(A), ...heartFeatures(A), ...heartFeaturesExt(A), age }; wav = { age, ...wav };
       return M.models.filter(m => (m.gate.deploy || (m.override && m.override.on)) && m.kind === kind).map(m => {
         const v = o => m.features.map(k => o[k] == null ? null : +o[k]);
         const a = modelProba(m, v(wav)), b = modelProba(m, v(f));
         return { id: m.id, d: a.map((q, k) => b[k] - q), flipWav: a.map((q, k) => q >= m.thresholds[k]), flipMp3: b.map((q, k) => q >= m.thresholds[k]),
                  feat: Object.fromEntries(m.features.map(k => [k, [wav[k], f[k]]])) };
       });
-    }, { b64: bundle[j.mp3], kind: j.kind, wav: j.f });
+    }, { b64: bundle[j.mp3], kind: j.kind, wav: j.f, age: j.age });
     rows.push(...r.map(x => ({ name: j.name, ...x })));
   }
   await close();

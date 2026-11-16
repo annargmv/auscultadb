@@ -1175,6 +1175,13 @@ function renderPatient(id){
 // child's age band, fit by pipeline/age_discover.py on training-split patients. Reference only — Discoveries 16
 // shows that the deviation does not predict clinical outcome, so it is never presented as a risk.
 let hrAgeChart=null;
+// HRV is shown with a number only if pipeline/hrv_discover.py found the beat finder agrees with the experts' annotated
+// beats (pre-set rule: ICC ≥ 0.75 and |bias| ≤ 10 ms). Otherwise the page says it failed validation.
+function hrvGate(){const H=window.__DISC&&window.__DISC.hrv;return H?{pass:!!H.pass,H}:{pass:false,H:null}}
+function hrvText(hrv){const {pass,H}=hrvGate();
+  if(!H)return '<span class="hint">validation not computed</span>';
+  if(!pass)return `<span class="hint">not shown — failed validation against expert-annotated beats (agreement ICC ${H.agreement?H.agreement.icc:'—'}, required ${H.rule.iccMin})</span>`;
+  return hrv&&hrv.rmssd!=null?`RMSSD ${hrv.rmssd} ms <span class="hint">(${hrv.n} beat-to-beat differences)</span>`:'<span class="hint">too few clean beats for RMSSD (need 8 successive differences)</span>'}
 async function fillHrAge(p,r){
   const el=$('#hrAgeCard'); if(!el)return;
   let A=null; try{A=(window.__DISC||(window.__DISC=await cachedFetch('data/discover.json','json'))).age}catch(e){}
@@ -1189,6 +1196,12 @@ async function fillHrAge(p,r){
     <div class="hint" style="margin:2px 0 8px">${where} of ${R.n} healthy ${({Neonate:'neonates',Infant:'infants',Child:'children',Adolescent:'adolescents'})[band]||esc(band)} (median ${Math.round(R.p50)} bpm) · z = ${z>=0?'+':''}${z.toFixed(1)}</div>
     <div style="position:relative;height:120px"><canvas id="c-hrAge"></canvas></div>
     <p class="hint">Measured from this recording by the page’s own S1/S2 detector; reference from CirCor patients with no murmur and a normal outcome. A reference, not a risk score: on held-out data the deviation does not separate normal from abnormal outcome (<a href="#discover" data-jump="d-age" class="toAge">Discoveries ${n}</a>).</p>`;
+  {const {pass,H}=hrvGate(), st=p.sites.find(x=>x.loc===p.curLoc), v=H&&H.perRecording&&st&&H.perRecording[st.name], bb=H&&(H.byBand||[]).find(x=>x.band===band);
+   el.insertAdjacentHTML('beforeend',`<h3 style="margin-top:14px">Heart-rate variability</h3>${!H?'<div class="hint">Not computed yet.</div>':!pass
+     ?`<div class="hint">Not shown: the beat finder’s RMSSD did not agree well enough with the experts’ annotated beats (ICC ${H.agreement?H.agreement.icc:'—'}, required ${H.rule.iccMin}; bias ${H.agreement?H.agreement.bias:'—'} ms). See <a href="#longevity">Longevity</a>.</div>`
+     :v&&v.rmssd!=null?`<div class="row" style="align-items:baseline;gap:8px"><b style="font-size:22px">${v.rmssd}</b><span class="hint">ms RMSSD · ${v.n} beat-to-beat differences</span></div><div class="hint">${bb?`Children in the ${esc(band.toLowerCase())} band, expert-annotated beats: median ${Math.round(bb.p50)} ms (middle half ${Math.round(bb.p25)}–${Math.round(bb.p75)}). `:''}Lower HRV predicts mortality in older adults (Tsuji 1994); no outcome link exists for children.</div>`
+     :'<div class="hint">Too few clean beats in this recording for RMSSD.</div>'}`)}
+
   if(hrAgeChart){try{hrAgeChart.destroy()}catch(e){}}
   if(window.Chart)hrAgeChart=new Chart($('#c-hrAge'),{type:'bar',data:{labels:[band],datasets:[
       {label:'healthy 10th–90th',data:[[R.p10,R.p90]],backgroundColor:'rgba(214,51,108,.15)',borderColor:'rgba(214,51,108,.45)',borderWidth:1,borderSkipped:false,barThickness:26},
@@ -2161,6 +2174,14 @@ async function renderLongevity(){
           <td>An age clock on breath-sound features, tested on held-out patients (Discoveries ${n16}).</td>
           <td>${A?`Adults: error ${A.adults.mae} y vs ${A.adults.maeNull} y for guessing the average — <b>no age signal</b> (p = ${A.adults.pPerm.toFixed(2)}).`:'—'}</td>
           <td>Not possible with the current sound features.</td></tr>
+        ${(()=>{const H=D.hrv,g=H&&H.agreement,rep=H&&H.repeatability||{};return `<tr><td><b>Heart-rate variability</b></td><td>Reduced HRV (SDNN and spectral power from 2-hour ECGs) predicted all-cause mortality in older adults — ${esc(H?H.refs[1].cite:'Tsuji et al., Circulation 1994')}, PMID ${H?H.refs[1].pmid:'8044959'}. RMSSD, the measure that stays valid in 10-s recordings (${esc(H?H.refs[0].cite:'Munoz et al., PLoS One 2015')}, PMID ${H?H.refs[0].pmid:'26414314'}), was not among its significant predictors.</td>
+          <td>RMSSD from the beat-to-beat intervals the S1 detector finds in heart-sound recordings (CirCor children).</td>
+          <td>${g?`Against the experts’ annotated beats on ${H.n.both.toLocaleString()} recordings: ICC <b>${g.icc}</b> ${rel(g.icc)}, bias ${g.bias} ms (limits ${g.loa[0]} to ${g.loa[1]}).`:'Not computed.'}${rep.detector?` Two valves of the same child: ICC ${f2(rep.detector.icc)} (experts’ beats: ${rep.expert?f2(rep.expert.icc):'—'}).`:''}</td>
+          <td>${H&&H.pass?'Shown on heart-sound pages; children only, no outcome link.':'<b>Failed validation — not shown.</b> The beat finder does not reproduce the experts’ beat-to-beat variability.'}</td></tr>`})()}
+        ${(()=>{const Ap=D.apnea&&D.apnea.channels&&D.apnea.channels.trach;return `<tr><td><b>Sleep apnea severity (AHI)</b></td><td>In the Sleep Heart Health Study (6,441 adults, 8.2 years), severe sleep-disordered breathing (AHI ≥ 30) carried a fully adjusted hazard ratio of 1.46 (95 % CI 1.14–1.86) for all-cause mortality — Punjabi et al., PLoS Med 2009, PMID 19688045.</td>
+          <td>Acoustic AHI from overnight breath sound, AASM rules (Discoveries 12).</td>
+          <td>${Ap&&Ap.ahi?`PSG-Audio pilot, ${Ap.patients} adults: under-counts by ${Math.abs(Ap.ahi.bias)} events/h (limits ${Ap.ahi.loa[0]} to ${Ap.ahi.loa[1]}); severity class correct in ${Ap.severity.agree} of ${Ap.severity.n}.`:'Not computed.'}</td>
+          <td>Measurable in adults overnight, but it under-counts: an acoustic AHI below 30 does not exclude severe apnea.</td></tr>`})()}
         <tr><td><b>Breathing rate</b></td><td>No mortality link is claimed here.</td><td>From breath-sound clips.</td>
           <td>ICC = <b>${f2(ra&&ra.iccRR)}</b> ${rel(ra&&ra.iccRR)}; full breath cycles segmented in ${ra?Math.round(100*ra.fracRRreliable):'—'} % of recordings. The estimator is also biased in adults (see Validation).</td><td>Not reliable from these clips.</td></tr>
       </tbody></table></div>
@@ -2307,7 +2328,7 @@ const GLOSS={
  // longevity
  rhr:{c:'Longevity',t:'Resting heart rate and mortality',d:'In adult population studies, a higher resting heart rate goes with higher all-cause and cardiovascular mortality (meta-analysis: about 9 % higher risk per 10 bpm). An association, not proof that lowering it helps.',s:['Resting heart rate','resting heart rate']},
  bioage:{c:'Longevity',t:'Biological-age gap',d:'A model predicts age from a physiological signal; a predicted age above the real one has been linked to mortality for the ECG. No validated auscultation equivalent exists.',s:['biological age','Biological age','Biological-age','biological-age','“Biological age” gap']},
- hrv:{c:'Longevity',t:'Heart-rate variability',d:'Beat-to-beat variation of the heart rate; lower variability predicts mortality in several populations. It needs minutes of clean beats — seconds-long clips are too short.',s:['heart-rate variability','HRV']},
+ hrv:{c:'Longevity',t:'Heart-rate variability',d:'Beat-to-beat variation of the heart rate; lower variability predicts mortality in several populations. It needs minutes of clean beats — seconds-long clips are too short.',s:['heart-rate variability','Heart-rate variability','heart rate variability','Heart rate variability','HRV','RMSSD']},
 };
 const GLOSS_MAP={}; for(const [k,g] of Object.entries(GLOSS))for(const w of g.s)GLOSS_MAP[w]=k;
 const GLOSS_RE=new RegExp('(?<![\\w\\-/])('+Object.keys(GLOSS_MAP).sort((a,b)=>b.length-a.length).map(w=>w.replace(/[.*+?^${}()|[\]\\\/]/g,'\\$&')).join('|')+')(?![\\w\\-])','g');
@@ -2391,11 +2412,52 @@ function modelProba(M,x){const m=M.model, nan=v=>v==null||Number.isNaN(v);
   for(const it of m.trees)it.forEach((nodes,k)=>{let i=0;while(!nodes[i][5]){const [f,t,ml,l,r]=nodes[i],v=x[f];i=nan(v)?(ml?l:r):(v<=t?l:r)}raw[k]+=nodes[i][6]});
   if(m.binary){const p=1/(1+Math.exp(-raw[0]));return [1-p,p]}
   const mx=Math.max(...raw),e=raw.map(v=>Math.exp(v-mx)),s=e.reduce((a,b)=>a+b,0);return e.map(v=>v/s)}
+// Heart-rate variability from the detected S1 times. Standard artefact rule: drop beat-to-beat intervals more than
+// 20 % from the median interval (missed or extra beats). RMSSD needs ≥ 8 successive differences (≈ 10 s; a single 10-s
+// ECG gives a valid RMSSD — Munoz 2015); SDNN needs ≥ 30 s of clean intervals. NOTE: the beat finder only accepts beats
+// recurring within ±12 % of the heart period, so variability may be under-estimated — pipeline/hrv_validate.js
+// measures this against the CirCor experts' S1 annotations before the marker is trusted.
+function hrvFromBeats(A,t0=-Infinity,t1=Infinity){
+  const s1=(A.heart&&A.heart.beats||[]).map(b=>b.s1).filter(t=>t>=t0&&t<=t1).sort((a,b)=>a-b);
+  return hrvFromTimes(s1);
+}
+function hrvFromTimes(s1){
+  const rr=[];for(let i=1;i<s1.length;i++)rr.push(s1[i]-s1[i-1]);
+  if(rr.length<4)return {n:0,rrN:rr.length,rmssd:null,sdnn:null,hr:null};
+  const md=median(rr), ok=rr.map(v=>Math.abs(v-md)<=0.2*md);
+  const clean=rr.filter((v,i)=>ok[i]), d=[];for(let i=1;i<rr.length;i++)if(ok[i]&&ok[i-1])d.push(rr[i]-rr[i-1]);
+  const ms=v=>Math.round(v*10000)/10;
+  const rmssd=d.length>=8?ms(Math.sqrt(d.reduce((a,v)=>a+v*v,0)/d.length)):null;
+  const sum=clean.reduce((a,v)=>a+v,0), mu=sum/(clean.length||1);
+  const sdnn=sum>=30&&clean.length>=20?ms(Math.sqrt(clean.reduce((a,v)=>a+(v-mu)*(v-mu),0)/(clean.length-1))):null;
+  return {n:d.length,rrN:rr.length,clean:clean.length,cleanFrac:+(clean.length/rr.length).toFixed(2),cleanSec:+sum.toFixed(1),hr:clean.length?+(60/mu).toFixed(1):null,rmssd,sdnn};
+}
+// Richer heart-sound features for the murmur model: per beat, systolic vs diastolic power in four bands, plus spread
+// across beats, spectral centre and flatness. Uses the same STFT frames as the rest of the analysis.
+function heartFeaturesExt(A){
+  const F=A.F, beats=(A.heart&&A.heart.beats)||[], BANDS=[[50,150],[150,300],[300,600],[600,1000]];
+  const fr=(a,b)=>{const out=[];for(let f=0;f<F.nF;f++)if(F.t[f]>=a&&F.t[f]<=b)out.push(f);return out};
+  const bandPow=(frames,lo,hi)=>{if(!frames.length)return null;const k0=Math.round(lo/binHz),k1=Math.round(hi/binHz);let s=0;for(const f of frames){const sp=F.specs[f];for(let k=k0;k<=k1;k++)s+=sp[k]*sp[k]}return s/frames.length/(k1-k0+1)};
+  const centroid=frames=>{const k0=Math.round(50/binHz),k1=Math.round(1000/binHz);let w=0,c=0;for(const f of frames){const sp=F.specs[f];for(let k=k0;k<=k1;k++){const p=sp[k]*sp[k];w+=p;c+=p*k*binHz}}return w?c/w:null};
+  const flat=frames=>{const k0=Math.round(100/binHz),k1=Math.round(600/binHz);let lg=0,ar=0,n=0;for(const f of frames){const sp=F.specs[f];for(let k=k0;k<=k1;k++){const p=sp[k]*sp[k]+1e-12;lg+=Math.log(p);ar+=p;n++}}return n?Math.exp(lg/n)/(ar/n):null};
+  const per=[];
+  for(let i=0;i<beats.length-1;i++){const b=beats[i],nx=beats[i+1].s1; if(nx-b.s1>2.2*(b.s2-b.s1)+0.6)continue;
+    const sy=fr(b.s1+0.05,b.s2-0.03), di=fr(b.s2+0.06,nx-0.05); if(sy.length<2||di.length<2)continue;
+    per.push({r:BANDS.map(([lo,hi])=>Math.log10((bandPow(sy,lo,hi)+1e-12)/(bandPow(di,lo,hi)+1e-12))),cs:centroid(sy),cd:centroid(di),fs:flat(sy)})}
+  const q=(arr,p)=>{const a=arr.filter(v=>v!=null&&isFinite(v)).sort((x,y)=>x-y);return a.length?a[Math.min(a.length-1,Math.floor(p*(a.length-1)+0.5))]:null};
+  const o={usableBeats:per.length};
+  BANDS.forEach(([lo,hi],j)=>{const v=per.map(p=>p.r[j]);o[`r${lo}_${hi}`]=q(v,0.5);o[`iqr${lo}_${hi}`]=v.length>=4?q(v,0.75)-q(v,0.25):null});
+  o.sysCentroid=q(per.map(p=>p.cs),0.5); o.diaCentroid=q(per.map(p=>p.cd),0.5); o.sysFlatness=q(per.map(p=>p.fs),0.5);
+  o.fracLoudSys=per.length?per.filter(p=>p.r[1]>0.3).length/per.length:null;   // beats with 150–300 Hz systolic power > 2× diastolic
+  for(const k in o)if(typeof o[k]==='number')o[k]=+o[k].toFixed(4);
+  return o;
+}
 let MODELS=null, anCharts=[], anWS=null;
 const HEART_SITES=[['AV','Aortic valve'],['PV','Pulmonary valve'],['TV','Tricuspid valve'],['MV','Mitral valve']];
 async function renderAnalyze(){
   $('#view').innerHTML='<h1>Analyze a recording</h1><div class="empty">Loading models…</div>';
   try{MODELS=MODELS||await cachedFetch('data/models.json','json')}catch(e){$('#view').innerHTML=`<h1>Analyze a recording</h1><div class="notice">Models not available: ${esc(e.message)}</div>`;return}
+  try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){}
   if(location.hash!=='#analyze')return;
   const on=MODELS.models.filter(m=>m.gate.deploy), off=MODELS.models.filter(m=>!m.gate.deploy), exp=off.filter(m=>m.override&&m.override.on), dead=off.filter(m=>!(m.override&&m.override.on));
   $('#view').innerHTML=`<h1>Analyze a recording</h1>
@@ -2427,13 +2489,15 @@ function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">swi
   const pc=v=>v&&v.value!=null?`${v.value} % <span class="hint">(${v.lo}–${v.hi})</span>`:'—';
   return `<div class="card vrep" id="m-${m.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 style="margin:0">${esc(m.title)}</h2>${st}</div>
     <dl class="kv" style="margin-top:10px;grid-template-columns:170px 1fr"><dt>Question</dt><dd>${esc(m.question)}</dd><dt>Trained on</dt><dd>${esc(m.data)} — ${m.nTrainPatients} patients (${m.nTrainRec} recordings)</dd>
-      <dt>Tested on</dt><dd><b>${m.nTestPatients} held-out patients</b> (${m.nTestRec} recordings)</dd><dt>Model</dt><dd>${esc(m.chosen)} — chosen by cross-validation on the training patients (${Object.entries(m.cv).map(([k,v])=>esc(k)+' '+v).join(' · ')})</dd>
+      <dt>Tested on</dt><dd><b>${m.nTestPatients} held-out patients</b> (${m.nTestRec} recordings)</dd><dt>Model</dt><dd>${esc(m.chosen)}${m.featureSet?` on the “${esc(m.featureSet)}” inputs`:''} — chosen by cross-validation on the training patients (${Object.entries(m.cv).map(([k,v])=>esc(k)+' '+v).join(' · ')})</dd>
       ${m.gate.deploy?'':`<dt>${isExp(m)?'Why it failed':'Why it is off'}</dt><dd class="bad-t" style="font-weight:500">${m.gate.reasons.map(esc).join('; ')}</dd>`}
       ${m.ageGate?`<dt>Runs only for</dt><dd>${m.ageRange[0]===0?'patients under '+m.ageRange[1]:'patients aged '+m.ageRange[0]+'–'+m.ageRange[1]} — the ages it was trained on</dd>`:''}
       ${isExp(m)?`<dt>Status</dt><dd>Switched on by the owner on ${esc(m.override.date)} despite failing validation. Its output is research-only and is shown with these failures beside it.</dd>`:''}</dl>
     <div class="grid g2" style="margin-top:8px"><div style="overflow-x:auto"><table><thead><tr><th>Held-out</th><th>Value (95 % CI)</th></tr></thead><tbody>
       <tr><td>Top answer correct</td><td class="mono">${pc(t.accuracy)}</td></tr><tr><td>Baseline: always answering the commonest class</td><td class="mono">${pc(m.majority)}</td></tr>
       ${m.confound?`<tr><td>${esc(m.confound.what)}</td><td class="mono">${pc(m.confound)}</td></tr>`:''}
+      ${m.ageOnly?`<tr><td>${esc(m.ageOnly.what)} — macro AUC</td><td class="mono">${m.ageOnly.macroAuc}</td></tr>`:''}
+      ${m.vsPrevious?`<tr><td>Previous version (“${esc(m.vsPrevious.previous)}” inputs) on the same held-out patients</td><td class="mono">AUC ${m.vsPrevious.aucPrevious} → ${m.vsPrevious.auc} <span class="hint">(Δ ${m.vsPrevious.delta>0?'+':''}${m.vsPrevious.delta}, 95 % CI ${m.vsPrevious.ci[0]} to ${m.vsPrevious.ci[1]})</span></td></tr>`:''}
       <tr><td>Macro ROC AUC (0.5 = chance)</td><td class="mono">${t.macroAuc}</td></tr>${m.testPatient?`<tr><td>Top answer correct, per patient (recordings averaged)</td><td class="mono">${pc(m.testPatient.accuracy)}</td></tr>`:''}
       ${m.external?`<tr><td>External: ${esc(m.external.data)} — macro AUC</td><td class="mono">${m.external.macroAuc}</td></tr>`:''}
       ${(()=>{const rb=MODELS.robustness&&MODELS.robustness.models[m.id];if(!rb)return '';const w=rb.perClass.reduce((a,c)=>c.p95AbsShift>a.p95AbsShift?c:a),fl=rb.perClass.reduce((a,c)=>a+c.flagChanged,0);
@@ -2475,8 +2539,8 @@ async function runAnalyze(fileOverride){
   st.textContent='Decoding and analysing…'; $('#anGo').disabled=true;
   try{
     const {x,srcDur}=await decodeToSR(file,MAX_ANALYSE_S); if(x.length<5*SR)throw new Error(`recording is ${(x.length/SR).toFixed(1)} s — at least 5 s is needed`);
-    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf};
-    window.__analyze={feats,type,age,results:[]};
+    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}, hrv=hrvFromBeats(A);
+    window.__analyze={feats,type,age,hrv,results:[]};
     const ms=MODELS.models.filter(m=>m.kind===type);
     // ageGate: a model whose training population excludes this age is not run at all (owner's decision 2026-11-11)
     const ageOk=m=>!m.ageGate||(age>=m.ageRange[0]&&age<(m.ageRange[0]===0?m.ageRange[1]:m.ageRange[1]+1e-9));
@@ -2486,16 +2550,16 @@ async function runAnalyze(fileOverride){
       const miss=m.features.filter(f=>feats[f]==null); if(miss.length)warn.push(`not measurable on this recording: ${miss.join(', ')}`);
       return {m,p,warn,ageBlocked:runs(m)&&!ageOk(m)}});
     window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn,ageBlocked:r.ageBlocked}));
-    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res); st.textContent='';
+    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv); st.textContent='';
   }catch(e){st.textContent='Could not analyse: '+e.message}
   $('#anGo').disabled=false;
 }
-function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res){
+function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv){
   const siteName=type==='heart'?(HEART_SITES.find(s=>s[0]===site)||[0,site])[1]:site, n1=v=>v==null?'—':v;
   $('#anOut').innerHTML=`<div class="card" style="margin-top:16px"><h2>2 · The signal</h2><p class="hint" style="margin-top:0">${esc(file.name)} · ${siteName} · ${age} y · ${srcDur.toFixed(1)} s${srcDur>MAX_ANALYSE_S?` (first ${MAX_ANALYSE_S} s analysed)`:''} · resampled to ${SR/1000} kHz</p>
       <div id="anWave" style="border:1px solid var(--line);border-radius:10px;padding:6px"></div><div class="row" style="margin-top:6px"><button class="btn small" id="anPlay">▶ Play</button></div>
       <dl class="kv" style="margin-top:12px;grid-template-columns:200px 1fr">
-        ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd>`
+        ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd><dt>Heart-rate variability</dt><dd>${hrvText(hrv)}</dd>`
         :`<dt>Breathing rate</dt><dd>${f.rr==null?'—':f.rr+' /min'}${f.est?' <span class="hint">(phases estimated — approximate)</span>':''}</dd><dt>Crackle-like events</dt><dd>${f.crkRate} /s (${f.fineRate} /s fine)</dd><dt>Continuous (tonal) sound</dt><dd>${Math.round(100*f.tonFrac)} % of the time${f.tonHz?` · median ${f.tonHz} Hz`:''}</dd><dt>Spectral centroid / median frequency</dt><dd>${f.cen} Hz / ${n1(f.f50)} Hz</dd>`}
       </dl></div>
     <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${res.length?res.map((r,i)=>resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}

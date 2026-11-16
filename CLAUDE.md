@@ -85,6 +85,11 @@ npm run build:models                     # train_models.py -> codec_check.js -> 
 python3 pipeline/train_models.py         #   web/data/models.json: 4 models, patient split, gate, thresholds, parity vectors
 node pipeline/codec_check.js             #   models.json['robustness']: site MP3 copies vs original WAV (~7 min)
 
+# CirCor extended features + HRV validation (needs raw/circor: PhysioNet zip, physionet.org allowed)
+npm run build:hrv                        # circor_ext.js (~30 min) -> hrv_discover.py -> clinical_validation.py -> --bump
+node pipeline/circor_ext.js              #   meta/features/circor_ext.jsonl: heartFeatures + heartFeaturesExt + HRV detector vs expert .tsv
+python3 pipeline/hrv_discover.py         #   discover.json['hrv']: agreement, repeatability, by band, per-recording values
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -162,12 +167,30 @@ critically lower; breath-sound AUC 0.76, frozen on KAUH adults AUC 0.71. Researc
 - **Age gate (owner, 2026-11-11):** models with `ageGate` (both pattern models) are not run outside their training
   ages — children's pattern under 18, adults' pattern 12–90 — and the page says why. Before it, the adults' model
   answered "heart failure 100 %" for a 2-month-old. The validated models only warn on age.
+- **Model update 2026-11-16 (frozen split, same held-out patients as before — `FROZEN` from the previous testPids):**
+  candidates are now (feature set × model), chosen by grouped CV on train. Heart: `heartFeaturesExt` (per-beat
+  systolic/diastolic power in 50–150/150–300/300–600/600–1000 Hz, spread, centroids, flatness) won (CV 0.852 vs 0.837);
+  held-out AUC **0.804 → 0.825 (Δ +0.021, 95 % CI −0.001 to +0.042, patient bootstrap) — small, borderline**; stored in
+  `vsPrevious`. Lung sound: age did not help, unchanged. Disease models now take sound + age and are compared with an
+  **age-only baseline** (`ageOnly`, also in the gate): children 0.652 vs age 0.523, adults 0.679 vs age 0.635 — both
+  still fail. Valve/age context features did not help the murmur model in CV (tried and dropped).
 - `train_models.py` keeps `models.json['robustness']` when the retrained models are bit-identical; otherwise rerun
   `node pipeline/codec_check.js`.
 - Compressed uploads (`codec_check.js`): median probability shift 0–1 pt, 95th pct 3–9 pts, a flag changes in
   1.5–4.6 % of decisions.
 - The page always says "not a diagnosis" and shows warnings for age outside the training range, features outside the
   training 1st–99th percentile, and unmeasurable features.
+
+## HRV (heart-rate variability) — validated, failed, not shown (2026-11-16)
+`hrvFromBeats` / `hrvFromTimes` (page): RMSSD from S1 intervals, intervals > 20 % from the median dropped, ≥ 8 successive
+differences; SDNN only with ≥ 30 s of clean intervals. `circor_ext.js` computes it from the detector AND from the CirCor
+experts' S1 onsets (.tsv) on the same annotated window. **Pre-set rule (written before results): ICC ≥ 0.75 and
+|bias| ≤ 10 ms.** Result on 1,666 recordings: **ICC 0.516 (0.47–0.56), bias +8.8 ms, LoA −30 to +48 → failed**; pages
+say so and show no number. Heart rate from the same beats is good (ICC 0.81). Experts' own RMSSD repeats across
+valves at ICC 0.71; detector 0.49. Expert RMSSD by band (reference): infant ~23, child ~36, adolescent ~43 ms.
+Refs (PubMed-checked): Munoz 2015 PMID 26414314 (10-s RMSSD valid); Tsuji 1994 PMID 8044959 (reduced HRV → mortality in
+older adults; SDNN/spectral, not RMSSD); Punjabi 2009 PMID 19688045 (severe SDB AHI ≥ 30: HR 1.46 for all-cause mortality).
+To pass, the S1 timing must improve (the detector constrains beats to ±12 % of the period and misplaces onsets).
 
 ## Presentation layer — Home, tooltips, glossary
 - **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)
@@ -237,7 +260,7 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
 | SPRSound (SJTU) | in use: 191 browsable children; all 6,567 recordings in Discoveries | CC BY 4.0 | 8 kHz; WAV header has an odd blockAlign, so the custom `parseWav` is used; 390 BioCAS2023 files have no patient number (key `'0'`) |
 | KAUH (Fraiwan et al., Mendeley jwyy9np4gv v3) | in use: 112 subjects, 12–90 y | CC BY 4.0 | 4 kHz Littmann 3200, resampled to 8 kHz; one site per subject; whole-recording labels, no event timings |
 | CB / emphysema (Fraiwan, Haider & Khassawneh, Mendeley 9hdrddjpny v1) | in use: Discoveries only, 234 recordings | CC BY 4.0 | 86 chronic bronchitis + 148 emphysema, **same Littmann 3200 and protocol as KAUH** — the only device-matched disease comparison here. No healthy recordings and no per-file age/sex/site; filter mode not stated. Not browsable: findings need a baseline and the set has no controls |
-| CirCor DigiScope 1.0.3 (PhysioNet) | in use: 120 browsable patients; all 941 validated | **ODC-By 1.0** (checked: `LICENSE.txt` in the release — attribution, republishing allowed) | 942 patients, 3,163 recordings (3,118 primary takes used; `_1/_2/_3` repeats and `Phc` skipped). 4 kHz, up to 4 valve sites. Per-valve murmur truth plus `.tsv` S1/systole/S2/diastole segmentation — the only set here that can score the cardiac detectors |
+| CirCor DigiScope 1.0.3 (PhysioNet) | in use: 120 browsable patients; all 941 validated; **raw re-downloaded 2026-11-16** (zip from physionet.org, SHA256 verified; `raw/circor/circor-heart-sound-1.0.3` is a symlink to the extracted folder) | **ODC-By 1.0** (checked: `LICENSE.txt` in the release — attribution, republishing allowed) | 942 patients, 3,163 recordings (3,118 primary takes used; `_1/_2/_3` repeats and `Phc` skipped). 4 kHz, up to 4 valve sites. Per-valve murmur truth plus `.tsv` S1/systole/S2/diastole segmentation — the only set here that can score the cardiac detectors |
 | PSG-Audio (Korompili et al., Sci Data 2021; Science Data Bank 10.11922/sciencedb.00345) | in use: Discoveries 12 only, **pilot of 10 patients / 44 h** | CC BY 4.0 (HF mirror card + scidb page) | 212 adults, Athens sleep lab, PSG scored by technician + physician; tracheal contact mic + ambient mic at 48 kHz in hourly EDF (V3), `.rml` events + **UserStaging** (ignore MachineStaging). Read from the partial HF mirror `dust-systems/psg-audio` (the scidb FTP logins are time-limited). File names literally contain `%5B001%5D` — escape `%` in URLs. **Audio never goes to `web/`** (overnight audio can hold speech) |
 | PhysioNet overnight / sleep sets | wanted | varies | Still useful for healthy sleepers and children — PSG-Audio is ~89 % severe OSA, adults only |
 | ICBHI 2017 | wanted — **not obtainable**, see below | research only | Same devices from children to elderly, so a true lifespan curve; don't republish its audio |
@@ -386,4 +409,4 @@ arousal channel exists; Levine I–VI used properly.
 ## Cloud environment
 This repo's sessions run on the personal environment **auscultadb** (not Default): package registries plus
 `huggingface.co`, `cdn-lfs.huggingface.co`, `cas-bridge.xethub.hf.co`, `us.aws.cdn.hf.co` (HF file downloads) and
-`www.scidb.cn`. The HF hosts are also what task 3 (HeAR) needs, together with a token.
+`www.scidb.cn`, and `physionet.org` (CirCor). The HF hosts are also what task 3 (HeAR) needs, together with a token.

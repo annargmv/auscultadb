@@ -64,6 +64,11 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.waitForFunction(() => { const c = document.querySelector('#hrAgeCard'); return c && !/loading/.test(c.innerText) }, null, { timeout: 15000 });
     const ha = await pg.evaluate(() => { const c = document.querySelector('#hrAgeCard'); return { t: c.innerText.replace(/\s+/g, ' '), chart: !!c.querySelector('#c-hrAge') } });
     check(/bpm/.test(ha.t) && (ha.chart || /No heart rate|No healthy reference/.test(ha.t)) && /not a risk score|No heart rate|No healthy/.test(ha.t), `heart rate for age: ${ha.t.slice(18, 90)}`);
+    // HRV appears as a number only if it passed its pre-set agreement rule against expert-marked beats
+    await pg.waitForFunction(() => /Heart-rate variability/.test(document.querySelector('#hrAgeCard').innerText), null, { timeout: 15000 });
+    const hv = await pg.evaluate(() => ({ pass: !!(window.__DISC.hrv && window.__DISC.hrv.pass), txt: document.querySelector('#hrAgeCard').innerText }));
+    check(hv.pass ? /ms RMSSD|Too few clean beats/.test(hv.txt) : (/Not shown/.test(hv.txt) && !/ms RMSSD/.test(hv.txt)),
+      `HRV on the patient card follows its validation (${hv.pass ? 'passed: value shown' : 'failed: no number shown, reason given'})`);
     const rel = await pg.evaluate(() => [...document.querySelectorAll('dt')].find(d => d.textContent === 'Release').nextElementSibling.textContent);
     check(/CC201[45]/.test(rel), `CirCor release from the data: ${rel}`);
     await pg.screenshot({ path: path.join(OUT, 'circor.png'), fullPage: true });
@@ -207,6 +212,9 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.waitForFunction(() => window.__example && window.__analyze && window.__analyze.type === 'heart' && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const ex = await pg.evaluate(() => ({ ex: window.__example, p: window.__analyze.results[0].p, held: /held out/.test(document.querySelector('#anExample').innerText) }));
     check(ex.held && ex.ex.truth === 'Murmur' && ex.p, `held-out example ${ex.ex.id}: expert says Murmur, model says ${Math.round(100 * ex.p[1])} % murmur`);
+    const an = await pg.evaluate(() => ({ out: document.querySelector('#anOut').innerText, card: document.querySelector('#m-heart_murmur').innerText, pass: !!(window.__DISC.hrv && window.__DISC.hrv.pass), vs: !!MODELS.models[0].vsPrevious }));
+    check((an.pass || (/failed validation against expert-annotated beats/.test(an.out) && !/RMSSD \d/.test(an.out))) && (!an.vs || /Previous version/.test(an.card)),
+      `analyze: HRV line follows its validation; murmur card ${an.vs ? 'compares with the previous version on the same patients' : 'has no previous version'}`);
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(300);
     await pg.screenshot({ path: path.join(OUT, 'analyze-example.png'), fullPage: true });
 
