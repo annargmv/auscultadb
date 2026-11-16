@@ -48,6 +48,9 @@ OWNER_ON = {'lung_pattern_child', 'lung_pattern_adult'}
 CI = PerformanceMetricConfidenceParam(0.95)
 LUNG = ['f50', 'f75', 'cen', 'rr', 'hr', 'crkRate', 'fineRate', 'tonFrac', 'ie', 'dur']
 HEART = ['sysDia', 'consistency', 'hr', 'quietBeats', 'nBeats', 'nS3', 'dur']
+# richer systole-vs-diastole measurements (heartFeaturesExt in the page; meta/features/circor_ext.jsonl)
+HEART_EXT = ['usableBeats', 'r50_150', 'iqr50_150', 'r150_300', 'iqr150_300', 'r300_600', 'iqr300_600', 'r600_1000', 'iqr600_1000',
+             'sysCentroid', 'diaCentroid', 'sysFlatness', 'fracLoudSys']
 
 
 def prop(k, n):
@@ -104,15 +107,17 @@ def macro_auc(y, P, K):
     return float(np.mean([roc_auc_score(y == k, P[:, k]) for k in range(K) if 0 < (y == k).sum() < len(y)]))
 
 
-def choose(tr, feats, K):
+def choose(tr, feat_sets, K):
+    """Every (feature set × model) pair is scored by grouped 5-fold CV on the TRAINING patients; the best one ships."""
     cv = StratifiedGroupKFold(5, shuffle=True, random_state=SEED); res = {}
-    for C in (LR, GB):
-        oof = np.zeros((len(tr), K))
-        for a, b in cv.split(tr[feats], tr.y, tr.pid):
-            oof[b] = C().fit(tr.loc[a, feats].values, tr.y[a].values).proba(tr.loc[b, feats].values)
-        res[C.name] = (round(macro_auc(tr.y.values, oof, K), 3), C, oof)
+    for fs, feats in feat_sets.items():
+        for C in (LR, GB):
+            oof = np.zeros((len(tr), K))
+            for a, b in cv.split(tr[feats], tr.y, tr.pid):
+                oof[b] = C().fit(tr.loc[a, feats].values, tr.y[a].values).proba(tr.loc[b, feats].values)
+            res[(fs, C.name)] = (round(macro_auc(tr.y.values, oof, K), 3), C, oof)
     best = max(res, key=lambda k: res[k][0])
-    return res[best][1], {k: v[0] for k, v in res.items()}, res[best][2]
+    return best[0], res[best][1], {f'{fs} · {c}': v[0] for (fs, c), v in res.items()}, res[best][2]
 
 
 def flag_metrics(isk, score, t):
@@ -139,6 +144,8 @@ def gate(m):
     if m.get('confound') and m['confound']['value'] is not None and t['accuracy']['value'] <= m['confound']['value']:
         why.append(f"accuracy {t['accuracy']['value']} % does not beat the recording-batch baseline ({m['confound']['value']} %)")
     if t['accuracy']['value'] <= m['majority']['value']: why.append(f"accuracy {t['accuracy']['value']} % does not beat always answering the commonest class ({m['majority']['value']} %)")
+    if m.get('ageOnly') and 'age' in m['features'] and t['macroAuc'] <= m['ageOnly']['macroAuc']:
+        why.append(f"macro AUC {t['macroAuc']} does not beat age alone ({m['ageOnly']['macroAuc']})")
     return {'deploy': not why, 'reasons': why}
 
 
@@ -160,14 +167,21 @@ def evaluate(y, P, classes, thr=None):
             'confusion': cm.tolist(), 'calibration': bins, 'brier': round(brier, 3)}
 
 
-def train(task, df, feats, classes, rng, meta):
+FROZEN = {}   # task -> held-out patient ids from the previous models.json: old and new versions face the SAME test patients
+
+
+def train(task, df, feat_sets, classes, rng, meta, age_baseline=False):
     df = df.copy(); df['y'] = df.label.map({c: i for i, c in enumerate(classes)}); df = df[df.y.notna()].copy(); df['y'] = df.y.astype(int)
-    tr, te = split(df, rng); K = len(classes)
-    C, cvres, oof = choose(tr, feats, K)
+    if task in FROZEN:
+        test = FROZEN[task]; tr, te = df[~df.pid.astype(str).isin(test)].reset_index(drop=True), df[df.pid.astype(str).isin(test)].reset_index(drop=True)
+    else:
+        tr, te = split(df, rng)
+    K = len(classes)
+    fs_name, C, cvres, oof = choose(tr, feat_sets, K); feats = feat_sets[fs_name]
     thr = thresholds(tr.y.values, oof, K)
     model = C().fit(tr[feats].values, tr.y.values)
     P = model.proba(te[feats].values)
-    out = {'id': task, 'classes': classes, 'features': feats, 'model': model.export(), 'chosen': C.name, 'cv': cvres,
+    out = {'id': task, 'classes': classes, 'features': feats, 'featureSet': fs_name, 'model': model.export(), 'chosen': C.name, 'cv': cvres, 'frozenSplit': task in FROZEN,
            'thresholds': thr, 'nTrainPatients': int(tr.pid.nunique()), 'nTestPatients': int(te.pid.nunique()), 'nTrainRec': len(tr), 'nTestRec': len(te),
            'test': evaluate(te.y.values, P, classes, thr),
            'majority': prop(int((te.y == tr.y.mode().iloc[0]).sum()), len(te)),
@@ -179,36 +193,58 @@ def train(task, df, feats, classes, rng, meta):
     if te.groupby('pid').size().max() > 1:
         g = pd.DataFrame(P).groupby(te.pid.values).mean(); yp = te.groupby('pid').y.first().loc[g.index].values
         out['testPatient'] = evaluate(yp, g.values, classes, thr)
+    first = next(iter(feat_sets))
+    if fs_name != first and task in FROZEN:   # the chosen richer set vs the previous set, same model type, same held-out patients
+        P0 = C().fit(tr[feat_sets[first]].values, tr.y.values).proba(te[feat_sets[first]].values)
+        y = te.y.values; pids = te.pid.astype(str).values; up = np.unique(pids); ix = {q: np.where(pids == q)[0] for q in up}
+        brng = np.random.default_rng(SEED); d = []
+        for _ in range(2000):
+            i = np.concatenate([ix[q] for q in brng.choice(up, len(up))])
+            if len(set(y[i])) == K: d.append(macro_auc(y[i], P[i], K) - macro_auc(y[i], P0[i], K))
+        a0, a1 = macro_auc(y, P0, K), macro_auc(y, P, K)
+        out['vsPrevious'] = {'previous': first, 'aucPrevious': round(a0, 3), 'auc': round(a1, 3), 'delta': round(a1 - a0, 3),
+                             'ci': [round(float(np.percentile(d, 2.5)), 3), round(float(np.percentile(d, 97.5)), 3)], 'pNotBetter': round(float(np.mean(np.array(d) <= 0)), 3)}
+    if age_baseline:   # what age alone achieves on the same patients: sound must add to it
+        ab = HistGradientBoostingClassifier(max_depth=2, learning_rate=0.05, max_iter=150, random_state=SEED).fit(tr[['age']].values, tr.y.values)
+        Pa = ab.predict_proba(te[['age']].values)
+        out['ageOnly'] = {'what': 'Age-only baseline: the same patients, predicted from age alone', 'macroAuc': round(macro_auc(te.y.values, Pa, K), 3),
+                          'accuracy': prop(int((Pa.argmax(1) == te.y.values).sum()), len(te))}
     return out, model, te, P
 
 
 def main():
     rng = np.random.default_rng(SEED); models = []
-    # ---- heart: valve-level murmur
-    C = pd.DataFrame([{**{f: r.get(f) for f in HEART}, 'pid': r['pid'], 'label': {'Murmur': 'murmur', 'Normal': 'no murmur'}.get(r['siteTruth']), 'band': r['ageBand']}
-                      for r in (json.loads(l) for l in open(FEATURES / 'circor.jsonl')) if 'err' not in r]).astype({f: float for f in HEART})
-    m, *_ = train('heart_murmur', C, HEART, ['no murmur', 'murmur'], rng, {
+    if (WEB_DATA / 'models.json').exists():
+        FROZEN.update({m['id']: set(m['testPids']) for m in json.loads((WEB_DATA / 'models.json').read_text())['models'] if m.get('testPids')})
+    # ---- heart: valve-level murmur. circor_ext.jsonl (raw CirCor, same page code) carries the extended features too.
+    ext = FEATURES / 'circor_ext.jsonl'
+    src = [json.loads(l) for l in open(ext if ext.exists() else FEATURES / 'circor.jsonl')]
+    C = pd.DataFrame([{**{f: r.get(f) for f in HEART}, **{f: (r.get('ext') or {}).get(f) for f in HEART_EXT}, 'pid': r['pid'],
+                       'label': {'Murmur': 'murmur', 'Normal': 'no murmur'}.get(r['siteTruth']), 'band': r['ageBand']}
+                      for r in src if 'err' not in r]).astype({f: float for f in HEART + HEART_EXT})
+    sets = {'current': HEART, 'current + extended': HEART + HEART_EXT} if ext.exists() else {'current': HEART}
+    m, *_ = train('heart_murmur', C, sets, ['no murmur', 'murmur'], rng, {
         'title': 'Murmur at this valve', 'kind': 'heart', 'ageRange': [0, 21], 'data': 'CirCor DigiScope 1.0.3 — children, Brazil, DigiScope stethoscope, per-valve expert murmur labels',
         'question': 'Is a murmur audible at this valve, as an expert annotator would mark it?'})
     models.append(m)
     # ---- lung: sound type (children), external check on KAUH adults
     S = [json.loads(l) for f in sorted(FEATURES.glob('spr.*.jsonl')) for l in open(f)]
     snd = {'Normal': 'normal', 'CAS': 'continuous (wheeze / rhonchi)', 'DAS': 'crackles', 'CAS & DAS': 'both'}
-    Sd = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'pid': r['pid'], 'label': snd.get(r['label']), 'release': r['rel'], 'dx': r['disease']} for r in S if r.get('age') is not None]).astype({f: float for f in LUNG})
-    cls = list(snd.values())
-    m, model, te, P = train('lung_sound', Sd, LUNG, cls, rng, {
+    Sd = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'age': r['age'], 'pid': r['pid'], 'label': snd.get(r['label']), 'release': r['rel'], 'dx': r['disease']} for r in S if r.get('age') is not None]).astype({f: float for f in LUNG + ['age']})
+    cls = list(snd.values()); LSETS = {'sound': LUNG, 'sound + age': LUNG + ['age']}
+    m, model, te, P = train('lung_sound', Sd, LSETS, cls, rng, {
         'title': 'Breath-sound type', 'kind': 'lung', 'ageRange': [0, 18], 'data': 'SPRSound (all releases) — children, Shanghai, Yunting stethoscope, expert recording labels',
         'question': 'Which kind of sound would an expert label this recording with?'})
-    K = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'label': snd.get(r['label'])} for r in (json.loads(l) for l in open(FEATURES / 'kauh.jsonl')) if r['mode'] == 'D']).astype({f: float for f in LUNG})
+    K = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'age': r.get('age'), 'label': snd.get(r['label'])} for r in (json.loads(l) for l in open(FEATURES / 'kauh.jsonl')) if r['mode'] == 'D']).astype({f: float for f in LUNG + ['age']})
     K = K[K.label.notna()]; yK = K.label.map({c: i for i, c in enumerate(cls)}).values
-    m['external'] = {'data': 'KAUH adults, Littmann 3200 diaphragm mode — model frozen', **evaluate(yK, model.proba(K[LUNG].values), cls, m['thresholds'])}
+    m['external'] = {'data': 'KAUH adults, Littmann 3200 diaphragm mode — model frozen', **evaluate(yK, model.proba(K[m['features']].values), cls, m['thresholds'])}
     models.append(m)
     # ---- lung: child diagnosis group; plus the release-only confound baseline
     grp = {'Pneumonia (non-severe)': 'pneumonia', 'Pneumonia (severe)': 'pneumonia', 'Bronchitis': 'bronchitis', 'Asthma': 'asthma', 'Control Group': 'healthy'}
     D = Sd.assign(label=Sd.dx.map(grp))
-    m, model, te, P = train('lung_pattern_child', D, LUNG, ['pneumonia', 'bronchitis', 'asthma', 'healthy'], rng, {
+    m, model, te, P = train('lung_pattern_child', D, LSETS, ['pneumonia', 'bronchitis', 'asthma', 'healthy'], rng, {
         'title': 'Lung pattern — children', 'kind': 'lung', 'ageRange': [0, 18], 'ageGate': True, 'data': 'SPRSound — children whose diagnosis is pneumonia, bronchitis, asthma or healthy control',
-        'question': 'Which diagnosis group do children with recordings like this one belong to?'})
+        'question': 'Which diagnosis group do children with recordings like this one belong to?'}, age_baseline=True)
     trD = D[D.label.notna() & ~D.pid.isin(set(te.pid))]
     rel_major = trD.groupby('release').label.agg(lambda s: s.mode().iloc[0])
     cls = m['classes']; ytrue = te.y.values; yrel = te.release.map(rel_major).map({c: i for i, c in enumerate(cls)}).values
@@ -216,10 +252,10 @@ def main():
     models.append(m)
     # ---- lung: adults (pilot)
     kg = {'Healthy adult (control)': 'healthy', 'Asthma': 'asthma', 'Heart failure': 'heart failure', 'Heart failure + COPD': 'heart failure', 'Heart failure + lung fibrosis': 'heart failure'}
-    A = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'pid': r['pid'], 'label': kg.get(r['disease'])} for r in (json.loads(l) for l in open(FEATURES / 'kauh.jsonl'))]).astype({f: float for f in LUNG})
-    m, *_ = train('lung_pattern_adult', A, LUNG, ['healthy', 'asthma', 'heart failure'], rng, {
+    A = pd.DataFrame([{**{f: r.get(f) for f in LUNG}, 'age': r.get('age'), 'pid': r['pid'], 'label': kg.get(r['disease'])} for r in (json.loads(l) for l in open(FEATURES / 'kauh.jsonl'))]).astype({f: float for f in LUNG + ['age']})
+    m, *_ = train('lung_pattern_adult', A, LSETS, ['healthy', 'asthma', 'heart failure'], rng, {
         'title': 'Lung pattern — adults (pilot)', 'kind': 'lung', 'ageRange': [12, 90], 'ageGate': True, 'pilot': True, 'data': 'KAUH — adolescents and adults, Jordan, Littmann 3200 (all three filter modes)',
-        'question': 'Which group — healthy, asthma or heart failure — do adults with recordings like this one belong to?'})
+        'question': 'Which group — healthy, asthma or heart failure — do adults with recordings like this one belong to?'}, age_baseline=True)
     models.append(m)
     for m in models:
         m['gate'] = gate(m)
@@ -234,10 +270,11 @@ def main():
     (WEB_DATA / 'models.json').write_text(json.dumps(out, separators=(',', ':'), ensure_ascii=False))
     for m in models:
         t = m['test']; a = t['accuracy']
-        print(f"{m['id']:20} {m['chosen']:20} cv {m['cv']} | test {m['nTestPatients']} pts/{m['nTestRec']} rec: acc {a['value']} [{a['lo']}-{a['hi']}] (majority {m['majority']['value']}) macroAUC {t['macroAuc']}"
+        print(f"{m['id']:20} [{m['featureSet']}] {m['chosen']:20} cv {m['cv']} | test {m['nTestPatients']} pts/{m['nTestRec']} rec: acc {a['value']} [{a['lo']}-{a['hi']}] (majority {m['majority']['value']}) macroAUC {t['macroAuc']}"
               + (f" | per patient acc {m['testPatient']['accuracy']['value']}" if 'testPatient' in m else '')
               + (f" | release-only {m['confound']['value']}" if 'confound' in m else '')
-              + (f" | external acc {m['external']['accuracy']['value']} macroAUC {m['external']['macroAuc']}" if 'external' in m else ''))
+              + (f" | external acc {m['external']['accuracy']['value']} macroAUC {m['external']['macroAuc']}" if 'external' in m else '')
+              + (f" | age-only AUC {m['ageOnly']['macroAuc']}" if m.get('ageOnly') else ''))
         print('    gate:', m['gate'])
         if m['test'].get('flags'): print('    flags:', '; '.join(f"{f['class']} t={f['threshold']} sens {f['sens']['value']} spec {f['spec']['value']}" for f in m['test']['flags']))
         print('   ', '; '.join(f"{c['class']}: sens {c['sens']['value']} spec {c['spec']['value']} AUC {c['auc']['value'] if c['auc'] else '—'}" for c in t['perClass']))

@@ -227,10 +227,36 @@ def age(D):
         'verdict': 'No clinical meaning; research only.'}
 
 
+def hrv(D):
+    H = D.get('hrv')
+    if not H or not H.get('agreement'): return None
+    g = H['agreement']; rep = H.get('repeatability', {}); hr = H.get('hrAgreement', {})
+    return {
+        'id': 'hrv', 'title': 'Heart-rate variability (RMSSD) from heart sounds', 'discover': 'd-age', 'evidence': 'external',
+        'question': 'Can beat-to-beat variability be measured from a heart-sound recording as accurately as from hand-marked beats?',
+        'intendedUse': 'Research: a candidate longevity-related marker. Shown on pages only if it agrees with expert-marked beats (pre-set rule: ICC ≥ 0.75 and |bias| ≤ 10 ms).',
+        'population': {'n': H['n']['both'], 'text': f"{H['n']['recordings']:,} CirCor heart-sound recordings (children, Brazil); {H['n']['both']:,} had enough clean beats for RMSSD from both the detector and the experts on the same annotated stretch."},
+        'reference': 'RMSSD computed from the S1 onsets the CirCor annotators marked in the .tsv segmentation, on the same stretch of recording and with the same artefact rule (intervals within 20 % of the median).',
+        'indexTest': 'RMSSD from the S1 times found by the page’s heart-sound detector; at least 8 successive differences required (a single 10-s recording suffices for RMSSD — Munoz 2015).',
+        'independence': 'External: the beat finder and the pass rule were fixed before the comparison was run.',
+        'metrics': [], 'subgroups': [],
+        'extra': [{'label': 'Agreement with expert-marked beats (ICC 2,1)', 'value': g['icc'], 'lo': g['iccCI'][0], 'hi': g['iccCI'][1], 'n': H['n']['both'], 'explain': f"required ≥ {H['rule']['iccMin']}; 0.75 is “good” agreement"},
+                  {'label': 'Mean bias, detector − experts (ms)', 'value': g['bias'], 'lo': g['loa'][0], 'hi': g['loa'][1], 'n': H['n']['both'], 'explain': '95 % limits of agreement: where one recording’s error falls'},
+                  {'label': 'Heart rate agreement (ICC)', 'value': hr.get('icc'), 'lo': None, 'hi': None, 'n': hr.get('n'), 'explain': f"bias {hr.get('bias')} bpm; {hr.get('within5bpm')} % within ±5 bpm — the beats are found, their exact timing is the problem"},
+                  {'label': 'Same child, two valves (ICC): detector / experts', 'value': rep.get('detector', {}).get('icc'), 'lo': None, 'hi': None, 'n': rep.get('detector', {}).get('children'),
+                   'explain': f"experts’ own beats repeat at ICC {rep.get('expert', {}).get('icc')} — short clips limit even perfect beat marking"}],
+        'bedside': [f"The detector’s RMSSD agrees only moderately with RMSSD from hand-marked beats (ICC {g['icc']}); a single recording can be off by {abs(g['loa'][0]):.0f}–{abs(g['loa'][1]):.0f} ms.",
+                    f"Heart rate from the same beats is reliable (ICC {hr.get('icc')}).",
+                    '<b>HRV is therefore not shown as a number on patient pages or for uploads.</b>' if not H['pass'] else 'HRV meets the pre-set agreement rule and is shown on heart-sound pages.'],
+        'limits': ['Children only; the mortality evidence for HRV is from older adults.', 'Clips of 5–65 s: RMSSD only; SDNN needs 30 s or more of clean beats.',
+                   'In the Framingham cohort the predictive HRV measures were SDNN and spectral power, not RMSSD (Tsuji 1994).'],
+        'verdict': 'Failed its pre-set agreement rule — not shown.' if not H['pass'] else 'Passed its pre-set agreement rule.'}
+
+
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), resp_spr(I), resp_kauh(I), apnea(), age(D)) if r]
+    reports = [r for r in (murmur(I), resp_spr(I), resp_kauh(I), apnea(), hrv(D), age(D)) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}
