@@ -94,6 +94,22 @@ def segmenter_section():
             if len(B) >= 20: by.append({'band': band, **{k: v for k, v in agree([r['hrvSeg']['rmssd'] for r in B], [r['hrvExp']['rmssd'] for r in B]).items() if k != 'iccCI'}})
         o['byBand'] = by
     o['pass'] = bool(o.get('agreement', {}).get('pass'))
+    # descriptive reference by age band (held-out recordings): the learned finder next to the experts' own beats
+    ref = []
+    for band in BANDS:
+        B = [r for r in segAll if r['ageBand'] == band]
+        if len(B) >= 20:
+            q = lambda v: [round(float(np.percentile(v, x)), 1) for x in (25, 50, 75)]
+            ref.append({'band': band, 'n': len(B), 'seg': q([r['hrvSeg']['rmssd'] for r in B]), 'exp': q([r['hrvExp']['rmssd'] for r in B])})
+    o['refByBand'] = ref
+    # trend with age band: one value per patient (mean of their recordings), Spearman against band order
+    rank = {b: i for i, b in enumerate(BANDS)}; pp = collections.defaultdict(list)
+    for r in segAll:
+        if r['ageBand'] in rank: pp[r['pid']].append((rank[r['ageBand']], r['hrvSeg']['rmssd'], r['hrvExp']['rmssd']))
+    if len(pp) >= 20:
+        b = [v[0][0] for v in pp.values()]; sm = [np.mean([x[1] for x in v]) for v in pp.values()]; em = [np.mean([x[2] for x in v]) for v in pp.values()]
+        rs, ps = stats.spearmanr(b, sm); re_, pe = stats.spearmanr(b, em)
+        o['ageTrend'] = {'patients': len(pp), 'rhoSeg': round(float(rs), 3), 'pSeg': float(ps), 'rhoExp': round(float(re_), 3), 'pExp': float(pe)}
     # shown only in the age bands that pass on their own (>= 20 held-out recordings); others say why
     o['showBands'] = [b['band'] for b in o.get('byBand', []) if b['pass']] if o['pass'] else []
     fc = FEATURES / 'seg_cohort.jsonl'

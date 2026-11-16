@@ -159,6 +159,10 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     const lo = await pg.evaluate(() => ({ none: /Nothing on this platform estimates longevity/.test(document.body.innerText), icc: /ICC = /.test(document.body.innerText),
       refs: /PMID 26598376/.test(document.body.innerText) && /PMID 34433816/.test(document.body.innerText), charts: !!document.querySelector('#c-ageclock') }));
     check(lo.none && lo.icc && lo.refs && lo.charts, 'longevity page: markers with measured reliability, cited evidence, age clock, no longevity estimate');
+    const lx = await pg.evaluate(() => ({ age: document.querySelector('#lg-icbhiAge') ? document.querySelector('#lg-icbhiAge').innerText : '', hrv: !!document.querySelector('#c-lgHrv'),
+      rows: [...document.querySelectorAll('td b')].map(b => b.textContent), pm: /PMID 31151958/.test(document.body.innerText) && /PMID 2506967/.test(document.body.innerText) }));
+    check(/ICBHI/.test(lx.age) && /(no )?age signal/.test(lx.age) && lx.hrv && lx.rows.includes('Wheeze') && lx.pm,
+      'longevity extended: ICBHI age-clock replication, HRV-by-age chart, wheeze and breathing-rate evidence with PMIDs');
     await pg.screenshot({ path: path.join(OUT, 'longevity.png'), fullPage: true });
 
     // Analyze a new recording: the browser must reproduce Python's probabilities, then run end to end on real audio

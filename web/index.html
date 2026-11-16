@@ -2170,8 +2170,9 @@ async function renderValidation(){
 async function renderLongevity(){
   $('#view').innerHTML='<h1>Longevity</h1><div class="empty">Loading…</div>';
   let D; try{D=window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){$('#view').innerHTML=`<h1>Longevity</h1><div class="notice">Results not available: ${esc(e.message)}</div>`;return}
+  await ensureIcbhi();
   if(location.hash!=='#longevity')return;
-  const A=D.age, ra=D.rates, f2=v=>v==null?'—':v.toFixed(2), rel=v=>v==null?'':v>=0.75?'<span class="pill ok">good</span>':v>=0.5?'<span class="pill warn">moderate</span>':'<span class="pill bad">poor</span>';
+  const A=D.age, ra=D.rates, IA=A&&A.icbhi, IR=IA&&IA.refs||{}, SG=D.hrv&&D.hrv.segmenter, IS=ICBHI&&ICBHI.models.find(m=>m.id==='icbhi_sound'), f2=v=>v==null?'—':v.toFixed(2), rel=v=>v==null?'':v>=0.75?'<span class="pill ok">good</span>':v>=0.5?'<span class="pill warn">moderate</span>':'<span class="pill bad">poor</span>';
   const ex=patients.find(p=>p.source==='circor'&&p.ageBand==='Child');
   const n16=DISCOVER_MAP.findIndex(x=>x.id==='age')+1;
   $('#view').innerHTML=`<h1>Longevity</h1>
@@ -2195,11 +2196,25 @@ async function renderLongevity(){
           <td>Acoustic AHI from overnight breath sound, AASM rules (Discoveries 12).</td>
           <td>${Ap&&Ap.ahi?`PSG-Audio pilot, ${Ap.patients} adults: under-counts by ${Math.abs(Ap.ahi.bias)} events/h (limits ${Ap.ahi.loa[0]} to ${Ap.ahi.loa[1]}); severity class correct in ${Ap.severity.agree} of ${Ap.severity.n}.`:'Not computed.'}</td>
           <td>Measurable in adults overnight, but it under-counts: an acoustic AHI below 30 does not exclude severe apnea.</td></tr>`})()}
-        <tr><td><b>Breathing rate</b></td><td>No mortality link is claimed here.</td><td>From breath-sound clips.</td>
+        <tr><td><b>Breathing rate</b></td><td>${IR.rr?`${esc(IR.rr.finding)} ${esc(IR.rr.cite)}, PMID ${IR.rr.pmid}.`:'No mortality link is claimed here.'}</td><td>From breath-sound clips (the published rate came from overnight airflow, not sound).</td>
           <td>ICC = <b>${f2(ra&&ra.iccRR)}</b> ${rel(ra&&ra.iccRR)}; full breath cycles segmented in ${ra?Math.round(100*ra.fracRRreliable):'—'} % of recordings. The estimator is also biased in adults (see Validation).</td><td>Not reliable from these clips.</td></tr>
+        ${IR.wheeze?`<tr><td><b>Wheeze</b></td><td>${esc(IR.wheeze.finding)} ${esc(IR.wheeze.cite)}, PMID ${IR.wheeze.pmid}.</td><td>Wheeze per breath cycle (ICBHI-trained model) and continuous sound per recording.</td>
+          <td>${IS?`Per cycle AUC <b>${IS.binary.wheezes.value}</b> (${IS.binary.wheezes.lo}–${IS.binary.wheezes.hi}) on ${IS.nTestPatients} held-out patients; per recording ${IS.deploy.wheezes?IS.deploy.wheezes.value:'—'}.`:'Not computed.'}</td>
+          <td>Measurable, weak. The published risk is for <b>reported</b> wheeze, not wheeze heard on a recording; no study links an auscultated wheeze to survival.</td></tr>`:''}
       </tbody></table></div>
-      <p class="hint">ICC = intraclass correlation between two recordings of the same patient: above 0.75 good, below 0.5 poor.</p></div>
+      <p class="hint">ICC = intraclass correlation between two recordings of the same patient: above 0.75 good, below 0.5 poor. Crackles are not listed: no population study linking auscultated crackles to mortality was found.</p></div>
     ${A?ageCard(A):'<div class="notice">The biological-age analysis has not been computed yet.</div>'}
+    ${IA&&IA.clocks.length?`<div class="card" style="margin-top:16px" id="lg-icbhiAge"><h2>Second adult test of the age clock — ICBHI 2017</h2>
+      <p class="hint" style="margin-top:0">Same method as above (ridge on the page’s breath-sound measurements, fit on 60 % of patients, scored on the other 40 %, compared with always guessing the training patients’ mean age). ICBHI is independent of KAUH: other countries, other stethoscopes.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Group</th><th>Patients</th><th>Error of the clock</th><th>Error of guessing the mean</th><th>Gain, 95 % CI</th><th>Permutation p</th><th></th></tr></thead><tbody>
+      ${IA.clocks.map(c=>`<tr><td>${esc(c.label)}</td><td class="mono">${c.patients}</td><td class="mono">${c.mae} y</td><td class="mono">${c.maeNull} y</td><td class="mono">${c.gainCI[0]} to ${c.gainCI[1]} y</td><td class="mono">${c.pPerm}</td><td>${c.significant?'<span class="pill ok">age signal</span>':'<span class="pill">no age signal</span>'}</td></tr>`).join('')}</tbody></table></div>
+      <p class="hint">${IA.clocks.every(c=>!c.significant)?'Neither group shows an age signal, even with diagnosis and microphone held fixed. This replicates the KAUH result: in adults, these breath-sound measurements do not carry the patient’s age, so no acoustic “biological age” can be built from them.':'At least one group shows a signal; see the confounds named in its label before reading it as age.'}</p></div>`:''}
+    ${SG&&SG.refByBand&&SG.refByBand.length?`<div class="card" style="margin-top:16px" id="lg-hrvAge"><h2>Heart-rate variability by age — children</h2>
+      <div class="grid g2"><div style="position:relative;height:220px"><canvas id="c-lgHrv"></canvas></div>
+      <div><p class="hint" style="margin-top:0">RMSSD on held-out CirCor recordings: the learned beat finder (validated, ICC ${SG.agreement.icc}) next to the experts’ marked beats. Bars span the middle half of recordings; the dot is the median. The finder passed validation only for ${(SG.showBands||[]).map(b=>b.toLowerCase()+'s').join(' and ').replace('childs','children')}; other bands are shown for comparison.</p>
+      ${SG.ageTrend?`<ul class="bedside"><li>RMSSD rises with age band: ρ = ${SG.ageTrend.rhoSeg} (${SG.ageTrend.pSeg<0.001?'p < 0.001':'p = '+SG.ageTrend.pSeg.toFixed(3)}, ${SG.ageTrend.patients} patients, one value each); the experts’ beats give ρ = ${SG.ageTrend.rhoExp}. ${SG.ageTrend.pSeg<0.05?'A significant trend, in the same direction as the expert reference.':'Not significant.'}</li>
+        <li>Part of this follows heart rate, which falls with age in children; RMSSD is not adjusted for it here.</li>
+        <li>No dataset here links a child’s HRV to later outcome: this is a reference, not a risk marker.</li></ul>`:''}</div></div></div>`:''}
     <div class="card" style="margin-top:16px"><h2>Per patient</h2><p class="hint" style="margin-top:0">Children with heart-sound recordings show a <b>Heart rate for age</b> card: their measured rate against healthy children of the same age band, as a reference — not a risk score, because on held-out data the deviation does not predict clinical outcome.${ex?` Example: <a href="#patient-${ex.id}">${esc(ex.name)}</a>.`:''}</p></div>
     <div class="card" style="margin-top:16px"><h2>What would make longevity testable</h2><ul class="bedside">
       <li>Recordings from <b>adults</b>, on <b>one stethoscope model</b> across all ages (device differences swamp age effects here).</li>
@@ -2207,6 +2222,12 @@ async function renderLongevity(){
       <li>Heart sounds long enough for heart-rate variability (minutes, not seconds).</li>
       <li>A pre-registered analysis: fit on one cohort, test on another, as for the age clock above.</li></ul></div>`;
   destroyDiscoverCharts(); if(A)ageCharts(A);
+  if(SG&&SG.refByBand&&$('#c-lgHrv')&&window.Chart){const R=SG.refByBand,lab=r=>`${r.band} (n ${r.n})${(SG.showBands||[]).includes(r.band)?'':' · finder not validated'}`;
+    dChart('c-lgHrv',{type:'bar',data:{labels:R.map(lab),datasets:[
+      {label:'learned beat finder — middle half',data:R.map(r=>[r.seg[0],r.seg[2]]),backgroundColor:'rgba(15,111,222,.35)',borderColor:'rgba(15,111,222,.8)',borderWidth:1,borderSkipped:false},
+      {label:'experts’ beats — middle half',data:R.map(r=>[r.exp[0],r.exp[2]]),backgroundColor:'rgba(31,157,85,.25)',borderColor:'rgba(31,157,85,.8)',borderWidth:1,borderSkipped:false},
+      {label:'median (finder)',type:'scatter',data:R.map(r=>({x:lab(r),y:r.seg[1]})),backgroundColor:'#0e1726',pointRadius:4}]},
+      options:{animation:false,responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'RMSSD (ms)'},beginAtZero:true}},plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}}}})}
 }
 /* ---------- Home: the project in 30 seconds, every number from the data ---------- */
 async function renderHome(){
