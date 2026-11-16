@@ -2657,7 +2657,7 @@ async function runAnalyze(fileOverride){
     window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn,ageBlocked:r.ageBlocked}));
     const IR=type!=='heart'&&await ensureIcbhi()?icbhiScore(A,lf,age):null;
     if(IR)window.__analyze.icbhi={nCycles:IR.cyc.length,ag:IR.ag,ill:IR.ill.map(r=>({id:r.m.id,p:r.p,run:r.run,inAge:r.inAge}))};
-    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv,IR); st.textContent='';
+    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv,IR); window.__analyze.done=true; st.textContent='';
   }catch(e){st.textContent='Could not analyse: '+e.message}
   $('#anGo').disabled=false;
 }
@@ -2714,21 +2714,23 @@ function icbhiScore(A,lf,age){const M=ICBHI,S=M.models.find(m=>m.id==='icbhi_sou
   return {S,cyc,ag,feats,ill,timing:ins+exp>=5?{ins,exp}:null,wheezeHz:hz.length?hz[hz.length>>1]:null,poly:wz.length?wz.filter(c=>c.f.poly).length/wz.length:null};
 }
 // Plain-language findings and the clinical associations of each sound (Bohadana, Izbicki & Kraman, NEJM 2014, PMID 24552321).
-function icbhiFindings(R,lf){const n=R.cyc.length,nc=R.cyc.filter(c=>c.pc>=0.5).length,nw=R.cyc.filter(c=>c.pw>=0.5).length,L=[];
+const aucWord=a=>a==null?'':a>=0.8?'good':a>=0.7?'moderate':'weak';
+function icbhiFindings(R,lf,age){const n=R.cyc.length,nc=R.cyc.filter(c=>c.pc>=0.5).length,nw=R.cyc.filter(c=>c.pw>=0.5).length,L=[],b=R.S.binary;
+  const rel=k=>` — per-cycle model, held-out AUC ${b[k].value} (${aucWord(b[k].value)})`;
   L.push({k:'Breath cycles scored',v:`${n}${R.cyc.some(c=>c.src==='window')?' (fixed 2.5-s windows: the breathing rhythm was not resolved)':''}`});
-  L.push({k:'Crackles',v:nc?`in ${nc} of ${n} cycles${R.timing?` · ${Math.round(100*R.timing.ins/(R.timing.ins+R.timing.exp))} % of crackle-like events in inspiration (phase timing approximate, not validated)`:''}`:'not detected'});
-  L.push({k:'Wheeze',v:nw?`in ${nw} of ${n} cycles${R.wheezeHz?` · pitch about ${Math.round(R.wheezeHz)} Hz`:''}${R.poly!=null?` · ${R.poly>=0.5?'several simultaneous pitches (polyphonic)':'single pitch (monophonic)'}`:''}`:'not detected'});
-  if(lf.rr!=null)L.push({k:'Breathing rate',v:`${lf.rr} /min${lf.est?' (approximate)':''} — the estimator over-counts in quiet adults (see Validation)`});
+  L.push({k:'Crackles',v:(nc?`probable in ${nc} of ${n} cycles${R.timing?` · ${Math.round(100*R.timing.ins/(R.timing.ins+R.timing.exp))} % of crackle-like events in inspiration (phase timing approximate, not validated)`:''}`:'not detected')+rel('crackles')});
+  L.push({k:'Wheeze',v:(nw?`probable in ${nw} of ${n} cycles${R.wheezeHz?` · pitch about ${Math.round(R.wheezeHz)} Hz`:''}${R.poly!=null?` · ${R.poly>=0.5?'several simultaneous pitches (polyphonic)':'single pitch (monophonic)'}`:''}`:'not detected')+rel('wheezes')});
+  if(lf.rr!=null)L.push({k:'Breathing rate',v:`${lf.rr} /min${lf.est?' (approximate)':''}${age>=12?' — the estimator over-counts in quiet adults (see Validation)':''}`});
   const mean=[];
   if(nc)mean.push('Crackles are short explosive sounds from airways opening or from secretions. Fine, late-inspiratory crackles are typical of interstitial fibrosis, heart failure and early pneumonia; coarse crackles of bronchiectasis, COPD and airway secretions (Bohadana 2014). Fine vs coarse is not reported here: at 8 kHz the waveform-width measure is biased.');
   if(nw)mean.push(`Wheezes are continuous musical sounds from narrowed airways — asthma, COPD, bronchiolitis in infants. ${R.poly!=null&&R.poly<0.5?'A single-pitch wheeze heard at one site can also point to a local obstruction (Bohadana 2014).':'Several pitches at once suggest widespread narrowing (Bohadana 2014).'}`);
   if(!nc&&!nw)mean.push('No crackles or wheezes were found. Normal breath sounds do not exclude lung disease.');
   return {L,mean,nc,nw,n};
 }
-function icbhiCard(R,lf,age){const M=ICBHI,S=R.S,t=S.test,F=icbhiFindings(R,lf),b=S.binary;
+function icbhiCard(R,lf,age){const M=ICBHI,S=R.S,t=S.test,F=icbhiFindings(R,lf,age),b=S.binary;
   const ill=R.ill.map(r=>{const m=r.m,t=m.test;
     if(!r.inAge)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: trained on ages ${m.ageGate[0]}–${m.ageGate[1]===120?'90+':m.ageGate[1]} y, this recording is ${age} y.</span></div>`;
-    if(!r.run)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="pill bad">failed validation — not run</span><div class="hint" style="margin-top:4px">${m.gate.reasons.map(esc).join('; ')}. Age alone: AUC ${m.ageOnly.macroAuc}; stethoscope alone: ${m.deviceOnly.macroAuc??'— (one stethoscope)'}; sound without age: ${m.soundOnly.macroAuc} (leave-one-patient-out, ${m.nPatients} patients).</div></div>`;
+    if(!r.run)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="pill bad">failed validation — not run</span><div class="hint" style="margin-top:4px">${m.gate.reasons.map(esc).join('; ')}. Age alone: AUC ${m.ageOnly.macroAuc}; stethoscope alone: ${m.deviceOnly.macroAuc??'— (one stethoscope)'}; sound without age: ${m.soundOnly.macroAuc} (${esc(m.scheme)}, ${m.nPatients} patients).</div></div>`;
     const top=r.top, pc=t.perClass[top], ord=r.contrib.map((c,i)=>[c,i]).sort((a,b)=>Math.abs(b[0])-Math.abs(a[0])).slice(0,4);
     return `<div class="finding" style="cursor:default"><div class="row" style="justify-content:space-between"><b>${esc(m.title)}</b><span class="pill ok">passed validation</span></div>
       <div style="margin:6px 0">Most similar: <b>${esc(m.classes[top])}</b> (${Math.round(100*r.p[top])} %) · ${m.classes.map((c,k)=>`${esc(c)} ${Math.round(100*r.p[k])} %`).join(' · ')}</div>
@@ -2744,13 +2746,13 @@ function icbhiCard(R,lf,age){const M=ICBHI,S=R.S,t=S.test,F=icbhiFindings(R,lf),
     <button class="btn small" id="icCopy">Copy summary</button>
     <div class="notice" style="margin-top:10px">Research output, not a diagnosis. The illness models were trained on ${M.data.patients} patients from two centres (ICBHI 2017; Rocha et al., Physiol Meas 2019, PMID 30708353); their diagnoses are confounded with age and stethoscope, which is why each age group has its own model and every model is compared with age alone and stethoscope alone.</div></div>`;
 }
-function clinicalNote(R,lf,age,site){const F=icbhiFindings(R,lf),L=[];
+function clinicalNote(R,lf,age,site){const F=icbhiFindings(R,lf,age),L=[];
   L.push(`Auscultation analysis — ${site||'site not given'}, age ${age} y. Research output, not a diagnosis.`);
   L.push('Findings:');F.L.forEach(x=>L.push(`  - ${x.k}: ${x.v}`));
   L.push('Interpretation of the sounds:');F.mean.forEach(x=>L.push('  - '+x));
   R.ill.forEach(r=>{const m=r.m;if(!r.inAge)return;
     if(!r.run){L.push(`Illness pattern (${m.title}): not reported — the model failed validation (${m.gate.reasons.join('; ')}).`);return}
-    L.push(`Illness pattern (${m.title}): most similar to ${m.classes[r.top]} (${Math.round(100*r.p[r.top])} %); validated AUC ${m.test.perClass[r.top].auc?.value} on ${m.nPatients} patients scored leave-one-patient-out.`)});
+    L.push(`Illness pattern (${m.title}): most similar to ${m.classes[r.top]} (${Math.round(100*r.p[r.top])} %); validated AUC ${m.test.perClass[r.top].auc?.value} on ${m.nPatients} patients (${m.scheme}).`)});
   L.push('Confirmation needs clinical examination and standard tests (e.g. spirometry for airflow obstruction, chest imaging for pneumonia).');
   return L.join('\n')}
 function icbhiCharts(R){const el=$('#c-icCyc');if(!el||!window.Chart)return;

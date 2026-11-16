@@ -18,8 +18,8 @@ weights and validation numbers.
      children (< 18 y): Healthy / URTI / lower respiratory infection (bronchiolitis, LRTI, pneumonia)
      adults  (>= 18 y): COPD / other (bronchiectasis, pneumonia, asthma)
    Fixed beforehand: logistic regression (C = 1, standardised), sound features + age, each patient weighted equally.
-   Too few patients for a held-out split, so every patient is scored by a model fitted WITHOUT that patient
-   (leave-one-patient-out); the sound-model inputs are cross-fitted the same way. Baselines on the same folds: age
+   Too few patients for a held-out split, so every patient is scored by models fitted WITHOUT that patient
+   (patient-grouped 5-fold CV, repeated 10 times, probabilities averaged); the sound-model inputs are cross-fitted. Baselines on the same folds: age
    only, device only, commonest class. Same deployment gate as the other Analyze models; failures are kept off.
 
   python3 pipeline/train_icbhi.py      (then python3 pipeline/clinical_validation.py && python3 pipeline/merge.py --bump)
@@ -152,14 +152,21 @@ def illness(task, title, df, classes, feats, devices):
     w = 1.0 / df.groupby('pid').pid.transform('size').values
     pids = df.pid.unique(); oof = np.zeros((len(df), K)); oa = np.zeros((len(df), K)); od = np.zeros((len(df), K)); ok = np.zeros((len(df), K))
     D = pd.get_dummies(df.dev).astype(float).values
-    for p in pids:   # leave one patient out
-        te = (df.pid == p).values; tr = ~te
-        if len(set(df.y[tr])) < K: continue
-        oof[te] = WLR().fit(df.loc[tr, feats].values, df.y[tr].values, w[tr]).proba(df.loc[te, feats].values)
-        oa[te] = WLR().fit(df.loc[tr, ['age']].values, df.y[tr].values, w[tr]).proba(df.loc[te, ['age']].values)
-        od[te] = WLR().fit(D[tr], df.y[tr].values, w[tr]).proba(D[te])
-        snd = [f for f in feats if f != 'age']
-        ok[te] = WLR().fit(df.loc[tr, snd].values, df.y[tr].values, w[tr]).proba(df.loc[te, snd].values)
+    # Repeated patient-grouped 5-fold CV (10 repeats, probabilities averaged). Leave-one-patient-out was used first and
+    # dropped: removing a patient shifts the class balance against that patient's class, which pushes base-rate
+    # predictors (the age-only and stethoscope-only baselines) below chance and so flatters the model against them.
+    snd = [f for f in feats if f != 'age']; cnt = np.zeros(len(df))
+    for rep in range(10):
+        cv = StratifiedGroupKFold(5, shuffle=True, random_state=SEED + rep)
+        for tr_i, te_i in cv.split(df, df.y, df.pid):
+            tr = np.zeros(len(df), bool); tr[tr_i] = True; te = ~tr
+            if len(set(df.y[tr])) < K: continue
+            oof[te] += WLR().fit(df.loc[tr, feats].values, df.y[tr].values, w[tr]).proba(df.loc[te, feats].values)
+            oa[te] += WLR().fit(df.loc[tr, ['age']].values, df.y[tr].values, w[tr]).proba(df.loc[te, ['age']].values)
+            od[te] += WLR().fit(D[tr], df.y[tr].values, w[tr]).proba(D[te])
+            ok[te] += WLR().fit(df.loc[tr, snd].values, df.y[tr].values, w[tr]).proba(df.loc[te, snd].values)
+            cnt[te] += 1
+    for P in (oof, oa, od, ok): P /= np.maximum(cnt, 1)[:, None]
     # patient level: average a patient's recordings (what the page would do with several sites)
     def per_patient(P):
         g = pd.DataFrame(P).groupby(df.pid.values).mean(); yp = df.groupby('pid').y.first().loc[g.index].values; return yp, g.values
@@ -168,7 +175,7 @@ def illness(task, title, df, classes, feats, devices):
     test = evaluate(df.y.values, oof, classes, thr)
     major = df.groupby('pid').y.first().value_counts().idxmax()
     out = {'id': task, 'kind': 'lung', 'unit': 'recording', 'title': title, 'classes': classes, 'features': feats, 'chosen': 'logistic regression (fixed beforehand)',
-           'model': WLR().fit(df[feats].values, df.y.values, w).export(), 'thresholds': thr, 'scheme': 'leave-one-patient-out',
+           'model': WLR().fit(df[feats].values, df.y.values, w).export(), 'thresholds': thr, 'scheme': 'patient-grouped 5-fold CV, 10 repeats',
            'nPatients': int(len(pids)), 'nRec': int(len(df)), 'perClassPatients': {c: int((df.groupby('pid').y.first() == i).sum()) for i, c in enumerate(classes)},
            'devices': devices, 'test': test, 'testPatient': evaluate(yp, Pp, classes, thr),
            'majority': prop(int((df.y == major).sum()), len(df)),

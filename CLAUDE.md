@@ -90,6 +90,12 @@ npm run build:hrv                        # circor_ext.js (~30 min) -> learned be
 node pipeline/circor_ext.js              #   meta/features/circor_ext.jsonl: heartFeatures + heartFeaturesExt + HRV detector vs expert .tsv
 python3 pipeline/hrv_discover.py         #   discover.json['hrv']: agreement, repeatability, by band, per-recording values
 
+# ICBHI 2017 (research licence — analysed only, audio NEVER in web/): sound-type + illness models for Analyze
+npm run build:icbhi                      # prep -> features (~15 min) -> train -> clinical_validation -> --bump
+python3 pipeline/icbhi_prep.py           #   raw/icbhi -> build/icbhi_wav (8 kHz, polyphase) + meta/icbhi_index.json
+node pipeline/icbhi_features.js          #   page's analyzeSignal / cycleFeatures / cycleMel / recordingFeatures -> meta/features/icbhi.jsonl
+python3 pipeline/train_icbhi.py          #   web/data/icbhi_models.json (sound model + 2 illness models, gates, baselines)
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -210,6 +216,36 @@ Refs (PubMed-checked): Munoz 2015 PMID 26414314 (10-s RMSSD valid); Tsuji 1994 P
 older adults; SDNN/spectral, not RMSSD); Punjabi 2009 PMID 19688045 (severe SDB AHI ≥ 30: HR 1.46 for all-cause mortality).
 No dataset here links HRV to outcome in children — never present it as a risk.
 
+## ICBHI 2017 — sound-type and illness models with explanations (2026-11-16)
+Source: `raw/icbhi` → clone of `github.com/aashnajoshi/Respiratory_Sound_Dataset` (copy of the Kaggle ICBHI release; Rocha et al.,
+Physiol Meas 2019, PMID 30708353). **Research licence: analysed only; no ICBHI audio, patient page or example clip in `web/`.**
+126 patients, 920 recordings, 6,897 annotated cycles (one malformed 5-value row dropped). **Confound:** every healthy patient
+is a child on the Meditron, COPD are adults on four devices — so no all-ages illness model, and every model is compared with
+age alone and stethoscope alone.
+- Page code (additive): `cycleFeatures(A,t0,t1)` (27 per-cycle measurements: band levels vs the recording's median frame,
+  spectral shape, tonal/transient evidence of the shipped detectors), `cycleMel` (20 mel bands, mean + spread),
+  `scoringCycles(A)` (detected full cycles, else 2.5-s windows), `icbhiScore` / `icbhiFindings` / `icbhiCard` /
+  `clinicalNote` / `modelExplain` (logistic contributions = coef × z) and `FEAT_TEXT` (feature → clinical phrase).
+- **Sound model** (patient split 60/40, seed 20261116; set × model by grouped CV on train: cycle+mel GB 0.674
+  vs cycle GB 0.672 — chosen, though held-out it was slightly worse than the cycle-only set, 0.627 vs 0.638 macro AUC):
+  held-out 50 patients / 2715 cycles: crackles AUC 0.611, wheezes AUC 0.68,
+  ICBHI score 52.5 % (Se 21.4 / Sp 83.6); device alone 50 %. Weak. Deployment (page's own cycles):
+  recording-level crackles AUC 0.603, wheezes 0.639.
+- **Shipped rules on ICBHI (external, `resp_icbhi` report):** crackle rule finds **9.1 %** of crackle cycles
+  (spec 90.2 %); wheeze rule 49.0 % / 89.2 %; ICBHI score 48.9 %.
+- **Illness models** (logistic, fixed beforehand; sound probabilities cross-fitted; patient-grouped 5-fold CV ×10 —
+  leave-one-patient-out was dropped because it pushes base-rate baselines below chance):
+  children Healthy/URTI/LRI macro AUC **0.634** vs age alone 0.575 → **fails** (LRI class alone 0.791);
+  adults COPD/other **0.547** vs age 0.52, **stethoscope alone 0.932** → **fails**. Both are listed
+  as "failed validation — not run" on Analyze. Do not switch them on without the owner's explicit decision (precedent:
+  `OWNER_ON` in train_models.py), and do not pick a new task after seeing these numbers (forking paths).
+- Analyze shows, for lung uploads: per-cycle crackle/wheeze probabilities (Chart.js), findings with each model's held-out AUC
+  in words, clinical meaning of each sound (Bohadana, Izbicki & Kraman, NEJM 2014, PMID 24552321), illness-model status,
+  and a copyable plain-text clinical summary. Fine vs coarse crackles are deliberately not reported (8 kHz CORSA bias).
+- Not obtainable / not usable (2026-11-16): COVID-19 Sounds (NeurIPS 2021 D&B) needs a signed data-transfer agreement and is
+  phone audio, not auscultation; the JASA-EL 2024 PKU auscultation set (doi 10.1121/10.0025851) — publisher blocks automated
+  access, data URL unknown; BIGR COPD (bigr.nl) is chest-CT features, research/education only, no redistribution.
+
 ## Presentation layer — Home, tooltips, glossary
 - **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)
   and a "What you can trust today" table. Every number and every status pill is read from `index.json`,
@@ -281,7 +317,7 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
 | CirCor DigiScope 1.0.3 (PhysioNet) | in use: 120 browsable patients; all 941 validated; **raw re-downloaded 2026-11-16** (zip from physionet.org, SHA256 verified; `raw/circor/circor-heart-sound-1.0.3` is a symlink to the extracted folder) | **ODC-By 1.0** (checked: `LICENSE.txt` in the release — attribution, republishing allowed) | 942 patients, 3,163 recordings (3,118 primary takes used; `_1/_2/_3` repeats and `Phc` skipped). 4 kHz, up to 4 valve sites. Per-valve murmur truth plus `.tsv` S1/systole/S2/diastole segmentation — the only set here that can score the cardiac detectors |
 | PSG-Audio (Korompili et al., Sci Data 2021; Science Data Bank 10.11922/sciencedb.00345) | in use: Discoveries 12 only, **pilot of 10 patients / 44 h** | CC BY 4.0 (HF mirror card + scidb page) | 212 adults, Athens sleep lab, PSG scored by technician + physician; tracheal contact mic + ambient mic at 48 kHz in hourly EDF (V3), `.rml` events + **UserStaging** (ignore MachineStaging). Read from the partial HF mirror `dust-systems/psg-audio` (the scidb FTP logins are time-limited). File names literally contain `%5B001%5D` — escape `%` in URLs. **Audio never goes to `web/`** (overnight audio can hold speech) |
 | PhysioNet overnight / sleep sets | wanted | varies | Still useful for healthy sleepers and children — PSG-Audio is ~89 % severe OSA, adults only |
-| ICBHI 2017 | wanted — **not obtainable**, see below | research only | Same devices from children to elderly, so a true lifespan curve; don't republish its audio |
+| ICBHI 2017 | **in use: analysed only** (Analyze models + `resp_icbhi` / `icbhi_models` reports); via a GitHub copy, see the ICBHI section | research only | 126 patients, 4 devices, per-cycle crackle/wheeze labels. Never republish its audio. Lifespan curve (Discoveries 10) not yet redone with it |
 | HF_Lung | optional | V1_IP CC BY-NC | |
 
 ## Known limitations and what is blocked
@@ -327,11 +363,8 @@ Only 9 is genuinely waiting on access; 12 has a pilot result. 10, 11 and 14 are 
 
 ## Source notes (checked 2026-11-08)
 
-- **ICBHI 2017 cannot be downloaded.** `bhichallenge.med.auth.gr` does not respond, it is not on
-  PhysioNet (404) and not on Zenodo. It is normally distributed via Kaggle, which needs an account.
-  Nothing is written for it yet. When the data arrives, note rule 3: ICBHI is research-only, so it may
-  be **analysed into Discoveries but its audio must never reach `web/`** — that means no browsable
-  patients, unlike SPRSound / KAUH / CirCor.
+- **ICBHI 2017** — the official host still does not respond, but a public GitHub copy of the Kaggle release
+  (`aashnajoshi/Respiratory_Sound_Dataset`) is now used (2026-11-16). Rule 3: research-only, analysed only, no audio in `web/`.
 - **Pal & Barney 2024**, *Automatic breathing phase identification based on the second derivative of the
   recorded lung sounds* (Biomed Signal Process Control 94:106315). Savitzky-Golay second derivative,
   normalised absolute value; reported 92.8 % / 92.2 % sensitivity for inspiration / expiration. A real
@@ -416,6 +449,8 @@ arousal channel exists; Levine I–VI used properly.
    the precomputed SPRSound/KAUH analysis (flow is computed live), but rerun `npm run test:ahi`.
 6. Make all 860 SPRSound children browsable (currently 191). Uploaded patients are not saved across reloads.
 7. Healthy sleepers and children for apnea specificity — PSG-Audio has neither.
+8. Redo Discoveries 10 (breath sounds across the lifespan) with ICBHI's AKG C417L recordings (one device, wide ages) —
+   mind that diagnosis tracks age there too.
 
 ## Publishing as a claude.ai artifact (if asked)
 - The artifact hosts at most **512 files**.
