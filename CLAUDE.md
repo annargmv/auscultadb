@@ -96,6 +96,9 @@ python3 pipeline/icbhi_prep.py           #   raw/icbhi -> build/icbhi_wav (8 kHz
 node pipeline/icbhi_features.js          #   page's analyzeSignal / cycleFeatures / cycleMel / recordingFeatures -> meta/features/icbhi.jsonl
 python3 pipeline/train_icbhi.py          #   web/data/icbhi_models.json (sound model + 2 illness models, gates, baselines)
 
+# murmur spectrogram network (PyTorch, CPU) — needs raw/circor; replaced the feature murmur model on Analyze/Batch
+npm run build:cnn                        # circor_spec.js (~8 min) -> train_cnn.py (~8 min) -> cnn_eval.py -> clinical_validation -> --bump
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -254,6 +257,23 @@ age alone and stethoscope alone.
 - Not obtainable / not usable (2026-11-16): COVID-19 Sounds (NeurIPS 2021 D&B) needs a signed data-transfer agreement and is
   phone audio, not auscultation; the JASA-EL 2024 PKU auscultation set (doi 10.1121/10.0025851) — publisher blocks automated
   access, data URL unknown; BIGR COPD (bigr.nl) is chest-CT features, research/education only, no redistribution.
+
+## Murmur spectrogram network — PyTorch (2026-11-17)
+`pipeline/train_cnn.py` (torch from PyPI; download.pytorch.org is not on the allowlist). Input = page's `cnnSpec` (log power of
+FFT bins 1–32 = 31–1000 Hz, 10-ms hop) normalised by `cnnNorm` (per-bin median removed, ÷ recording IQR; same formula in
+Python). Network: 3 × [conv 3×3 → ReLU → max-pool 2] (12/24/32 ch) → global average → dropout 0.3 → linear; random 3-s crops
+in training; a recording = mean of 3-s window probabilities (hop 1.5 s). Seed 20261117, 30 epochs, AdamW 1e-3, pos_weight.
+- **Rules fixed before training:** held-out = heart_murmur `testPids` (same patients as the feature model); epoch and flag
+  threshold (90 % spec) chosen on 15 % of training patients; deploy only if it passes the gate; replace the feature model only
+  if the ΔAUC 95 % CI is above 0.
+- **Result (held-out 349 patients, 1185 recordings): AUC 0.91 (0.882–0.939) vs feature model 0.825
+  on the same recordings; Δ +0.086 (CI 0.048 to 0.129) → replaced.** Flag: sens 69.6 %, spec 94.2 %. Better in every
+  band (`cnn_eval.py` → `byBand`): infants 0.84 vs 0.73 (but spec 78 %), children 0.92 vs 0.84, adolescents 0.92 vs 0.85.
+- Page: `cnnSpec` / `cnnNorm` / `cnnConvPool` / `cnnWindow` / `cnnMurmur`, weights in `web/data/cnn_murmur.json` (277 KB),
+  `ensureCnn()`. JS = PyTorch to ~1e-7 (e2e parity). ~50 ms per window. Analyze shows it first (`cnnBlock`) with the feature
+  model below "for comparison"; Batch's murmur question uses it (`murmur-prev` = feature model). Report `cnn_murmur` on
+  Validation (`development`: internal held-out). Not tested: MP3 uploads, adults, other stethoscopes.
+- Changing `cnnSpec`/`cnnNorm` means rerunning `npm run build:cnn`.
 
 ## Batch analysis and local validation (`#batch`, 2026-11-17)
 `renderBatch` / `runBatch` / `batchQuestions` / `batchEval` / `batchWords` (page). Many files (multi-select or a folder) are

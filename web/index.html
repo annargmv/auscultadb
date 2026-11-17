@@ -2699,8 +2699,8 @@ async function runAnalyze(fileOverride){
   st.textContent='Decoding and analysing…'; $('#anGo').disabled=true;
   try{
     const {x,srcDur}=await decodeToSR(file,MAX_ANALYSE_S); if(x.length<5*SR)throw new Error(`recording is ${(x.length/SR).toFixed(1)} s — at least 5 s is needed`);
-    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}; await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){} const G=segmentHeartSounds(x), hrv=G?hrvFromTimes(G.s1):null;
-    window.__analyze={feats,type,age,hrv,results:[]};
+    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}; await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){} const G=segmentHeartSounds(x), hrv=G?hrvFromTimes(G.s1):null; const CR=type==='heart'&&await ensureCnn()&&CNN.gate.deploy?cnnMurmur(x):null;
+    window.__analyze={feats,type,age,hrv,results:[],cnn:CR?{p:CR.p,windows:CR.windows.length}:null};
     const ms=MODELS.models.filter(m=>m.kind===type);
     // ageGate: a model whose training population excludes this age is not run at all (owner's decision 2026-11-11)
     const ageOk=m=>!m.ageGate||(age>=m.ageRange[0]&&age<(m.ageRange[0]===0?m.ageRange[1]:m.ageRange[1]+1e-9));
@@ -2712,11 +2712,11 @@ async function runAnalyze(fileOverride){
     window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn,ageBlocked:r.ageBlocked}));
     const IR=type!=='heart'&&await ensureIcbhi()?icbhiScore(A,lf,age):null;
     if(IR)window.__analyze.icbhi={nCycles:IR.cyc.length,ag:IR.ag,ill:IR.ill.map(r=>({id:r.m.id,p:r.p,run:r.run,inAge:r.inAge}))};
-    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv,IR); window.__analyze.done=true; st.textContent='';
+    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv,IR,CR); window.__analyze.done=true; st.textContent='';
   }catch(e){st.textContent='Could not analyse: '+e.message}
   $('#anGo').disabled=false;
 }
-function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR){
+function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR,CR){
   const siteName=type==='heart'?(HEART_SITES.find(s=>s[0]===site)||[0,site])[1]:site, n1=v=>v==null?'—':v;
   $('#anOut').innerHTML=`<div class="card" style="margin-top:16px"><h2>2 · The signal</h2><p class="hint" style="margin-top:0">${esc(file.name)} · ${siteName} · ${age} y · ${srcDur.toFixed(1)} s${srcDur>MAX_ANALYSE_S?` (first ${MAX_ANALYSE_S} s analysed)`:''} · resampled to ${SR/1000} kHz</p>
       <div id="anWave" style="border:1px solid var(--line);border-radius:10px;padding:6px"></div><div class="row" style="margin-top:6px"><button class="btn small" id="anPlay">▶ Play</button></div>
@@ -2724,7 +2724,7 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR){
         ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd><dt>Heart-rate variability</dt><dd>${hrvText(hrv,age)}</dd>`
         :`<dt>Breathing rate</dt><dd>${f.rr==null?'—':f.rr+' /min'}${f.est?' <span class="hint">(phases estimated — approximate)</span>':''}</dd><dt>Crackle-like events</dt><dd>${f.crkRate} /s (${f.fineRate} /s fine)</dd><dt>Continuous (tonal) sound</dt><dd>${Math.round(100*f.tonFrac)} % of the time${f.tonHz?` · median ${f.tonHz} Hz`:''}</dd><dt>Spectral centroid / median frequency</dt><dd>${f.cen} Hz / ${n1(f.f50)} Hz</dd>`}
       </dl></div>
-    <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${res.length?res.map((r,i)=>resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}
+    <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${CR?cnnBlock(CR,age):''}${res.length?res.map((r,i)=>(CR&&r.m.id==='heart_murmur'?'<p class="hint" style="margin:10px 0 4px">Previous murmur model (hand-made features), kept for comparison:</p>':'')+resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}
       <div class="notice" style="margin-top:10px">Research output, not a diagnosis. A flag means “recordings like this were often labelled this way in the training data”; the numbers beside it say how often that was right on patients the model never saw. Interpret with the history, the examination and proper investigations.</div></div>`;
   $('#anOut').insertAdjacentHTML('beforeend',briefCard(type==='heart'?{type,age,hr:f.hr,hrv}:{type,age,cycles:IR?IR.cyc.length:0,wheezeCycles:IR?IR.cyc.filter(c=>c.pw>=0.5).length:0,rr:f.rr}));
   if(IR){$('#anOut').insertAdjacentHTML('beforeend',icbhiCard(IR,f,age));const note=clinicalNote(IR,f,age,site);$('#icNote').textContent=note;
@@ -2828,7 +2828,7 @@ function parseLabels(text){const lines=text.replace(/\r/g,'').split('\n').filter
 async function renderBatch(){
   $('#view').innerHTML='<h1>Batch analysis</h1><div class="empty">Loading models…</div>';
   try{MODELS=MODELS||await cachedFetch('data/models.json','json')}catch(e){$('#view').innerHTML=`<h1>Batch analysis</h1><div class="notice">Models not available: ${esc(e.message)}</div>`;return}
-  await ensureIcbhi(); await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){}
+  await ensureIcbhi(); await ensureSeg(); await ensureCnn(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){}
   if(location.hash!=='#batch')return;
   $('#view').innerHTML=`<h1>Batch analysis</h1>
     <p class="sub">Analyse many recordings at once with the same signal analysis and models as <a href="#analyze">Analyze a recording</a>. Add a labels file and the page measures how accurate each validated model is <b>on your recordings</b>, and says what the numbers mean in words. Files are analysed in this browser and never uploaded.</p>
@@ -2871,7 +2871,7 @@ async function runBatch(files,L,dType,dAge){
         if(age<m.ageRange[0]||age>m.ageRange[1])row.warn.push(`age outside ${m.id} training range`);
         const out=m.features.filter(k=>{const r=m.range[k],v=feats[k];return r&&v!=null&&r[0]!=null&&(v<r[0]||v>r[1])});if(out.length)row.warn.push(`unusual: ${out.join(', ')}`)}
       if(type==='lung'&&ICBHI){const R=icbhiScore(A,lf,age);row.cyc={n:R.cyc.length,pc:Math.max(0,...R.cyc.map(c=>c.pc)),pw:Math.max(0,...R.cyc.map(c=>c.pw)),nc:R.cyc.filter(c=>c.pc>=0.5).length,nw:R.cyc.filter(c=>c.pw>=0.5).length}}
-      if(type==='heart'){row.hr=feats.hr;const G=SEG?segmentHeartSounds(x):null;if(G){const h=hrvFromTimes(G.s1);row.hrSeg=h.hr;row.rmssd=h.rmssd}}else row.rr=lf.rr;
+      if(type==='heart'){row.hr=feats.hr;if(CNN&&CNN.gate.deploy){const C=cnnMurmur(x);row.cnn=C?C.p:null}const G=SEG?segmentHeartSounds(x):null;if(G){const h=hrvFromTimes(G.s1);row.hrSeg=h.hr;row.rmssd=h.rmssd}}else row.rr=lf.rr;
     }catch(err){row.err=String(err.message||err)}
     BATCH.rows.push(row)}
   BATCH.busy=false;$('#bGo').disabled=false;$('#bStop').hidden=true;
@@ -2880,7 +2880,10 @@ async function runBatch(files,L,dType,dAge){
 }
 // The questions a labelled batch can answer, each tied to a published held-out result for comparison.
 function batchQuestions(){const Q=[],M=id=>MODELS.models.find(m=>m.id===id),hm=M('heart_murmur'),ls=M('lung_sound'),S=ICBHI&&ICBHI.models.find(m=>m.id==='icbhi_sound');
-  if(hm){const f=hm.test.flags[1];Q.push({id:'murmur',title:'Murmur (heart-sound model)',type:'heart',model:hm,cond:'a murmur',unit:'recordings',
+  if(CNN&&CNN.gate.deploy){const t=CNN.test;Q.push({id:'murmur',title:'Murmur (spectrogram network)',type:'heart',model:null,cond:'a murmur',unit:'recordings',
+    truth:r=>r.label&&r.label.heart?r.label.heart==='murmur':null,score:r=>r.cnn??null,flag:r=>r.cnn==null?null:r.cnn>=CNN.threshold,
+    pub:{sens:t.sens,spec:t.spec,auc:t.auc,where:`${t.patients} held-out CirCor patients`}})}
+  if(hm){const f=hm.test.flags[1];Q.push({id:CNN&&CNN.gate.deploy?'murmur-prev':'murmur',title:CNN&&CNN.gate.deploy?'Murmur (previous feature model, for comparison)':'Murmur (heart-sound model)',type:'heart',model:hm,cond:'a murmur',unit:'recordings',
     truth:r=>r.label&&r.label.heart?r.label.heart==='murmur':null,score:r=>r.res[hm.id]&&r.res[hm.id].p?r.res[hm.id].p[1]:null,flag:r=>r.res[hm.id]&&r.res[hm.id].flags?r.res[hm.id].flags[1]:null,
     pub:{sens:f.sens,spec:f.spec,auc:hm.test.perClass[1].auc,where:`${hm.nTestPatients} held-out CirCor patients`}})}
   if(ls){const fN=ls.test.flags[0];Q.push({id:'abnormal',title:'Abnormal breath sound (breath-sound model)',type:'lung',model:ls,cond:'an adventitious sound',unit:'recordings',
@@ -2974,13 +2977,13 @@ function batchTrends(){const rows=BATCH.rows.filter(r=>!r.err&&r.patient&&r.date
   draw(0); $('#bTrendSel').onchange=e=>draw(+e.target.value);
 }
 function batchResultText(r){const parts=[];
-  if(r.type==='heart'){const m=r.res.heart_murmur;if(m&&m.p)parts.push(`murmur ${Math.round(100*m.p[1])} %${m.flags[1]?' <b>flag</b>':''}`);if(r.hr)parts.push(`HR ${Math.round(r.hr)}`)}
+  if(r.type==='heart'){const m=r.res.heart_murmur;if(r.cnn!=null)parts.push(`murmur ${Math.round(100*r.cnn)} %${r.cnn>=CNN.threshold?' <b>flag</b>':''}`);else if(m&&m.p)parts.push(`murmur ${Math.round(100*m.p[1])} %${m.flags[1]?' <b>flag</b>':''}`);if(r.hr)parts.push(`HR ${Math.round(r.hr)}`)}
   else{const m=r.res.lung_sound;if(m&&m.p){const k=m.p.indexOf(Math.max(...m.p));parts.push(`${esc(MODELS.models.find(x=>x.id==='lung_sound').classes[k])} ${Math.round(100*m.p[k])} %`)}
     if(r.cyc)parts.push(`crackles in ${r.cyc.nc}/${r.cyc.n} cycles, wheeze in ${r.cyc.nw}/${r.cyc.n}`)}
   return parts.join(' · ')||'—'}
-function batchCsv(){const ls=MODELS.models.find(m=>m.id==='lung_sound'),H=['file','type','age','site','patient','label','murmur_p','murmur_flag',...(ls?ls.classes.map(c=>'lung_'+c.split(' ')[0]+'_p'):[]),'cycles','crackle_cycles','wheeze_cycles','error'];
+function batchCsv(){const ls=MODELS.models.find(m=>m.id==='lung_sound'),H=['file','type','age','site','patient','label','murmur_network_p','murmur_network_flag','murmur_p','murmur_flag',...(ls?ls.classes.map(c=>'lung_'+c.split(' ')[0]+'_p'):[]),'cycles','crackle_cycles','wheeze_cycles','error'];
   const q=v=>v==null?'':/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
-  return [H.join(','),...BATCH.rows.map(r=>{const m=r.res.heart_murmur,l=r.res.lung_sound;return [r.file,r.type,r.age,r.site,r.patient,r.label&&r.label.raw,m&&m.p?m.p[1].toFixed(4):'',m&&m.flags?(m.flags[1]?1:0):'',
+  return [H.join(','),...BATCH.rows.map(r=>{const m=r.res.heart_murmur,l=r.res.lung_sound;return [r.file,r.type,r.age,r.site,r.patient,r.label&&r.label.raw,r.cnn!=null?r.cnn.toFixed(4):'',r.cnn!=null&&CNN?(r.cnn>=CNN.threshold?1:0):'',m&&m.p?m.p[1].toFixed(4):'',m&&m.flags?(m.flags[1]?1:0):'',
     ...(ls?ls.classes.map((c,k)=>l&&l.p?l.p[k].toFixed(4):''):[]),r.cyc?r.cyc.n:'',r.cyc?r.cyc.nc:'',r.cyc?r.cyc.nw:'',r.err].map(q).join(',')})].join('\n')}
 function copyText(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast(msg)}catch(e){toast('Copy not available here')}ta.remove()})}
 // ---------- ICBHI-trained sound-type and illness models, explanations, clinical summary (web/data/icbhi_models.json) ----------
@@ -3068,6 +3071,13 @@ function expBlock(r,i){const m=r.m,t=m.test,top=r.p.indexOf(Math.max(...r.p)),pc
       <li>For “${esc(m.classes[top])}”, held-out AUC was <b>${pc.auc?pc.auc.value:'—'}</b>${pc.auc?` (95 % CI ${pc.auc.lo}–${pc.auc.hi})`:''} — 0.5 is a coin toss.</li>
       <li>${m.classes.map((c,k)=>`${esc(c)} ${t.perClass[k].auc?t.perClass[k].auc.value:'—'}`).join(' · ')} <span class="hint">(per-group AUC)</span></li></ul>
       <p class="hint">Bars use the same flag levels as the validated models, but a flag from this model carries almost no information.</p></div></div></div>`}
+function cnnBlock(CR,age){const M=CNN,t=M.test,v=M.vsCurrent,fl=CR.p>=M.threshold,b=(M.byBand||[]).find(x=>x.band===hrvBandOf(age));
+  return `<div class="finding" style="cursor:default;margin-bottom:10px" id="cnnBlock"><div class="row" style="justify-content:space-between"><b>Murmur at this valve — spectrogram network</b><span class="pill ok">passed validation</span></div>
+    <div style="margin:6px 0">Murmur probability <b>${Math.round(100*CR.p)} %</b> (mean of ${CR.windows.length} 3-s windows) — ${fl?'<b class="bad-t">flagged</b>':'not flagged'} (flag level ${Math.round(100*M.threshold)} %).</div>
+    <ul class="bedside"><li>On ${t.patients} children it never saw (${t.recordings} valve recordings): AUC <b>${t.auc.value}</b> (${t.auc.lo}–${t.auc.hi}); at the flag level it finds ${t.sens.value} % of murmur valves and leaves ${t.spec.value} % of others unflagged.</li>
+      <li>It replaced the feature model (AUC ${v.aucCurrent} on the same recordings; difference +${v.delta}, 95 % CI ${v.ci[0]} to ${v.ci[1]}).</li>
+      ${b?`<li>In ${esc(b.band.toLowerCase())}s: AUC ${b.auc.value} (${b.auc.lo}–${b.auc.hi}), sensitivity ${b.sens.value} %, specificity ${b.spec.value} %.</li>`:''}
+      <li class="hint">Trained with PyTorch on CirCor children (Brazil, one stethoscope type); adults and other stethoscopes are not tested. Not a diagnosis.</li></ul></div>`}
 function resultBlock(r,i){const m=r.m,t=m.test;
   if(r.ageBlocked)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: a ${esc(String(window.__analyze.age))}-year-old is outside the ages this model was trained on (${m.ageRange[0]===0?'under '+m.ageRange[1]:m.ageRange[0]+'–'+m.ageRange[1]} y).</span></div>`;
   if(!r.p)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: failed validation (${m.gate.reasons.map(esc).join('; ')}).</span></div>`;

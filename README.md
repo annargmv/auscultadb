@@ -49,6 +49,9 @@ What it does:
   General Hospital, Athens. Read from the public Hugging Face mirror `dust-systems/psg-audio`. Rebuild with `npm run build:apnea`
   (downloads ~0.7 GB per patient-hour, keeps only the two microphones at 8 kHz in `raw/psg_audio/`). **No PSG-Audio audio is
   published** — overnight bedroom audio can contain speech; only the statistics reach `web/`.
+- a **murmur spectrogram network** (PyTorch) that replaced the feature-based murmur model: held-out AUC 0.91 vs 0.825
+  on the same 349 CirCor children (difference +0.086, 95 % CI 0.048 to 0.129); the weights run in the browser.
+  Rebuild with `npm run build:cnn` (`pip install torch`).
 - a **Batch analysis** page: many recordings analysed at once in the browser; with a labels CSV it measures each validated
   model on your own recordings (sensitivity, specificity, PPV/NPV, likelihood ratios, AUC with 95 % CIs, per patient when
   IDs are given) and writes each number out in words, including the post-test probability for a chosen pre-test estimate.

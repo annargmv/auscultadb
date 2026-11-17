@@ -358,10 +358,38 @@ def icbhi_models():
         'verdict': 'Sound type per cycle: usable for research. Illness pattern: see each model’s gate.'}
 
 
+def cnn_murmur():
+    """Murmur spectrogram network (PyTorch, train_cnn.py): held-out CirCor patients, same as the feature model."""
+    f = WEB_DATA / 'cnn_murmur.json'
+    if not f.exists(): return None
+    M = json.load(open(f)); t = M['test']; v = M['vsCurrent']
+    tp, P = t['sens']['k'], t['sens']['n']; tn, N = t['spec']['k'], t['spec']['n']
+    metrics, L = two_by_two(tp, P - tp, N - tn, tn, 'valve recordings with a murmur', 'valve recordings')
+    ri, ro = lr_words(L)
+    sub = [{'group': 'Age band (held-out)', 'rows': [{**prop(b['sens']['k'], b['sens']['n'], f"{b['band']} (AUC {b['auc']['value']}; feature model {b['aucCurrent']['value']})"), 'kind': 'sensitivity',
+                                                    'spec': prop(b['spec']['k'], b['spec']['n'], b['band'])} for b in M.get('byBand', [])]}]
+    return {
+        'id': 'cnn_murmur', 'title': 'Murmur at a valve — spectrogram network (PyTorch)', 'discover': None, 'evidence': 'development',
+        'question': 'Is a murmur audible at this valve, as an expert annotator would mark it?',
+        'intendedUse': 'Research and teaching: the murmur result on Analyze and Batch. Not a diagnosis.',
+        'population': {'n': t['recordings'], 'text': f"{t['recordings']:,} valve recordings from {t['patients']} held-out CirCor children (Brazil, DigiScope stethoscope) — the same patients the previous murmur model is scored on."},
+        'reference': 'Per-valve murmur annotation by the CirCor experts (Murmur locations); valves marked Unknown excluded.',
+        'indexTest': f"A convolutional network (3 conv blocks, {sum(len(c['w']) + len(c['b']) for c in M['conv']) + len(M['fc']['w']) + 1:,} weights) on the log-power spectrogram 31–1000 Hz, 3-s windows averaged; flag at probability ≥ {M['threshold']} (90 % specificity on training-side validation patients). Trained on {M['train']['patients']} other patients; epoch chosen on {M['train']['validationPatients']} training-side patients.",
+        'independence': 'Internal: held-out patients of the same database, never used for training, epoch choice or threshold. Same campaigns and stethoscope, so accuracy on other devices and adults is unknown.',
+        'metrics': metrics, **L, 'subgroups': sub,
+        'extra': [{'label': 'ROC AUC', 'value': t['auc']['value'], 'lo': t['auc']['lo'], 'hi': t['auc']['hi'], 'n': t['recordings'], 'explain': 'held-out; 0.5 = coin toss'},
+                  {'label': 'Gain over the feature model (ΔAUC)', 'value': v['delta'], 'lo': v['ci'][0], 'hi': v['ci'][1], 'n': t['patients'], 'explain': f"same recordings; feature model AUC {v['aucCurrent']}; patient bootstrap 95 % CI"}],
+        'bedside': [per100(metrics[0]['value'], metrics[1]['value']), f'A flag {ri} (LR+ {L["lrPos"]["value"]}); no flag {ro} (LR− {L["lrNeg"]["value"]}).',
+                    f"It replaced the feature model: better on the same children by {v['delta']} AUC (95 % CI {v['ci'][0]} to {v['ci'][1]}), in every age band."],
+        'limits': ['Children from one country and one stethoscope type; adults and other devices untested.', 'Infants: more false flags (lower specificity) than older children.',
+                   'Compressed (MP3) uploads not yet tested for this model.'],
+        'verdict': 'Passed its gate and replaced the previous murmur model; internal validation only.'}
+
+
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models()) if r]
+    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models()) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}
