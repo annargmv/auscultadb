@@ -9,9 +9,16 @@ reach web/ — no browsable patients, no audio bundles, no example clips. Only d
 7 chest locations, every respiratory cycle annotated by experts: start, end, crackles 0/1, wheezes 0/1.
 Recordings are resampled with a polyphase anti-alias filter to the platform's 8 kHz (the page analyses at SR = 8000).
 
+Provenance: this came from a third-party re-upload, not from the challenge organisers, so the
+content is fingerprinted here rather than trusted. The run records a manifest hash over every
+source file (name + size + sha256) in meta/icbhi_index.json, and fails if the set of files
+changes against a previously recorded hash unless ICBHI_ACCEPT_NEW=1 is set. Compare with
+pipeline/fetch_circor.sh, where PhysioNet publishes checksums we can verify directly; no such
+reference exists for this mirror, so the hash establishes reproducibility, not authenticity.
+
   python3 pipeline/icbhi_prep.py
 """
-import csv, json, collections
+import csv, hashlib, json, os, collections
 from math import gcd
 import numpy as np
 from scipy.io import wavfile
@@ -19,6 +26,31 @@ from scipy.signal import resample_poly
 from paths import RAW, META, BUILD
 
 SRC = RAW / 'icbhi'
+
+
+def manifest(paths):
+    """Stable fingerprint of the source files: name, size and sha256 of each, hashed in name order."""
+    h, files = hashlib.sha256(), []
+    for p in sorted(paths, key=lambda q: q.name):
+        d = hashlib.sha256(p.read_bytes()).hexdigest()
+        files.append({'name': p.name, 'bytes': p.stat().st_size, 'sha256': d})
+        h.update(f'{p.name}:{p.stat().st_size}:{d}\n'.encode())
+    return h.hexdigest(), files
+
+
+def check_manifest(digest, n):
+    """Refuse to rebuild from a source set that differs from the one already recorded."""
+    prev = META / 'icbhi_index.json'
+    if not prev.exists(): return
+    try:
+        old = (json.load(open(prev)).get('provenance') or {}).get('manifestSha256')
+    except Exception:
+        return
+    if old and old != digest and os.environ.get('ICBHI_ACCEPT_NEW') != '1':
+        raise SystemExit(
+            f'ICBHI source files changed.\n  recorded: {old}\n  now:      {digest} ({n} files)\n'
+            'The index on disk was built from different audio. Re-run with ICBHI_ACCEPT_NEW=1 to accept '
+            'this copy and overwrite the recorded hash.')
 AUD = SRC / 'audio_and_txt_files'
 OUT = BUILD / 'icbhi_wav'
 SR = 8000
@@ -32,6 +64,13 @@ def num(v):
 
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    if not SRC.exists() or not AUD.exists():
+        raise SystemExit(
+            f'no ICBHI data at {SRC}.\n'
+            '  The challenge host (bhichallenge.med.auth.gr) is unreachable and it is not on PhysioNet;\n'
+            '  this index was built from github.com/aashnajoshi/Respiratory_Sound_Dataset (the Kaggle copy).\n'
+            '  Put patient_diagnosis.csv and audio_and_txt_files/ under raw/icbhi and re-run.\n'
+            '  Rule 3: ICBHI may be analysed, but its audio must never reach web/.')
     D = {r['Patient_ID']: r for r in csv.DictReader(open(SRC / 'patient_diagnosis.csv'))}
     pats = collections.OrderedDict()
     srs = collections.Counter(); bad = [0]
@@ -56,10 +95,20 @@ def main():
     for p in P:
         p['group'] = None if p['age'] is None else ('child' if p['age'] < CHILD_AGE else 'adult')
         p['devs'] = sorted({r['dev'] for r in p['recs']})
+    srcFiles = sorted(AUD.glob('*.wav')) + sorted(AUD.glob('*.txt'))
+    digest, files = manifest(srcFiles)
+    check_manifest(digest, len(srcFiles))
     out = {'source': 'ICBHI 2017 Respiratory Sound Database (Rocha et al., Physiol Meas 2019;40:035001)', 'licence': 'research use (ICBHI challenge); audio never published',
-           'via': 'github.com/aashnajoshi/Respiratory_Sound_Dataset (copy of the Kaggle release)', 'sr': SR, 'droppedRows': bad[0], 'patients': P}
+           'via': 'github.com/aashnajoshi/Respiratory_Sound_Dataset (copy of the Kaggle release)', 'sr': SR, 'droppedRows': bad[0],
+           'provenance': {'manifestSha256': digest, 'nSourceFiles': len(srcFiles),
+                          'note': 'sha256 over name+size+content of every source file, in name order. '
+                                  'The mirror publishes no official checksum, so this fingerprints the copy '
+                                  'that produced these numbers; it does not authenticate it against the organisers.',
+                          'files': files},
+           'patients': P}
     (META / 'icbhi_index.json').write_text(json.dumps(out, separators=(',', ':')))
     nc = sum(len(r['cycles']) for p in P for r in p['recs'])
+    print(f"  source manifest sha256 {digest[:16]}… over {len(srcFiles)} files")
     print(f"{len(P)} patients, {sum(len(p['recs']) for p in P)} recordings, {nc} annotated cycles ({bad[0]} malformed row dropped); original rates {dict(srs)} -> {OUT}")
     print(collections.Counter((p['dx'], p['group']) for p in P))
 

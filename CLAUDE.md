@@ -457,6 +457,23 @@ arousal channel exists; Levine I–VI used properly.
    children. At a median 143 bpm diastole is too short for the S1/S2 separation the murmur rule
    needs. Report infants separately rather than inside a pooled figure.
 
+## ICBHI provenance and the age-clock caveat (2026-11-17)
+
+- ICBHI came from **github.com/aashnajoshi/Respiratory_Sound_Dataset**, a third-party copy of the
+  Kaggle release — not from the challenge organisers, who are unreachable. `icbhi_prep.py` now
+  records a **manifest sha256** (name + size + content of every source file, in name order) in
+  `meta/icbhi_index.json` and refuses to rebuild from a different source set unless
+  `ICBHI_ACCEPT_NEW=1`. That establishes *reproducibility*, not authenticity: the mirror publishes
+  no checksum to verify against, unlike CirCor from PhysioNet.
+- Rule 3 is respected — no ICBHI audio in `web/`, verified. `web/audio` holds one bundle per
+  browsable patient and nothing else.
+- **The age-clock replication's controlled arm is underpowered.** ICBHI adults (30 held out) and
+  the COPD/one-microphone arm (**13 held out**) both show no age signal, replicating KAUH. But the
+  n = 13 interval runs −0.60 to +0.52 y, too wide to rule a real gain out. The Longevity card now
+  shows the held-out count beside the group total, labels that arm *too few to tell* rather than
+  *no age signal*, and states that the conclusion rests on the arms with enough patients. Absence
+  of evidence, not evidence of absence — don't cite the n = 13 arm as independent confirmation.
+
 ## Open tasks (priority order)
 1. **Cardiac detector recalibration — the CirCor validation says it is needed.**
    - Measured on all 941 patients / 3,118 recordings, thresholds unchanged (`meta/circor_validation.json`):
