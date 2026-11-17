@@ -159,6 +159,12 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     const lo = await pg.evaluate(() => ({ none: /Nothing on this platform estimates longevity/.test(document.body.innerText), icc: /ICC = /.test(document.body.innerText),
       refs: /PMID 26598376/.test(document.body.innerText) && /PMID 34433816/.test(document.body.innerText), charts: !!document.querySelector('#c-ageclock') }));
     check(lo.none && lo.icc && lo.refs && lo.charts, 'longevity page: markers with measured reliability, cited evidence, age clock, no longevity estimate');
+    const lx = await pg.evaluate(() => ({ age: document.querySelector('#lg-icbhiAge') ? document.querySelector('#lg-icbhiAge').innerText : '', hrv: !!document.querySelector('#c-lgHrv'),
+      rows: [...document.querySelectorAll('td b')].map(b => b.textContent), pm: /PMID 31151958/.test(document.body.innerText) && /PMID 2506967/.test(document.body.innerText) }));
+    check(/ICBHI/.test(lx.age) && /(no )?age signal/.test(lx.age) && lx.hrv && lx.rows.includes('Wheeze') && lx.pm,
+      'longevity extended: ICBHI age-clock replication, HRV-by-age chart, wheeze and breathing-rate evidence with PMIDs');
+    check(await pg.evaluate(() => { const g = document.querySelector('#lgSystems'); return !!g && g.querySelectorAll('.card').length === 3 && /Heart/.test(g.innerText) && /Lungs/.test(g.innerText) && /Sleep/.test(g.innerText) && /no signal/.test(g.innerText) }),
+      'longevity systems overview: heart, lungs and sleep, each marker with its validation status');
     await pg.screenshot({ path: path.join(OUT, 'longevity.png'), fullPage: true });
 
     // Analyze a new recording: the browser must reproduce Python's probabilities, then run end to end on real audio
@@ -176,6 +182,8 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.click('#anGo'); await pg.waitForFunction(() => window.__analyze && window.__analyze.results.length && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const hr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
     check(hr.r[0].p && Math.abs(hr.r[0].p[0] + hr.r[0].p[1] - 1) < 1e-9 && /not a diagnosis/.test(hr.txt) && /held-out/.test(hr.txt), `heart clip CirCor ${heartClip.id} @${heartClip.loc}: murmur probability ${Math.round(100 * hr.r[0].p[1])} % with held-out accuracy and a not-a-diagnosis notice`);
+    const br = await pg.evaluate(async () => { const s = () => document.querySelector('#lgBriefBody').innerText; const a = s(); const sel = document.querySelector('#lgBriefLv'); sel.value = 'detailed'; sel.dispatchEvent(new Event('change')); return { a, b: s() } });
+    check(/Heart rate \d+ bpm/.test(br.a) && /Next steps/.test(br.a) && br.b.length > br.a.length && /No risk score or biological age/.test(br.b), 'longevity brief on Analyze: short and detailed versions, findings tied to next steps, no risk score');
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
     await pg.screenshot({ path: path.join(OUT, 'analyze-heart.png'), fullPage: true });
     const lungClip = realClip(p => p.src === 'sprsound' && p.sites.some(s => s.record === 'DAS'));
@@ -232,6 +240,15 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       await pg.waitForFunction(() => window.__batch && window.__batch.done, null, { timeout: 120000 });
       const s2 = await pg.evaluate(() => document.querySelector('#bOut').innerText);
       check(/Too few cases to measure/.test(s2) && !/Of 100 recordings with a murmur/.test(s2), 'batch with too few labelled cases shows no percentages and says why');
+      // change over time: the four valves of one CirCor child labelled as four dated visits of one patient
+      const one = I.patients.find(p => p.src === 'circor' && p.sites.length === 4 && p.ageBand === 'Child'); const vf = [], vcsv = ['file,label,type,age,patient,date'];
+      one.sites.forEach((st, i) => { const [file, name] = st.file.split('#'); const f = path.join(tmp, 'v_' + name); fs.writeFileSync(f, Buffer.from(JSON.parse(fs.readFileSync(path.join(ROOT, 'web', file)))[name], 'base64')); vf.push(f);
+        vcsv.push(`v_${name},${st.record === 'Murmur' ? 'murmur' : 'no murmur'},heart,${one.age ?? 6},P1,2026-0${i + 1}-15`) });
+      const vl = path.join(tmp, 'visits.csv'); fs.writeFileSync(vl, vcsv.join('\n'));
+      await pg.setInputFiles('#bFiles', vf); await pg.setInputFiles('#bLabels', vl); await pg.evaluate(() => { window.__batch = null }); await pg.click('#bGo');
+      await pg.waitForFunction(() => window.__batch && window.__batch.done, null, { timeout: 120000 });
+      const tr = await pg.evaluate(() => ({ n: window.__batch.trends, chart: !!document.querySelector('#bTrendC'), txt: document.querySelector('#bTrend') ? document.querySelector('#bTrend').innerText : '' }));
+      check(tr.n === 1 && tr.chart && /Heart rate/.test(tr.txt) && /(within|larger than) measurement noise/.test(tr.txt), `batch change over time: 1 patient, 4 dated recordings, each change judged against measurement noise`);
     }
     // datasets page: ICBHI listed with its licence and the no-audio rule
     await pg.goto(url('#datasets')); await pg.waitForFunction(() => /ICBHI 2017 Respiratory Sound Database \(Rocha/.test(document.body.innerText), null, { timeout: 15000 });

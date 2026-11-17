@@ -135,6 +135,15 @@ npm run build:discover   # only re-run the statistics from meta/features
     the per-patient card. Result on the current data: **no breath-sound age signal in adults** (MAE 17.4 vs null 17.5 y),
     one SPRSound release beats the null by 0.13 y, heart rate tracks age band (ρ −0.43), and HR-for-age does **not**
     separate CirCor outcome (p 0.45). No dataset here has survival data — never describe anything as a longevity predictor.
+12b. `icbhi_age.py` adds `discover.json['age']['icbhi']` (same `clock()`; needs meta/features/icbhi.jsonl): a second, independent
+    adult test. **No age signal** — ICBHI adults MAE 8.07 vs null 8.03 y (perm p 0.61, 76 patients); COPD on one microphone
+    (AKG C417L) 7.39 vs 7.32 y (p 0.81, 32 patients). It also stores two PubMed-checked marker references read by the Longevity
+    page: Baumert 2019 (PMID 31151958; nocturnal RR ≥ 16/min → all-cause HR 1.18 men / 1.50 women) and Carpenter 1989
+    (PMID 2506967; *reported* wheeze → chronic-bronchitis death MR 10.5). No population study links auscultated crackles to
+    mortality (searched 2026-11-17), so crackles are not listed.
+12c. `hrv_discover.py` also writes `hrv.segmenter.refByBand` (RMSSD quartiles per band, finder vs experts, held-out) and
+    `ageTrend`: RMSSD rises with age band, ρ 0.31 (p < 0.001, 290 patients, one value each; experts' beats ρ 0.33). Not
+    heart-rate adjusted; a reference, not a risk marker. Longevity page shows both (`#lg-icbhiAge`, `#lg-hrvAge`).
 12. **`merge.py --bump` must run last.** It also stamps every patient with `rel` (SPRSound release, CirCor campaign,
     KAUH release) from `meta/`, which the UI shows as "Release". `index.json`'s `version` is the browser cache key, and the discover
     scripts write `discover.json` *after* merge has stamped it. Without a final re-stamp, a browser that loads
@@ -261,6 +270,21 @@ analysed in the browser with exactly the Analyze code and models; nothing is upl
   pre-test estimate (default: the batch's own rate), AUC in words, comparison with the published result. Copy summary /
   copy CSV (downloads are blocked inside the claude.ai artifact, so copy is the export). Thresholds are never refit (rule 4).
 - e2e: 20 real CirCor valve recordings + labels → measured and worded; 4 recordings → "too few cases".
+
+## Longevity page — systems view, personal brief, change over time (2026-11-17)
+Pattern taken from clinical longevity platforms (longevity-ai.com, read 2026-11-17: system-by-system risk, "where the patient
+stands", what changed since the last visit, next steps tied to a finding, a report at a chosen depth, clinician review) and
+cut down to what sound measures and what was validated here. **No risk score and no biological-age number** — no dataset has
+follow-up, and the acoustic age clock has no adult signal (KAUH and ICBHI).
+- `lgSystems(D)`: Heart / Lungs / Sleep cards at the top of `#longevity`; each marker: status pill (validated / weak / not
+  reliable / no signal / pilot), what was measured here, the published link. Every number read from discover.json /
+  icbhi_models.json.
+- `longevityBrief(ctx, level)` / `briefCard(ctx)` on Analyze (short / detailed, copy): heart rate against the healthy CirCor
+  reference for the age band, HRV only where validated, wheeze share per cycle; next steps tied to a finding, plain language.
+- Batch "Change over time" (`batchTrends`): with `patient` + `date` columns, per-patient line chart and first→last change,
+  judged against measurement noise from `hrv.segmenter.repeat` (two valves of one child at one sitting, 271 children:
+  **heart rate ICC 0.95, MDC95 10.3 bpm; RMSSD ICC 0.70, MDC95 35.7 ms** — about the size of the median RMSSD, so one-clip
+  HRV changes rarely mean anything). Between-day noise is larger; wheeze/crackle shares have no measured repeatability.
 
 ## Presentation layer — Home, tooltips, glossary
 - **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)

@@ -2170,13 +2170,15 @@ async function renderValidation(){
 async function renderLongevity(){
   $('#view').innerHTML='<h1>Longevity</h1><div class="empty">Loading…</div>';
   let D; try{D=window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){$('#view').innerHTML=`<h1>Longevity</h1><div class="notice">Results not available: ${esc(e.message)}</div>`;return}
+  await ensureIcbhi();
   if(location.hash!=='#longevity')return;
-  const A=D.age, ra=D.rates, f2=v=>v==null?'—':v.toFixed(2), rel=v=>v==null?'':v>=0.75?'<span class="pill ok">good</span>':v>=0.5?'<span class="pill warn">moderate</span>':'<span class="pill bad">poor</span>';
+  const A=D.age, ra=D.rates, IA=A&&A.icbhi, IR=IA&&IA.refs||{}, SG=D.hrv&&D.hrv.segmenter, IS=ICBHI&&ICBHI.models.find(m=>m.id==='icbhi_sound'), f2=v=>v==null?'—':v.toFixed(2), rel=v=>v==null?'':v>=0.75?'<span class="pill ok">good</span>':v>=0.5?'<span class="pill warn">moderate</span>':'<span class="pill bad">poor</span>';
   const ex=patients.find(p=>p.source==='circor'&&p.ageBand==='Child');
   const n16=DISCOVER_MAP.findIndex(x=>x.id==='age')+1;
   $('#view').innerHTML=`<h1>Longevity</h1>
     <p class="sub">Sound-derived markers with a published link to mortality, how reliably this platform measures each one, and whether the recordings carry information about age.</p>
     <div class="notice" style="margin-bottom:14px"><b>Nothing on this platform estimates longevity, life expectancy or mortality risk.</b> None of the open auscultation datasets used here follows patients over time or records survival, so no such estimate could be validated — and an unvalidated one would mislead.</div>
+    ${lgSystems(D)}
     <div class="card" style="margin-bottom:16px"><h2>Markers with a published longevity link — and what this platform can measure</h2>
       <div style="overflow-x:auto"><table><thead><tr><th>Marker</th><th>Published evidence (other populations)</th><th>Measured here</th><th>How reliably, on this data</th><th>Status</th></tr></thead><tbody>
         <tr><td><b>Resting heart rate</b></td><td>Higher resting heart rate is associated with higher all-cause and cardiovascular mortality in the general adult population (meta-analysis, ${esc(A?A.refs[1].cite:'Zhang et al., CMAJ 2016')}, PMID ${A?A.refs[1].pmid:'26598376'}).</td>
@@ -2195,11 +2197,25 @@ async function renderLongevity(){
           <td>Acoustic AHI from overnight breath sound, AASM rules (Discoveries 12).</td>
           <td>${Ap&&Ap.ahi?`PSG-Audio pilot, ${Ap.patients} adults: under-counts by ${Math.abs(Ap.ahi.bias)} events/h (limits ${Ap.ahi.loa[0]} to ${Ap.ahi.loa[1]}); severity class correct in ${Ap.severity.agree} of ${Ap.severity.n}.`:'Not computed.'}</td>
           <td>Measurable in adults overnight, but it under-counts: an acoustic AHI below 30 does not exclude severe apnea.</td></tr>`})()}
-        <tr><td><b>Breathing rate</b></td><td>No mortality link is claimed here.</td><td>From breath-sound clips.</td>
+        <tr><td><b>Breathing rate</b></td><td>${IR.rr?`${esc(IR.rr.finding)} ${esc(IR.rr.cite)}, PMID ${IR.rr.pmid}.`:'No mortality link is claimed here.'}</td><td>From breath-sound clips (the published rate came from overnight airflow, not sound).</td>
           <td>ICC = <b>${f2(ra&&ra.iccRR)}</b> ${rel(ra&&ra.iccRR)}; full breath cycles segmented in ${ra?Math.round(100*ra.fracRRreliable):'—'} % of recordings. The estimator is also biased in adults (see Validation).</td><td>Not reliable from these clips.</td></tr>
+        ${IR.wheeze?`<tr><td><b>Wheeze</b></td><td>${esc(IR.wheeze.finding)} ${esc(IR.wheeze.cite)}, PMID ${IR.wheeze.pmid}.</td><td>Wheeze per breath cycle (ICBHI-trained model) and continuous sound per recording.</td>
+          <td>${IS?`Per cycle AUC <b>${IS.binary.wheezes.value}</b> (${IS.binary.wheezes.lo}–${IS.binary.wheezes.hi}) on ${IS.nTestPatients} held-out patients; per recording ${IS.deploy.wheezes?IS.deploy.wheezes.value:'—'}.`:'Not computed.'}</td>
+          <td>Measurable, weak. The published risk is for <b>reported</b> wheeze, not wheeze heard on a recording; no study links an auscultated wheeze to survival.</td></tr>`:''}
       </tbody></table></div>
-      <p class="hint">ICC = intraclass correlation between two recordings of the same patient: above 0.75 good, below 0.5 poor.</p></div>
+      <p class="hint">ICC = intraclass correlation between two recordings of the same patient: above 0.75 good, below 0.5 poor. Crackles are not listed: no population study linking auscultated crackles to mortality was found.</p></div>
     ${A?ageCard(A):'<div class="notice">The biological-age analysis has not been computed yet.</div>'}
+    ${IA&&IA.clocks.length?`<div class="card" style="margin-top:16px" id="lg-icbhiAge"><h2>Second adult test of the age clock — ICBHI 2017</h2>
+      <p class="hint" style="margin-top:0">Same method as above (ridge on the page’s breath-sound measurements, fit on 60 % of patients, scored on the other 40 %, compared with always guessing the training patients’ mean age). ICBHI is independent of KAUH: other countries, other stethoscopes.</p>
+      <div style="overflow-x:auto"><table><thead><tr><th>Group</th><th>Patients</th><th>Error of the clock</th><th>Error of guessing the mean</th><th>Gain, 95 % CI</th><th>Permutation p</th><th></th></tr></thead><tbody>
+      ${IA.clocks.map(c=>`<tr><td>${esc(c.label)}</td><td class="mono">${c.patients}</td><td class="mono">${c.mae} y</td><td class="mono">${c.maeNull} y</td><td class="mono">${c.gainCI[0]} to ${c.gainCI[1]} y</td><td class="mono">${c.pPerm}</td><td>${c.significant?'<span class="pill ok">age signal</span>':'<span class="pill">no age signal</span>'}</td></tr>`).join('')}</tbody></table></div>
+      <p class="hint">${IA.clocks.every(c=>!c.significant)?'Neither group shows an age signal, even with diagnosis and microphone held fixed. This replicates the KAUH result: in adults, these breath-sound measurements do not carry the patient’s age, so no acoustic “biological age” can be built from them.':'At least one group shows a signal; see the confounds named in its label before reading it as age.'}</p></div>`:''}
+    ${SG&&SG.refByBand&&SG.refByBand.length?`<div class="card" style="margin-top:16px" id="lg-hrvAge"><h2>Heart-rate variability by age — children</h2>
+      <div class="grid g2"><div style="position:relative;height:220px"><canvas id="c-lgHrv"></canvas></div>
+      <div><p class="hint" style="margin-top:0">RMSSD on held-out CirCor recordings: the learned beat finder (validated, ICC ${SG.agreement.icc}) next to the experts’ marked beats. Bars span the middle half of recordings; the dot is the median. The finder passed validation only for ${(SG.showBands||[]).map(b=>b.toLowerCase()+'s').join(' and ').replace('childs','children')}; other bands are shown for comparison.</p>
+      ${SG.ageTrend?`<ul class="bedside"><li>RMSSD rises with age band: ρ = ${SG.ageTrend.rhoSeg} (${SG.ageTrend.pSeg<0.001?'p < 0.001':'p = '+SG.ageTrend.pSeg.toFixed(3)}, ${SG.ageTrend.patients} patients, one value each); the experts’ beats give ρ = ${SG.ageTrend.rhoExp}. ${SG.ageTrend.pSeg<0.05?'A significant trend, in the same direction as the expert reference.':'Not significant.'}</li>
+        <li>Part of this follows heart rate, which falls with age in children; RMSSD is not adjusted for it here.</li>
+        <li>No dataset here links a child’s HRV to later outcome: this is a reference, not a risk marker.</li></ul>`:''}</div></div></div>`:''}
     <div class="card" style="margin-top:16px"><h2>Per patient</h2><p class="hint" style="margin-top:0">Children with heart-sound recordings show a <b>Heart rate for age</b> card: their measured rate against healthy children of the same age band, as a reference — not a risk score, because on held-out data the deviation does not predict clinical outcome.${ex?` Example: <a href="#patient-${ex.id}">${esc(ex.name)}</a>.`:''}</p></div>
     <div class="card" style="margin-top:16px"><h2>What would make longevity testable</h2><ul class="bedside">
       <li>Recordings from <b>adults</b>, on <b>one stethoscope model</b> across all ages (device differences swamp age effects here).</li>
@@ -2207,6 +2223,12 @@ async function renderLongevity(){
       <li>Heart sounds long enough for heart-rate variability (minutes, not seconds).</li>
       <li>A pre-registered analysis: fit on one cohort, test on another, as for the age clock above.</li></ul></div>`;
   destroyDiscoverCharts(); if(A)ageCharts(A);
+  if(SG&&SG.refByBand&&$('#c-lgHrv')&&window.Chart){const R=SG.refByBand,lab=r=>`${r.band} (n ${r.n})${(SG.showBands||[]).includes(r.band)?'':' · finder not validated'}`;
+    dChart('c-lgHrv',{type:'bar',data:{labels:R.map(lab),datasets:[
+      {label:'learned beat finder — middle half',data:R.map(r=>[r.seg[0],r.seg[2]]),backgroundColor:'rgba(15,111,222,.35)',borderColor:'rgba(15,111,222,.8)',borderWidth:1,borderSkipped:false},
+      {label:'experts’ beats — middle half',data:R.map(r=>[r.exp[0],r.exp[2]]),backgroundColor:'rgba(31,157,85,.25)',borderColor:'rgba(31,157,85,.8)',borderWidth:1,borderSkipped:false},
+      {label:'median (finder)',type:'scatter',data:R.map(r=>({x:lab(r),y:r.seg[1]})),backgroundColor:'#0e1726',pointRadius:4}]},
+      options:{animation:false,responsive:true,maintainAspectRatio:false,scales:{y:{title:{display:true,text:'RMSSD (ms)'},beginAtZero:true}},plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}}}})}
 }
 /* ---------- Home: the project in 30 seconds, every number from the data ---------- */
 async function renderHome(){
@@ -2675,6 +2697,7 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR){
       </dl></div>
     <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${res.length?res.map((r,i)=>resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}
       <div class="notice" style="margin-top:10px">Research output, not a diagnosis. A flag means “recordings like this were often labelled this way in the training data”; the numbers beside it say how often that was right on patients the model never saw. Interpret with the history, the examination and proper investigations.</div></div>`;
+  $('#anOut').insertAdjacentHTML('beforeend',briefCard(type==='heart'?{type,age,hr:f.hr,hrv}:{type,age,cycles:IR?IR.cyc.length:0,wheezeCycles:IR?IR.cyc.filter(c=>c.pw>=0.5).length:0,rr:f.rr}));
   if(IR){$('#anOut').insertAdjacentHTML('beforeend',icbhiCard(IR,f,age));const note=clinicalNote(IR,f,age,site);$('#icNote').textContent=note;
     $('#icCopy').onclick=()=>{navigator.clipboard?.writeText(note).then(()=>toast('Summary copied')).catch(()=>{const r=document.createRange();r.selectNodeContents($('#icNote'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Select and copy the highlighted text')})}}
   if(window.WaveSurfer){try{if(anWS)anWS.destroy()}catch(e){}
@@ -2688,6 +2711,52 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR){
       options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,scales:{x:{min:0,max:100,title:{display:true,text:'probability (%)'}}},plugins:{legend:{labels:{boxWidth:10}}}}}))});
   if(IR)icbhiCharts(IR);
 }
+// ---------- Longevity: systems overview, personal brief, change over time ----------
+// Pattern borrowed from clinical longevity platforms (system-by-system view, "where the patient stands", what changed, next
+// steps tied to a finding, report at a chosen depth), limited to what sound measures and what was validated here. No risk
+// score and no biological age: no dataset here has follow-up, and the acoustic age clock found no adult age signal.
+const LG_PILL={ok:'<span class="pill ok">validated</span>',weak:'<span class="pill warn">weak</span>',bad:'<span class="pill bad">not reliable</span>',none:'<span class="pill">no signal</span>',pilot:'<span class="pill warn">pilot</span>'};
+function lgSystems(D){const A=D.age||{},SG=D.hrv&&D.hrv.segmenter,IA=A.icbhi,IR=IA&&IA.refs||{},IS=ICBHI&&ICBHI.models.find(m=>m.id==='icbhi_sound'),ra=D.rates,ap=D.apnea&&D.apnea.channels&&D.apnea.channels.trach;
+  const hrRel=SG&&SG.seg&&SG.seg.hr?SG.seg.hr.icc:null, rp=SG&&SG.repeat;
+  const sys=[
+    {name:'Heart',items:[
+      {k:'Resting heart rate',st:hrRel>=0.75?'ok':'weak',m:`agreement with expert-marked beats in children ICC ${hrRel??'—'}${rp?`; a change under ${rp.hr.mdc95} bpm between two recordings is within measurement noise`:''}`,e:A.refs?`higher resting rate, higher all-cause mortality in adults (${A.refs[1].cite.split('.')[0]} 2016)`:''},
+      {k:'Heart-rate variability (RMSSD)',st:SG&&SG.pass?'ok':'bad',m:SG&&SG.pass?`ICC ${SG.agreement.icc} vs expert beats, for ${(SG.showBands||[]).map(b=>b.toLowerCase()).join(' and ')} bands${rp?`; real change only above ${rp.rmssd.mdc95} ms`:''}`:'failed validation',e:'reduced HRV predicted mortality in older adults (Tsuji 1994; SDNN, not RMSSD)'}]},
+    {name:'Lungs',items:[
+      {k:'Wheeze',st:IS&&IS.binary.wheezes.value>=0.7?'ok':'weak',m:IS?`per breath cycle AUC ${IS.binary.wheezes.value}`:'—',e:IR.wheeze?'reported wheeze predicted chronic-bronchitis death (Carpenter 1989)':''},
+      {k:'Breathing rate',st:'bad',m:`repeatability ICC ${ra&&ra.iccRR!=null?ra.iccRR.toFixed(2):'—'}; biased in adults`,e:IR.rr?'night-time rate ≥ 16/min predicted mortality in older adults (Baumert 2019)':''},
+      {k:'Acoustic age',st:'none',m:IA&&IA.clocks.length?`no age signal in adults (KAUH; ICBHI p ${IA.clocks.map(c=>c.pPerm.toFixed(2)).join(' / ')})`:'no age signal in adults (KAUH)',e:'an ECG-age gap predicts mortality; no equivalent exists for breath sound'}]},
+    {name:'Sleep',items:[
+      {k:'Apnea–hypopnea index',st:ap?'pilot':'bad',m:ap&&ap.ahi?`${ap.patients} adults: under-counts by ${Math.abs(ap.ahi.bias).toFixed(0)} events/h on average`:'not validated',e:'severe sleep apnea (AHI ≥ 30) carried HR 1.46 for death (Punjabi 2009)'}]}];
+  return `<div class="grid g3" style="gap:12px;margin-bottom:16px" id="lgSystems">${sys.map(s=>`<div class="card" style="margin:0"><h2 style="margin-top:0">${s.name}</h2>
+    ${s.items.map(i=>`<div style="margin:8px 0;padding-top:8px;border-top:1px solid var(--line)"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(i.k)}</b>${LG_PILL[i.st]}</div>
+      <div class="hint" style="margin-top:3px">Here: ${esc(i.m)}.</div>${i.e?`<div class="hint">Published: ${esc(i.e)}.</div>`:''}</div>`).join('')}</div>`).join('')}</div>`}
+// Personal brief from one analysed recording. ctx: {type, age, hr, hrv, cycles, wheezeCycles, rr}. level: 'short' | 'detailed'.
+function longevityBrief(ctx,level){const D=window.__DISC||{},A=D.age||{},SG=D.hrv&&D.hrv.segmenter,rp=SG&&SG.repeat,L=[],next=[],detail=level==='detailed';
+  const band=hrvBandOf(ctx.age),ref=A.heart&&A.heart.ref&&A.heart.ref[band];
+  if(ctx.type==='heart'){
+    if(ctx.hr!=null){let where='';if(ref){where=ctx.hr<ref.p10?'below the 10th percentile':ctx.hr>ref.p90?'above the 90th percentile':ctx.hr<ref.p25?'in the lower quartile':ctx.hr>ref.p75?'in the upper quartile':'in the middle half'}
+      L.push(`Heart rate ${Math.round(ctx.hr)} bpm${ref?`, ${where} of ${ref.n} healthy ${band.toLowerCase()} recordings (median ${Math.round(ref.p50)})`:` — no healthy reference for age ${ctx.age} y on this platform (children only)`}.`);
+      if(ref&&(ctx.hr<ref.p10||ctx.hr>ref.p90))next.push(`Re-measure at rest, at the same site; a difference under ${rp?rp.hr.mdc95:10} bpm between two recordings is within measurement noise. A persistently ${ctx.hr>ref.p90?'high':'low'} rate is worth a clinical check (ECG if indicated).`);}
+    const okHrv=SG&&SG.pass&&(SG.showBands||[]).includes(band);
+    if(ctx.hrv&&ctx.hrv.rmssd!=null&&okHrv){const rb=(SG.refByBand||[]).find(r=>r.band===band);L.push(`Heart-rate variability (RMSSD) ${ctx.hrv.rmssd} ms${rb?`; middle half for ${band.toLowerCase()}s ${rb.seg[0]}–${rb.seg[2]} ms`:''}.`);
+      if(detail&&rp)L.push(`RMSSD from one short recording varies: two recordings of the same child at one sitting differ by up to ${rp.rmssd.mdc95} ms (95 % of the time).`)}
+    else if(detail)L.push(`Heart-rate variability: not reported for age ${ctx.age} y — ${hrvWhyNot(band)}.`);
+  }else{
+    if(ctx.cycles){L.push(`Wheeze in ${ctx.wheezeCycles} of ${ctx.cycles} breath cycles (per-cycle model, weak: AUC ${(ICBHI&&ICBHI.models[0].binary.wheezes.value)||'—'}).`);
+      if(ctx.wheezeCycles)next.push('If wheeze is confirmed on examination and recurs, spirometry is the standard test for airflow obstruction.')}
+    if(ctx.rr!=null&&detail)L.push(`Breathing rate ${ctx.rr}/min — not reliable from a short clip on this platform; a night-time rate ≥ 16/min carried higher mortality in older adults (Baumert 2019), but that was measured from overnight airflow.`);
+  }
+  if(detail)L.push('No risk score or biological age is given: no open auscultation dataset follows patients over time, and breath sound showed no age signal in adults.');
+  next.push('Repeat the recording under the same conditions to follow change over time (Batch analysis with a patient and date column).');
+  const head=`Longevity-related findings — ${ctx.type==='heart'?'heart':'breath'} sounds, age ${ctx.age} y. Research output, not a diagnosis; to be reviewed by a clinician.`;
+  return {head,lines:detail?L:L.slice(0,2),next:detail?next:next.slice(0,1),text:[head,...(detail?L:L.slice(0,2)).map(x=>'- '+x),'Next steps:',...(detail?next:next.slice(0,1)).map(x=>'- '+x)].join('\n')}}
+function briefCard(ctx){const id='lgBrief';
+  const draw=lv=>{const b=longevityBrief(ctx,lv);$('#'+id+'Body').innerHTML=`<p style="margin:0 0 6px"><b>${esc(b.head)}</b></p><ul class="bedside">${b.lines.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><h3 style="margin:8px 0 4px">Next steps</h3><ul class="bedside">${b.next.map(x=>`<li>${esc(x)}</li>`).join('')}</ul>`;$('#'+id+'Copy').onclick=()=>copyText(b.text,'Brief copied')};
+  setTimeout(()=>{if(!$('#'+id))return;draw('short');$('#'+id+'Lv').onchange=e=>draw(e.target.value)},0);
+  return `<div class="card" style="margin-top:16px" id="${id}"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Longevity brief</h2>
+    <div class="row" style="gap:8px"><label class="f" for="${id}Lv" style="margin:0">Detail</label><select class="f" id="${id}Lv" style="width:auto"><option value="short">Short</option><option value="detailed">Detailed</option></select><button class="btn small" id="${id}Copy">Copy</button></div></div>
+    <div id="${id}Body" style="margin-top:8px"></div><p class="hint">Each statement comes from a measurement on this recording and the validation behind it. See <a href="#longevity">Longevity</a>.</p></div>`}
 // ---------- Batch analysis and local validation (#batch) ----------
 // Many recordings at once, analysed in this browser with the same code and models as "Analyze a recording". With an
 // optional labels CSV the page measures the validated models on the user's own recordings and puts every number into
@@ -2719,14 +2788,14 @@ const LAB_LUNG={'normal':'normal','healthy':'normal','crackles':'crackles','crac
 const LAB_DX=['pneumonia','bronchitis','asthma','healthy','heart failure'];
 function parseLabels(text){const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim());if(lines.length<2)throw new Error('the labels file needs a header row and at least one row');
   const sep=[',',';','\t'].sort((a,b)=>lines[0].split(b).length-lines[0].split(a).length)[0], H=lines[0].split(sep).map(h=>h.trim().toLowerCase().replace(/^"|"$/g,''));
-  const col=n=>H.findIndex(h=>n.includes(h)), cF=col(['file','filename','file name','recording']), cL=col(['label','diagnosis','finding','truth']), cT=col(['type','kind']), cA=col(['age','age (years)','age_years']), cS=col(['site','location','valve']), cP=col(['patient','patient_id','patient id','pid','id']);
+  const col=n=>H.findIndex(h=>n.includes(h)), cF=col(['file','filename','file name','recording']), cL=col(['label','diagnosis','finding','truth']), cT=col(['type','kind']), cA=col(['age','age (years)','age_years']), cS=col(['site','location','valve']), cP=col(['patient','patient_id','patient id','pid','id']), cD=col(['date','visit','recorded','recording date','time']);
   if(cF<0)throw new Error('the labels file needs a "file" column with the file names');
   const M=new Map(), bad=[];
   for(const l of lines.slice(1)){const c=l.split(sep).map(v=>v.trim().replace(/^"|"$/g,''));const f=c[cF];if(!f)continue;const raw=cL>=0?(c[cL]||'').toLowerCase():'';
     const t=cT>=0&&/heart|lung/i.test(c[cT]||'')?(/heart/i.test(c[cT])?'heart':'lung'):null;
-    const e={file:f,raw,type:t,age:cA>=0&&c[cA]!==''&&!isNaN(+c[cA])?+c[cA]:null,site:cS>=0?c[cS]||null:null,patient:cP>=0?c[cP]||null:null,heart:LAB_HEART[raw]||null,lung:LAB_LUNG[raw]||null,dx:LAB_DX.includes(raw)?raw:null};
+    const e={file:f,raw,type:t,age:cA>=0&&c[cA]!==''&&!isNaN(+c[cA])?+c[cA]:null,site:cS>=0?c[cS]||null:null,patient:cP>=0?c[cP]||null:null,date:cD>=0&&c[cD]&&!isNaN(Date.parse(c[cD]))?c[cD]:null,heart:LAB_HEART[raw]||null,lung:LAB_LUNG[raw]||null,dx:LAB_DX.includes(raw)?raw:null};
     if(raw&&!e.heart&&!e.lung&&!e.dx)bad.push(raw); M.set(f.toLowerCase(),e);M.set(f.toLowerCase().replace(/\.[a-z0-9]+$/,''),e)}
-  return {map:M,n:lines.length-1,cols:{label:cL>=0,type:cT>=0,age:cA>=0,site:cS>=0,patient:cP>=0},unknown:[...new Set(bad)].slice(0,8)}}
+  return {map:M,n:lines.length-1,cols:{label:cL>=0,type:cT>=0,age:cA>=0,site:cS>=0,patient:cP>=0,date:cD>=0},unknown:[...new Set(bad)].slice(0,8)}}
 async function renderBatch(){
   $('#view').innerHTML='<h1>Batch analysis</h1><div class="empty">Loading models…</div>';
   try{MODELS=MODELS||await cachedFetch('data/models.json','json')}catch(e){$('#view').innerHTML=`<h1>Batch analysis</h1><div class="notice">Models not available: ${esc(e.message)}</div>`;return}
@@ -2747,7 +2816,8 @@ async function renderBatch(){
       </div>
       <details style="margin-top:10px"><summary class="hint">Labels file format</summary><div class="hint" style="margin-top:6px">A header row, then one row per recording. Columns: <span class="mono">file</span> (required, the file name), <span class="mono">label</span>, <span class="mono">type</span> (heart / lung), <span class="mono">age</span> (years), <span class="mono">site</span>, <span class="mono">patient</span> (an ID — with it, results are counted per patient, not per recording).<br>
         Labels understood — heart: <i>murmur, no murmur</i> (also present / absent). Breath sounds: <i>normal, crackles, wheeze, both, abnormal</i>. Diagnoses (for the experimental models only): <i>${LAB_DX.join(', ')}</i>.
-        <pre class="mono" style="margin:6px 0;white-space:pre-wrap">file,label,type,age,patient\nrec001_MV.wav,murmur,heart,6,P001\nrec002_AV.wav,no murmur,heart,9,P002\nchest_03.wav,crackles,lung,64,P003</pre></div></details>
+        Add a <span class="mono">date</span> column (YYYY-MM-DD) with a patient ID to follow a patient over time.
+        <pre class="mono" style="margin:6px 0;white-space:pre-wrap">file,label,type,age,patient,date\nrec001_MV.wav,murmur,heart,6,P001,2026-01-10\nrec002_MV.wav,murmur,heart,6,P001,2026-04-12\nchest_03.wav,crackles,lung,64,P003,2026-02-01</pre></div></details>
     </div><div id="bOut"></div>`;
   const pick=()=>[...$('#bFiles').files,...$('#bDir').files].filter(f=>/^audio\//.test(f.type)||/\.(wav|mp3|m4a|ogg|flac|aac|webm)$/i.test(f.name));
   $('#bGo').onclick=async()=>{const files=pick(),st=$('#bStatus');if(!files.length){st.textContent='Choose recordings first.';return}
@@ -2764,7 +2834,7 @@ async function runBatch(files,L,dType,dAge){
   for(let i=0;i<files.length&&!BATCH.stop;i++){const f=files[i],e=L&&(L.map.get(f.name.toLowerCase())||L.map.get(f.name.toLowerCase().replace(/\.[a-z0-9]+$/,'')))||null;
     const type=e&&e.type||(e&&e.heart&&!e.lung?'heart':e&&e.lung&&!e.heart?'lung':dType), age=e&&e.age!=null?e.age:dAge;
     st.textContent=`Analysing ${i+1} of ${files.length} — ${f.name}`;await new Promise(r=>setTimeout(r,0));
-    const row={file:f.name,type,age,site:e&&e.site||'',patient:e&&e.patient||null,label:e,res:{},warn:[],err:null};
+    const row={file:f.name,type,age,site:e&&e.site||'',patient:e&&e.patient||null,date:e&&e.date||null,label:e,res:{},warn:[],err:null};
     try{const {x,srcDur}=await decodeToSR(f,MAX_ANALYSE_S);if(x.length<5*SR)throw new Error(`${(x.length/SR).toFixed(1)} s — at least 5 s needed`);row.dur=+srcDur.toFixed(1);
       const A=analyzeSignal(x),lf=recordingFeatures(A),feats={...lf,...heartFeatures(A),...heartFeaturesExt(A),age};
       for(const m of MODELS.models.filter(m=>m.kind===type&&runs(m))){if(!ageOk(m,age)){row.res[m.id]={blocked:true};continue}
@@ -2772,12 +2842,12 @@ async function runBatch(files,L,dType,dAge){
         if(age<m.ageRange[0]||age>m.ageRange[1])row.warn.push(`age outside ${m.id} training range`);
         const out=m.features.filter(k=>{const r=m.range[k],v=feats[k];return r&&v!=null&&r[0]!=null&&(v<r[0]||v>r[1])});if(out.length)row.warn.push(`unusual: ${out.join(', ')}`)}
       if(type==='lung'&&ICBHI){const R=icbhiScore(A,lf,age);row.cyc={n:R.cyc.length,pc:Math.max(0,...R.cyc.map(c=>c.pc)),pw:Math.max(0,...R.cyc.map(c=>c.pw)),nc:R.cyc.filter(c=>c.pc>=0.5).length,nw:R.cyc.filter(c=>c.pw>=0.5).length}}
-      if(type==='heart'){row.hr=feats.hr}else row.rr=lf.rr;
+      if(type==='heart'){row.hr=feats.hr;const G=SEG?segmentHeartSounds(x):null;if(G){const h=hrvFromTimes(G.s1);row.hrSeg=h.hr;row.rmssd=h.rmssd}}else row.rr=lf.rr;
     }catch(err){row.err=String(err.message||err)}
     BATCH.rows.push(row)}
   BATCH.busy=false;$('#bGo').disabled=false;$('#bStop').hidden=true;
   st.textContent=`${BATCH.rows.length} recording${BATCH.rows.length===1?'':'s'} analysed in ${Math.round((Date.now()-t0)/1000)} s${BATCH.stop?' (stopped)':''}.`;
-  renderBatchOut(); window.__batch={done:true,n:BATCH.rows.length,questions:BATCH.q};
+  renderBatchOut(); window.__batch={done:true,n:BATCH.rows.length,questions:BATCH.q,trends:document.querySelectorAll('#bTrendSel option').length};
 }
 // The questions a labelled batch can answer, each tied to a published held-out result for comparison.
 function batchQuestions(){const Q=[],M=id=>MODELS.models.find(m=>m.id===id),hm=M('heart_murmur'),ls=M('lung_sound'),S=ICBHI&&ICBHI.models.find(m=>m.id==='icbhi_sound');
@@ -2844,11 +2914,35 @@ function renderBatchOut(){BATCH.charts.forEach(c=>{try{c.destroy()}catch(e){}});
     <div class="card" style="margin-top:16px"><div class="row" style="justify-content:space-between"><h2 style="margin:0">${L?'3':'2'} · Per recording</h2><button class="btn small" id="bCopyCsv">Copy as CSV</button></div>
       <div style="overflow-x:auto;margin-top:8px"><table style="font-size:12px"><thead><tr><th>File</th><th>Type</th><th>Age</th>${L?'<th>Label</th>':''}<th>Result</th><th>Notes</th></tr></thead><tbody>
       ${R.map(r=>`<tr><td class="mono">${esc(r.file)}</td><td>${r.type}</td><td>${r.age??'—'}</td>${L?`<td>${r.label&&r.label.raw?esc(r.label.raw):'—'}</td>`:''}<td>${r.err?`<span class="bad-t">not analysed</span>`:batchResultText(r)}</td><td class="hint">${r.err?esc(r.err):r.warn.map(esc).join('; ')}</td></tr>`).join('')}</tbody></table></div></div>`;
+  batchTrends();
   if($('#bSum')){$('#bSum').textContent=sum.join('\n');$('#bCopySum').onclick=()=>copyText(sum.join('\n'),'Summary copied')}
   $('#bCopyCsv').onclick=()=>copyText(batchCsv(),'CSV copied');
   E.forEach((e,i)=>{const el=$('#bCal-'+i);if(!el||!window.Chart)return;const bins=[[0,.2],[.2,.4],[.4,.6],[.6,.8],[.8,1.01]].map(([lo,hi])=>{const b=e.cal.filter(([s])=>s>=lo&&s<hi);return {lab:`${Math.round(100*lo)}–${Math.min(100,Math.round(100*hi))} %`,n:b.length,obs:b.length?100*b.filter(([,t])=>t).length/b.length:null}});
     BATCH.charts.push(new Chart(el,{type:'bar',data:{labels:bins.map(b=>b.lab),datasets:[{label:`share with ${e.q.cond} (calibration)`,data:bins.map(b=>b.obs),backgroundColor:'rgba(15,111,222,.55)'}]},
       options:{animation:false,responsive:true,maintainAspectRatio:false,scales:{y:{min:0,max:100,title:{display:true,text:'% positive'}},x:{title:{display:true,text:'model score'}}},plugins:{legend:{labels:{boxWidth:10,font:{size:10}}},tooltip:{callbacks:{afterLabel:c=>`n = ${bins[c.dataIndex].n}`}}}}}))});
+}
+// Change over time: patients with ≥ 2 dated recordings of one type. Each change is judged against the measurement noise
+// measured on this platform (two valves of the same child at one sitting, hrv.segmenter.repeat): below it, "within noise".
+function batchTrends(){const rows=BATCH.rows.filter(r=>!r.err&&r.patient&&r.date),G=new Map();
+  for(const r of rows){const k=r.patient+'|'+r.type;(G.get(k)||G.set(k,[]).get(k)).push(r)}
+  const S=[...G.entries()].filter(([,v])=>new Set(v.map(r=>r.date)).size>=2).map(([k,v])=>({pid:k.split('|')[0],type:k.split('|')[1],v:v.sort((a,b)=>Date.parse(a.date)-Date.parse(b.date))}));
+  if(!S.length)return; const D=window.__DISC||{},SG=D.hrv&&D.hrv.segmenter,rp=SG&&SG.repeat;
+  const M=t=>t==='heart'?[['hr','Heart rate','bpm',rp&&rp.hr.mdc95,r=>r.hrSeg??r.hr],['rmssd','RMSSD','ms',rp&&rp.rmssd.mdc95,r=>{const b=hrvBandOf(r.age);return SG&&SG.pass&&(SG.showBands||[]).includes(b)?r.rmssd:null}]]
+    :[['wz','Share of cycles with wheeze','%',null,r=>r.cyc&&r.cyc.n?100*r.cyc.nw/r.cyc.n:null],['ck','Share of cycles with crackles','%',null,r=>r.cyc&&r.cyc.n?100*r.cyc.nc/r.cyc.n:null]];
+  const verdict=(d,mdc)=>d==null?'—':mdc==null?'no repeatability measured — descriptive only':Math.abs(d)<mdc?`within measurement noise (< ${mdc})`:`larger than measurement noise (≥ ${mdc})`;
+  const html=`<div class="card" style="margin-top:16px" id="bTrend"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Change over time</h2>
+    <div class="row" style="gap:8px"><label class="f" for="bTrendSel" style="margin:0">Patient</label><select class="f" id="bTrendSel" style="width:auto">${S.map((x,i)=>`<option value="${i}">${esc(x.pid)} · ${x.type} · ${x.v.length} recordings</option>`).join('')}</select></div></div>
+    <p class="hint">Patients with recordings on at least two dates. A change counts as real only if it exceeds the noise measured between two recordings of the same child at one sitting${rp?` (heart rate ${rp.hr.mdc95} bpm, RMSSD ${rp.rmssd.mdc95} ms; ${rp.patients} children)`:''}; between days the noise is larger. Wheeze and crackle shares have no measured repeatability.</p>
+    <div class="grid g2"><div style="position:relative;height:220px"><canvas id="bTrendC"></canvas></div><div id="bTrendT"></div></div></div>`;
+  $('#bOut').insertAdjacentHTML('beforeend',html);
+  const draw=i=>{const x=S[i],ms=M(x.type),lab=x.v.map(r=>r.date);
+    BATCH.charts=BATCH.charts.filter(c=>{if(c.canvas&&c.canvas.id==='bTrendC'){try{c.destroy()}catch(e){}return false}return true});
+    if(window.Chart)BATCH.charts.push(new Chart($('#bTrendC'),{type:'line',data:{labels:lab,datasets:ms.map(([k,t,u,,g],j)=>({label:`${t} (${u})`,data:x.v.map(r=>{const v=g(r);return v==null?null:+(+v).toFixed(1)}),borderColor:['#0f6fde','#d6336c'][j],backgroundColor:['#0f6fde','#d6336c'][j],yAxisID:j?'y1':'y',spanGaps:true}))},
+      options:{animation:false,responsive:true,maintainAspectRatio:false,scales:{y:{position:'left',title:{display:true,text:ms[0][2]}},y1:{position:'right',grid:{drawOnChartArea:false},title:{display:true,text:ms[1][2]}}},plugins:{legend:{labels:{boxWidth:10,font:{size:10}}}}}}));
+    $('#bTrendT').innerHTML=`<table style="font-size:12px"><thead><tr><th>Measure</th><th>First → last</th><th>Change</th><th>Reading</th></tr></thead><tbody>${ms.map(([k,t,u,mdc,g])=>{const a=g(x.v[0]),b=g(x.v[x.v.length-1]),d=a!=null&&b!=null?b-a:null;
+      return `<tr><td>${esc(t)}</td><td class="mono">${a==null?'—':Math.round(a)} → ${b==null?'—':Math.round(b)} ${u}</td><td class="mono">${d==null?'—':(d>0?'+':'')+Math.round(d)}</td><td>${verdict(d,mdc)}</td></tr>`}).join('')}</tbody></table>
+      <p class="hint">${x.v.length} recordings, ${esc(x.v[0].date)} to ${esc(x.v[x.v.length-1].date)}. Same site and conditions make the comparison fairer.${x.type==='heart'&&x.v.some(r=>r.rmssd!=null)&&!x.v.some(r=>{const b=hrvBandOf(r.age);return SG&&(SG.showBands||[]).includes(b)})?' RMSSD hidden: not validated for this age.':''}</p>`};
+  draw(0); $('#bTrendSel').onchange=e=>draw(+e.target.value);
 }
 function batchResultText(r){const parts=[];
   if(r.type==='heart'){const m=r.res.heart_murmur;if(m&&m.p)parts.push(`murmur ${Math.round(100*m.p[1])} %${m.flags[1]?' <b>flag</b>':''}`);if(r.hr)parts.push(`HR ${Math.round(r.hr)}`)}
