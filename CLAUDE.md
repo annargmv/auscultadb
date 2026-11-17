@@ -271,6 +271,21 @@ analysed in the browser with exactly the Analyze code and models; nothing is upl
   copy CSV (downloads are blocked inside the claude.ai artifact, so copy is the export). Thresholds are never refit (rule 4).
 - e2e: 20 real CirCor valve recordings + labels → measured and worded; 4 recordings → "too few cases".
 
+## Longevity page — systems view, personal brief, change over time (2026-11-17)
+Pattern taken from clinical longevity platforms (longevity-ai.com, read 2026-11-17: system-by-system risk, "where the patient
+stands", what changed since the last visit, next steps tied to a finding, a report at a chosen depth, clinician review) and
+cut down to what sound measures and what was validated here. **No risk score and no biological-age number** — no dataset has
+follow-up, and the acoustic age clock has no adult signal (KAUH and ICBHI).
+- `lgSystems(D)`: Heart / Lungs / Sleep cards at the top of `#longevity`; each marker: status pill (validated / weak / not
+  reliable / no signal / pilot), what was measured here, the published link. Every number read from discover.json /
+  icbhi_models.json.
+- `longevityBrief(ctx, level)` / `briefCard(ctx)` on Analyze (short / detailed, copy): heart rate against the healthy CirCor
+  reference for the age band, HRV only where validated, wheeze share per cycle; next steps tied to a finding, plain language.
+- Batch "Change over time" (`batchTrends`): with `patient` + `date` columns, per-patient line chart and first→last change,
+  judged against measurement noise from `hrv.segmenter.repeat` (two valves of one child at one sitting, 271 children:
+  **heart rate ICC 0.95, MDC95 10.3 bpm; RMSSD ICC 0.70, MDC95 35.7 ms** — about the size of the median RMSSD, so one-clip
+  HRV changes rarely mean anything). Between-day noise is larger; wheeze/crackle shares have no measured repeatability.
+
 ## Presentation layer — Home, tooltips, glossary
 - **Home (`#home`, the default route)**: hero, live KPIs, four clinical tracks (lungs, heart, sleep apnea, longevity)
   and a "What you can trust today" table. Every number and every status pill is read from `index.json`,

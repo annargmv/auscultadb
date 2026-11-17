@@ -102,6 +102,15 @@ def segmenter_section():
             q = lambda v: [round(float(np.percentile(v, x)), 1) for x in (25, 50, 75)]
             ref.append({'band': band, 'n': len(B), 'seg': q([r['hrvSeg']['rmssd'] for r in B]), 'exp': q([r['hrvExp']['rmssd'] for r in B])})
     o['refByBand'] = ref
+    # measurement noise: two valves of the same child at one sitting (held-out). Smallest real change between two recordings
+    # (MDC95 = 1.96·√2·SEM, SEM = within-patient SD). Same-sitting repeats: between-day noise will be larger.
+    pv = collections.defaultdict(list)
+    for r in R:
+        if r['hrvSeg']['rmssd'] is not None: pv[r['pid']].append(r['hrvSeg'])
+    pairs = [v[:2] for v in pv.values() if len(v) >= 2]; o['repeat'] = {'patients': len(pairs), 'what': 'two valve sites of the same child, one sitting'}
+    for key in ('rmssd', 'hr'):
+        X = np.array([[a[key], b[key]] for a, b in pairs], float); sem = float(np.sqrt(np.mean((X[:, 0] - X[:, 1]) ** 2) / 2))
+        o['repeat'][key] = {'icc': round(icc11(X), 3), 'sem': round(sem, 2), 'mdc95': round(1.96 * math.sqrt(2) * sem, 1), 'median': round(float(np.median(X)), 1)}
     # trend with age band: one value per patient (mean of their recordings), Spearman against band order
     rank = {b: i for i, b in enumerate(BANDS)}; pp = collections.defaultdict(list)
     for r in segAll:
