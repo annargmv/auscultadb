@@ -2535,6 +2535,35 @@ function segViterbi(logE,hmm){ // logE[f][c] = log p(x|state c) up to a constant
   for(let f=nF-1;f>=0;f--){path[f]=idx[s][0];if(f>0)s=back[f][s]}
   return path;
 }
+// ---------- Spectrogram network for murmur (pipeline/train_cnn.py, PyTorch; weights in data/cnn_murmur.json) ----------
+// Input: log power of FFT bins 1–32 (31–1000 Hz) every 10 ms, normalised per recording (per-bin median removed, divided by
+// the recording's interquartile range) — the same formula in Python. Network: three 3×3 conv + ReLU + 2×2 max-pool blocks,
+// global average pool, one linear output; scored on 3-s windows (hop 1.5 s), recording score = mean window probability.
+const CNN_BINS=32, CNN_WIN=300, CNN_HOP=150;
+let CNN=null;
+async function ensureCnn(){ if(!CNN){try{CNN=await cachedFetch('data/cnn_murmur.json','json')}catch(e){CNN=null}} return CNN }
+function cnnSpec(x){const nF=Math.max(0,Math.floor((x.length-FR.N)/FR.HOP)+1),B=new Float32Array(nF*CNN_BINS),re=new Float64Array(FR.N);
+  for(let f=0;f<nF;f++){const o=f*FR.HOP;for(let i=0;i<FR.N;i++)re[i]=x[o+i]*HANN[i];const m=fftMag(re);for(let j=0;j<CNN_BINS;j++){const v=m[j+1];B[f*CNN_BINS+j]=Math.log10(v*v+1e-10)}}
+  return {nF,B}}
+function cnnNorm(S){const {nF,B}=S,Z=new Float32Array(nF*CNN_BINS),med=new Float64Array(CNN_BINS);
+  for(let j=0;j<CNN_BINS;j++){const v=new Float64Array(nF);for(let f=0;f<nF;f++)v[f]=B[f*CNN_BINS+j];v.sort();med[j]=segQ(v,0.5)}
+  const d=new Float64Array(nF*CNN_BINS);for(let f=0;f<nF;f++)for(let j=0;j<CNN_BINS;j++)d[f*CNN_BINS+j]=B[f*CNN_BINS+j]-med[j];
+  const s=Float64Array.from(d).sort(),sc=Math.max(1e-6,segQ(s,0.75)-segQ(s,0.25));for(let i=0;i<d.length;i++)Z[i]=d[i]/sc;return Z}
+// conv 3×3 (padding 1) + ReLU on [C][H][W] Float32Arrays, then 2×2 max-pool (floor)
+function cnnConvPool(inp,C,H,W,w,b,O){const out=new Float32Array(O*H*W);
+  for(let o=0;o<O;o++)for(let c=0;c<C;c++){const ip=inp.subarray(c*H*W,(c+1)*H*W),wo=(o*C+c)*9;
+    for(let ky=0;ky<3;ky++)for(let kx=0;kx<3;kx++){const k=w[wo+ky*3+kx];if(!k)continue;
+      for(let y=0;y<H;y++){const yy=y+ky-1;if(yy<0||yy>=H)continue;const ob=o*H*W+y*W,ib=yy*W+kx-1;
+        for(let x=0;x<W;x++){const xx=x+kx-1;if(xx<0||xx>=W)continue;out[ob+x]+=k*ip[ib+x]}}}}
+  const H2=H>>1,W2=W>>1,P=new Float32Array(O*H2*W2);
+  for(let o=0;o<O;o++){const bo=b[o];for(let y=0;y<H2;y++)for(let x=0;x<W2;x++){let m=-Infinity;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){const v=out[o*H*W+(2*y+dy)*W+2*x+dx]+bo;if(v>m)m=v}P[o*H2*W2+y*W2+x]=m>0?m:0}}
+  return {P,H:H2,W:W2}}
+function cnnWindow(M,Z,f0){let C=1,H=CNN_BINS,W=CNN_WIN,a=new Float32Array(H*W);   // input laid out [bin][frame]
+  for(let t=0;t<W;t++)for(let j=0;j<H;j++)a[j*W+t]=Z[(f0+t)*CNN_BINS+j];
+  for(const L of M.conv){const r=cnnConvPool(a,C,H,W,L.w,L.b,L.out);a=r.P;C=L.out;H=r.H;W=r.W}
+  let z=M.fc.b;for(let c=0;c<C;c++){let s=0;for(let i=0;i<H*W;i++)s+=a[c*H*W+i];z+=M.fc.w[c]*s/(H*W)}return 1/(1+Math.exp(-z))}
+function cnnMurmur(x){if(!CNN)return null;const Z=cnnNorm(cnnSpec(x)),nF=Z.length/CNN_BINS;if(nF<CNN_WIN)return null;
+  const ps=[];for(let f=0;f+CNN_WIN<=nF;f+=CNN_HOP)ps.push(cnnWindow(CNN,Z,f));return {p:ps.reduce((a,b)=>a+b,0)/ps.length,windows:ps}}
 async function ensureSeg(){ if(!SEG){try{SEG=await cachedFetch('data/segmenter.json','json')}catch(e){SEG=null}} return SEG }
 function segmentHeartSounds(x){
   if(!SEG)return null; const S=segBands(x); if(S.nF<50)return null;
