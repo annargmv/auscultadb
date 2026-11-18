@@ -1,0 +1,57 @@
+{
+ "what": "Breathing rate vs ICBHI expert cycles (60 / median cycle length), held-out patients",
+ "patients": 50,
+ "recordings": 359,
+ "reference": {
+  "median": 21.2
+ },
+ "shipped": {
+  "n": 359,
+  "mae": 5.66,
+  "bias": 1.03,
+  "loa": [
+   -17.9,
+   20.0
+  ],
+  "rho": 0.491,
+  "within3": 60.7
+ },
+ "candidate": {
+  "n": 359,
+  "mae": 4.94,
+  "bias": 1.47,
+  "loa": [
+   -18.2,
+   21.1
+  ],
+  "rho": 0.591,
+  "within3": 72.4,
+  "band": [
+   4,
+   32
+  ],
+  "smoothS": 0.6
+ },
+ "reduction": {
+  "mae": 0.73,
+  "ci": [
+   -0.56,
+   2.29
+  ]
+ },
+ "byGroup": [
+  {
+   "group": "children",
+   "recordings": 32,
+   "maeShipped": 8.35,
+   "maeCandidate": 3.67
+  },
+  {
+   "group": "adults",
+   "recordings": 327,
+   "maeShipped": 5.4,
+   "maeCandidate": 5.06
+  }
+ ],
+ "adopt": false
+}

@@ -32,7 +32,7 @@ Owner: Anna, a HealthTech software engineer (Python/React).
 web/            the static site — this is what gets served/published
   index.html    the whole app (≈370 KB): UI + all signal analysis (see "Code map")
   data/index.json      patients, sites, labels, findings summary, validation; `version` = cache key
-  data/d/<n>.json      per-patient precomputed analysis, 20 patients per shard
+  data/d/<n>.json      per-patient precomputed analysis, 20 patients per shard (CirCor 4: `merge.SHARD_BY`; `pipeline/reshard.py <src>` re-shards without recomputing)
   data/discover.json   Discoveries results
   audio/<key>.json     {"<recording>.mp3": base64 MP3} — one bundle per patient
 pipeline/       data pipeline (Python + Node/Playwright)
@@ -96,6 +96,9 @@ python3 pipeline/icbhi_prep.py           #   raw/icbhi -> build/icbhi_wav (8 kHz
 node pipeline/icbhi_features.js          #   page's analyzeSignal / cycleFeatures / cycleMel / recordingFeatures -> meta/features/icbhi.jsonl
 python3 pipeline/train_icbhi.py          #   web/data/icbhi_models.json (sound model + 2 illness models, gates, baselines)
 
+# murmur spectrogram network (PyTorch, CPU) — needs raw/circor; replaced the feature murmur model on Analyze/Batch
+npm run build:cnn                        # circor_spec.js (~8 min) -> train_cnn.py (~8 min) -> cnn_eval.py -> clinical_validation -> --bump
+
 # biological-age signal (Discoveries 16 + the CirCor "heart rate for age" card)
 npm run build:age                        # pipeline/age_discover.py -> discover.json['age'], then --bump
 
@@ -136,8 +139,9 @@ npm run build:discover   # only re-run the statistics from meta/features
     one SPRSound release beats the null by 0.13 y, heart rate tracks age band (ρ −0.43), and HR-for-age does **not**
     separate CirCor outcome (p 0.45). No dataset here has survival data — never describe anything as a longevity predictor.
 12b. `icbhi_age.py` adds `discover.json['age']['icbhi']` (same `clock()`; needs meta/features/icbhi.jsonl): a second, independent
-    adult test. **No age signal** — ICBHI adults MAE 8.07 vs null 8.03 y (perm p 0.61, 76 patients); COPD on one microphone
-    (AKG C417L) 7.39 vs 7.32 y (p 0.81, 32 patients). It also stores two PubMed-checked marker references read by the Longevity
+    adult test. **No age signal** — ICBHI adults MAE 8.07 vs null 8.03 y (perm p 0.61, 76 patients, 30 held out); COPD on one
+    microphone (AKG C417L) 7.39 vs 7.32 y (p 0.81, 32 patients but only 13 held out — **too few to tell**, gain CI −0.60 to +0.52 y;
+    the owner's correction 2026-11-17: cite it as uninformative, not as a confirmation). It also stores two PubMed-checked marker references read by the Longevity
     page: Baumert 2019 (PMID 31151958; nocturnal RR ≥ 16/min → all-cause HR 1.18 men / 1.50 women) and Carpenter 1989
     (PMID 2506967; *reported* wheeze → chronic-bronchitis death MR 10.5). No population study links auscultated crackles to
     mortality (searched 2026-11-17), so crackles are not listed.
@@ -254,6 +258,44 @@ age alone and stethoscope alone.
 - Not obtainable / not usable (2026-11-16): COVID-19 Sounds (NeurIPS 2021 D&B) needs a signed data-transfer agreement and is
   phone audio, not auscultation; the JASA-EL 2024 PKU auscultation set (doi 10.1121/10.0025851) — publisher blocks automated
   access, data URL unknown; BIGR COPD (bigr.nl) is chest-CT features, research/education only, no redistribution.
+
+## Murmur spectrogram network — PyTorch (2026-11-17)
+`pipeline/train_cnn.py` (torch from PyPI; download.pytorch.org is not on the allowlist). Input = page's `cnnSpec` (log power of
+FFT bins 1–32 = 31–1000 Hz, 10-ms hop) normalised by `cnnNorm` (per-bin median removed, ÷ recording IQR; same formula in
+Python). Network: 3 × [conv 3×3 → ReLU → max-pool 2] (12/24/32 ch) → global average → dropout 0.3 → linear; random 3-s crops
+in training; a recording = mean of 3-s window probabilities (hop 1.5 s). Seed 20261117, 30 epochs, AdamW 1e-3, pos_weight.
+- **Rules fixed before training:** held-out = heart_murmur `testPids` (same patients as the feature model); epoch and flag
+  threshold (90 % spec) chosen on 15 % of training patients; deploy only if it passes the gate; replace the feature model only
+  if the ΔAUC 95 % CI is above 0.
+- **Result (held-out 349 patients, 1185 recordings): AUC 0.91 (0.882–0.939) vs feature model 0.825
+  on the same recordings; Δ +0.086 (CI 0.048 to 0.129) → replaced.** Flag: sens 69.6 %, spec 94.2 %. Better in every
+  band (`cnn_eval.py` → `byBand`): infants 0.84 vs 0.73 (but spec 78 %), children 0.92 vs 0.84, adolescents 0.92 vs 0.85.
+- Page: `cnnSpec` / `cnnNorm` / `cnnConvPool` / `cnnWindow` / `cnnMurmur`, weights in `web/data/cnn_murmur.json` (277 KB),
+  `ensureCnn()`. JS = PyTorch to ~1e-7 (e2e parity). ~50 ms per window. Analyze shows it first (`cnnBlock`) with the feature
+  model below "for comparison"; Batch's murmur question uses it (`murmur-prev` = feature model). Report `cnn_murmur` on
+  Validation (`development`: internal held-out). MP3 (`pipeline/cnn_codec.js`, 465 site MP3 copies vs WAV): median shift 0.1 pt,
+  95th pct 0.3 pt, 1 flag changed. Not tested: adults, other stethoscopes.
+- Changing `cnnSpec`/`cnnNorm` means rerunning `npm run build:cnn`.
+
+## Round of fixes (2026-11-18)
+- **Crackle/wheeze spectrogram network** (`pipeline/icbhi_spec.js` → `train_lung_cnn.py`, PyTorch; 64 bins 31–2000 Hz, one
+  2.56-s window per expert cycle, two outputs). Same ICBHI held-out patients: crackles AUC 0.606 vs current 0.611,
+  wheezes 0.718 vs 0.68 (Δ CI -0.016 to 0.099). **Did not meet the replacement rule (mean-Δ CI above 0) → not
+  deployed**; weights in `meta/cnn_lung.json` (research), report `cnn_lung` on Validation.
+- **Breathing rate vs ICBHI expert cycles** (`pipeline/rr_validate.py` → `meta/rr_validation.json`, report `rr_icbhi`, external):
+  shipped estimator MAE 5.66/min (limits -17.9 to 20.0), ρ 0.491; candidate (envelope autocorrelation, tuned on
+  training patients) MAE 4.94, reduction CI -0.56 to 2.29 → **not adopted**. Children: 8.35 vs 3.67
+  (few recordings). Audit item 3 is now measured, not fixed.
+- **Murmur rule cut-off refit** (`pipeline/murmur_refit.py` → `meta/murmur_refit.json`, report `murmur_refit`): ratio alone,
+  held-out AUC 0.76; shipped 2.5× sens 52.1 / spec 94.8; refitted 1.886× sens 61.2 / spec 88.7.
+  Precomputed findings keep 2.5×; the network handles new recordings (open task 1 closed this way).
+- **Speed:** CirCor shards of 4 patients (`merge.SHARD_BY`, `pipeline/reshard.py`): one CirCor page load ~1 MB instead of ~5 MB.
+- **Phone + accessibility:** `#navToggle` menu (< 900 px), `wrapTables()` (tables scroll in a focusable `.tblwrap`), forms
+  stack < 700 px, `REC_TXT` (label-chip text ≥ 5.8:1), `.bad-t` #b42d2d, aria-labels on filters/zoom/speed/region, `for=`
+  on Analyze labels, tooltip named, links underlined in text, `prefers-reduced-motion`. Remaining axe items: wavesurfer's
+  own scroll regions (inside its shadow DOM), empty table headers (minor), tooltip outside a landmark (moving it into
+  `<main>` breaks it — main is re-rendered).
+- **Repo:** `.github/workflows/test.yml` runs `npm test`, `test:ahi`, `test:corsa` on PRs; `requirements.txt` pinned.
 
 ## Batch analysis and local validation (`#batch`, 2026-11-17)
 `renderBatch` / `runBatch` / `batchQuestions` / `batchEval` / `batchWords` (page). Many files (multi-select or a folder) are
@@ -453,7 +495,7 @@ arousal channel exists; Levine I–VI used properly.
    under-counting when continuous adventitious sound masks cycle boundaries. **`scoreFlow` rejects
    implausible periods using `ageNormRR`, so apnea scoring inherits this bias.** Fix with the
    detector work in task 1/2, not by adjusting the norms.
-4. **Infant cardiac detection is close to useless** — 3/25 murmurs found (12 %) against 45 % in
+4. **Infant cardiac detection was close to useless** for the rule (the murmur network reaches AUC 0.84 in infants, specificity 78 %) — 3/25 murmurs found (12 %) against 45 % in
    children. At a median 143 bpm diastole is too short for the S1/S2 separation the murmur rule
    needs. Report infants separately rather than inside a pooled figure.
 
@@ -475,6 +517,8 @@ arousal channel exists; Levine I–VI used properly.
   of evidence, not evidence of absence — don't cite the n = 13 arm as independent confirmation.
 
 ## Open tasks (priority order)
+**`OPEN_WORK.md` is the current list** (2026-11-18): every unfinished item with what is missing and the steps to finish it.
+The notes below are the history behind tasks 1–8; tasks 1 (murmur) and 3 (HeAR token saved, access pending) moved on.
 1. **Cardiac detector recalibration — the CirCor validation says it is needed.**
    - Measured on all 941 patients / 3,118 recordings, thresholds unchanged (`meta/circor_validation.json`):
      per patient **sens 40 % (71/179), spec 99 % (687/694)**; per valve sens 30 %, spec 99.6 %.
@@ -513,8 +557,9 @@ arousal channel exists; Levine I–VI used properly.
 - The artifact hosts at most **512 files**.
 - One publish call takes **≤256 paths** (files + removals) and **≤64 MB**.
 - Only text and HTML/JSON extensions are served (no `.bin`, no `.mp3`), which is why audio is base64 JSON and the analysis is sharded.
-- Current artifact: claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW (published 2026-11-16 from `web/`, all 451 files: page, 27 data
-  files, 423 audio bundles; 4 publishes of ≤ 58 MB). Republish the same way after data changes.
+- Current artifact: claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW (published 2026-11-16 from `web/`; now 477 files after the CirCor
+  re-shard: page, 53 data files, 423 audio bundles; publish in batches of ≤ 58 MB). After a re-shard, remove the old shard
+  paths that no longer exist in the same publish.
 - Older artifact claude.ai/artifact/JawqvH3vX7cXXqbo94SXDB (slug `8e68b339-2080-481b-822f-6581919abf92`) holds a
   pre-CirCor build from before the first commit; it is stale and was left untouched.
 - Publish `web/` only. Never publish `raw/`, `build/`, `meta/` or `tests/`.

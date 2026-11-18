@@ -1,0 +1,63 @@
+{
+ "note": "sysDia ratio alone \u2014 the shipped finding also requires resolved beats and a plausible heart rate, so its sensitivity is lower",
+ "what": "sysDia cut-off refitted on training patients, scored on held-out valve recordings",
+ "trainRecordings": 1684,
+ "testRecordings": 1132,
+ "testPatients": 349,
+ "auc": {
+  "value": 0.76,
+  "lo": 0.718,
+  "hi": 0.801
+ },
+ "shipped": {
+  "cut": 2.5,
+  "sens": {
+   "k": 98,
+   "n": 188,
+   "value": 52.1,
+   "lo": 45.0,
+   "hi": 59.2
+  },
+  "spec": {
+   "k": 895,
+   "n": 944,
+   "value": 94.8,
+   "lo": 93.2,
+   "hi": 96.1
+  }
+ },
+ "youden": {
+  "cut": 1.886,
+  "sens": {
+   "k": 115,
+   "n": 188,
+   "value": 61.2,
+   "lo": 54.0,
+   "hi": 67.9
+  },
+  "spec": {
+   "k": 837,
+   "n": 944,
+   "value": 88.7,
+   "lo": 86.5,
+   "hi": 90.5
+  }
+ },
+ "spec90": {
+  "cut": 1.871,
+  "sens": {
+   "k": 116,
+   "n": 188,
+   "value": 61.7,
+   "lo": 54.6,
+   "hi": 68.4
+  },
+  "spec": {
+   "k": 832,
+   "n": 944,
+   "value": 88.1,
+   "lo": 85.9,
+   "hi": 90.1
+  }
+ }
+}

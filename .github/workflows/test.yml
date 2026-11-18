@@ -1,0 +1,34 @@
+# End-to-end tests on every pull request and push to main. The tests serve web/ locally with the pinned CDN libraries from
+# node_modules, so they need no network beyond npm and the Playwright browser download.
+name: test
+on:
+  pull_request:
+  push:
+    branches: [main]
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install numpy==2.3.5 scipy==1.16.3   # tests/make_test_audio.py only (synthetic test audio)
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: e2e smoke test
+        run: npm test
+      - name: apnea scoring on synthetic test audio
+        run: npm run test:ahi
+      - name: CORSA crackle calibration
+        run: npm run test:corsa
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: screenshots
+          path: tests/out/*.png

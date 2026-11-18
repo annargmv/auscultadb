@@ -1,6 +1,11 @@
-numpy
-scipy
-scikit-learn
-openpyxl
-imageio-ffmpeg   # static ffmpeg binary; used by encode_audio.py when ffmpeg is not on PATH
-seismometer==0.5.0   # Epic, BSD-3-Clause — validation statistics (clinical_validation.py, ml_validate.py)
+# Pinned to the versions the shipped models were trained and exported with (2026-11-18). The page reproduces scikit-learn
+# and PyTorch outputs exactly only for these versions; after an upgrade, retrain and rerun the e2e parity checks.
+numpy==2.3.5
+scipy==1.16.3
+scikit-learn==1.9.1
+pandas==2.3.3
+openpyxl==3.1.5
+imageio-ffmpeg==0.8.1   # static ffmpeg binary; used by encode_audio.py when ffmpeg is not on PATH
+seismometer==0.5.0      # Epic, BSD-3-Clause — validation statistics (clinical_validation.py, ml_validate.py)
+torch==2.15.0           # murmur / lung spectrogram networks (train_cnn.py, train_lung_cnn.py); CPU is enough.
+                        # Smaller CPU-only wheel: pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu

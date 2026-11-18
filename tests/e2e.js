@@ -182,6 +182,9 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     await pg.click('#anGo'); await pg.waitForFunction(() => window.__analyze && window.__analyze.results.length && document.querySelector('#ar-0'), null, { timeout: 60000 });
     const hr = await pg.evaluate(() => ({ r: window.__analyze.results, txt: document.querySelector('#anOut').innerText }));
     check(hr.r[0].p && Math.abs(hr.r[0].p[0] + hr.r[0].p[1] - 1) < 1e-9 && /not a diagnosis/.test(hr.txt) && /held-out/.test(hr.txt), `heart clip CirCor ${heartClip.id} @${heartClip.loc}: murmur probability ${Math.round(100 * hr.r[0].p[1])} % with held-out accuracy and a not-a-diagnosis notice`);
+    const cn = await pg.evaluate(() => { let mx = 0; CNN.parity.forEach(v => { mx = Math.max(mx, Math.abs(cnnWindow(CNN, Float32Array.from(v.z), 0) - v.p)) });
+      return { mx, p: window.__analyze.cnn && window.__analyze.cnn.p, card: !!document.querySelector('#cnnBlock'), prev: /Previous murmur model/.test(document.querySelector('#anOut').innerText) } });
+    check(cn.mx < 1e-5 && cn.p > 0 && cn.p < 1 && cn.card && cn.prev, `murmur spectrogram network on Analyze: page = PyTorch (max |Δp| ${cn.mx.toExponential(1)}), probability ${Math.round(100 * cn.p)} %, previous model kept for comparison`);
     const br = await pg.evaluate(async () => { const s = () => document.querySelector('#lgBriefBody').innerText; const a = s(); const sel = document.querySelector('#lgBriefLv'); sel.value = 'detailed'; sel.dispatchEvent(new Event('change')); return { a, b: s() } });
     check(/Heart rate \d+ bpm/.test(br.a) && /Next steps/.test(br.a) && br.b.length > br.a.length && /No risk score or biological age/.test(br.b), 'longevity brief on Analyze: short and detailed versions, findings tied to next steps, no risk score');
     await pg.waitForFunction(() => window.__anReady, null, { timeout: 30000 }); await pg.waitForTimeout(400);
@@ -232,7 +235,7 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       await pg.waitForFunction(() => window.__batch && window.__batch.done, null, { timeout: 180000 });
       const b = await pg.evaluate(() => ({ q: window.__batch.questions, txt: document.querySelector('#bOut').innerText, csv: batchCsv().split('\n').length, sum: document.querySelector('#bSum').textContent }));
       const mq = b.q.find(q => q.id === 'murmur');
-      check(b.q.length === 1 && mq && mq.enough && mq.P === 10 && mq.N === 10 && /Of 100 recordings with a murmur, it flags about/.test(b.txt) && /LR\+/.test(b.txt)
+      check(b.q.length === 2 && b.q.some(q => q.id === 'murmur-prev') && mq && mq.enough && mq.P === 10 && mq.N === 10 && /Of 100 recordings with a murmur, it flags about/.test(b.txt) && /LR\+/.test(b.txt)
         && /before listening/.test(b.txt) && /Compared with/.test(b.txt) && /Counted per recording/.test(b.txt) && b.csv === 21 && /not a diagnosis/.test(b.sum),
         `batch: 20 labelled CirCor recordings analysed; murmur accuracy measured (10 with / 10 without) and put into words; CSV has ${b.csv - 1} rows`);
       await pg.screenshot({ path: path.join(OUT, 'batch.png'), fullPage: true });
@@ -295,6 +298,13 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(rs.stamp && rs.foot, 'live data stamp and generated footer shown');
     await pg.screenshot({ path: path.join(OUT, 'sites.png'), fullPage: true });
   } catch (e) { check(false, e.message) }
+  // phone: the menu button opens all pages; no page scrolls sideways
+  await pg.setViewportSize({ width: 390, height: 800 }); await pg.goto(url('#validation')); await pg.waitForSelector('#v-murmur', { timeout: 30000 }); await pg.waitForTimeout(400);
+  const ph0 = await pg.evaluate(() => ({ hidden: getComputedStyle(document.querySelector('#mainnav')).display === 'none', wide: document.documentElement.scrollWidth > window.innerWidth + 1 }));
+  await pg.click('#navToggle'); await pg.waitForTimeout(150);
+  const ph1 = await pg.evaluate(() => ({ links: [...document.querySelectorAll('#mainnav a')].filter(a => a.getBoundingClientRect().width > 0).length, exp: document.querySelector('#navToggle').getAttribute('aria-expanded') }));
+  check(ph0.hidden && !ph0.wide && ph1.links >= 10 && ph1.exp === 'true', `phone: menu closed by default, opens ${ph1.links} pages; validation page fits the screen width`);
+  await pg.setViewportSize({ width: 1360, height: 1000 });
   check(errors.length === 0, 'no page errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await close();
 })();

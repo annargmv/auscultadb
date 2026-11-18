@@ -21,6 +21,7 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:var(--accent);text-decoration:none}
+p a,li a,td a,dd a,.hint a,.notice a{text-decoration:underline;text-underline-offset:2px}
 button{font:inherit;cursor:pointer}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 /* app shell: a fixed left rail on desktop, a compact top bar under 900 px */
@@ -49,8 +50,10 @@ footer{margin-left:var(--side-w)}
 @media(max-width:900px){
   header{position:sticky;inset:auto;width:auto;flex-direction:row;flex-wrap:wrap;align-items:center;padding:10px 14px;gap:8px}
   .brand{padding:0}.brand small,.navlabel,.sidefoot,header .spacer{display:none}
-  header nav{flex-direction:row;overflow-x:auto;order:3;width:100%}header nav a{white-space:nowrap;padding:6px 10px}
-  .search{flex:1;min-width:140px}
+  header nav{display:none;order:3;width:100%;grid-template-columns:1fr 1fr;gap:4px}header nav a{white-space:nowrap;padding:8px 10px}
+  header.open nav{display:grid}header #btnAdd{display:none;order:4;width:100%}header.open #btnAdd{display:block}
+  header #navToggle{display:inline-flex}
+  .search{flex:1;min-width:120px}
   main,footer{margin-left:0}main{padding:18px 16px}
 }
 h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em}
@@ -61,9 +64,13 @@ h3{font-size:14px;margin:0 0 6px}
 .card>h2:first-child,.card>.row:first-child h2{font-size:15px}
 .grid{display:grid;gap:16px}
 .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}
+#navToggle{display:none;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:8px;padding:6px 10px;font-weight:600}
+.tblwrap{overflow-x:auto;max-width:100%}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr!important}.form-grid>*{grid-column:auto!important}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.kpi{padding:12px 14px}}
 @media(max-width:900px){.g2,.g3{grid-template-columns:1fr}}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 [hidden]{display:none!important}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 .btn{border:1px solid var(--line-2);background:#fff;border-radius:var(--radius-s);padding:7px 12px;font-weight:500;color:var(--ink);display:inline-flex;align-items:center;gap:6px}
 .btn:hover{background:var(--panel-2);border-color:#c3cbd8}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent-ink)}
@@ -137,7 +144,7 @@ textarea.f{min-height:60px;resize:vertical}
 .tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .src{font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px;white-space:nowrap}
 .src.real{background:#e4f6ec;color:#176b3c}.src.syn{background:#f1eefc;color:#5b3fb0}
-.ok-t{color:var(--ok);font-weight:700}.bad-t{color:var(--bad);font-weight:700}
+.ok-t{color:var(--ok);font-weight:700}.bad-t{color:#b42d2d;font-weight:700}
 .cm td,.cm th{text-align:center}.cm td.diag{background:#e4f6ec;font-weight:700}
 .lane{border:1px solid var(--line);border-radius:10px;padding:8px 10px 4px;background:#fff;position:relative}
 .lane.ghost{background:#fafbfc}
@@ -212,8 +219,9 @@ footer{color:var(--soft);font-size:12px;text-align:center;padding:24px 34px 18px
 <body>
 <header>
   <div class="brand"><div class="logo">∿</div><div>AuscultaDB<small>open auscultation research</small></div></div>
+  <button id="navToggle" type="button" aria-expanded="false" aria-controls="mainnav">☰ Menu</button>
   <div class="search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="q" placeholder="Search patients…" aria-label="Search patients (name, MRN, diagnosis)"></div>
-  <nav>
+  <nav id="mainnav" aria-label="Main">
     <div class="navlabel">Start</div>
     <a href="#home" id="nav-home" data-tip="Overview: data, results and validation status."><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/></svg>Home</a>
     <div class="navlabel">Clinical</div>
@@ -978,7 +986,8 @@ function route(scroll=true){
   else renderPatients();
   if(scroll!==false)window.scrollTo(0,0);
 }
-window.addEventListener('hashchange',()=>route());
+window.addEventListener('hashchange',()=>{const h=document.querySelector('header');if(h){h.classList.remove('open');const b=$('#navToggle');if(b)b.setAttribute('aria-expanded','false')}route()});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('#navToggle');if(!b)return;const h=document.querySelector('header'),o=h.classList.toggle('open');b.setAttribute('aria-expanded',String(o))});
 
 function findingSummary(p){
   if(isPre(p))return p.summary;
@@ -986,7 +995,9 @@ function findingSummary(p){
   return {n:r.findings.length,types};
 }
 const REC_COL={'Normal':'#1f9d55','CAS':'#8e44ad','DAS':'#d64545','CAS & DAS':'#e67e22','Bronchial':'#2c7be5','Murmur':'#e84393','Unknown':'#8b97a5'};
-const siteChips=p=>p.source==='kauh'?`<div class="row" style="gap:4px;margin-top:4px"><span class="src" style="background:${(REC_COL[p.sites[0].record]||'#8b97a5')}1f;color:${REC_COL[p.sites[0].record]||'#5d6b7a'}">${esc(p.sites[0].zone)} ${esc(p.sites[0].record)}</span></div>`:p.sites?`<div class="row" style="gap:4px;margin-top:4px">${p.sites.map(x=>`<span class="src" style="background:${(REC_COL[x.record]||'#8b97a5')}1f;color:${REC_COL[x.record]||'#5d6b7a'}" title="${esc(x.site)}: ${esc(x.record)}">${x.loc.toUpperCase()} ${esc(x.record)}</span>`).join('')}</div>`:'';
+// darker text shade of each label colour: ≥ 5.8:1 on its own 12 % tint (WCAG 2.2 AA needs 4.5:1)
+const REC_TXT={'Normal':'#14693a','CAS':'#6a2d86','DAS':'#a32b2b','CAS & DAS':'#8a4a0e','Bronchial':'#1a55a8','Murmur':'#a51d5f','Unknown':'#4b5663'};
+const siteChips=p=>p.source==='kauh'?`<div class="row" style="gap:4px;margin-top:4px"><span class="src" style="background:${(REC_COL[p.sites[0].record]||'#8b97a5')}1f;color:${REC_TXT[p.sites[0].record]||'#4b5663'}">${esc(p.sites[0].zone)} ${esc(p.sites[0].record)}</span></div>`:p.sites?`<div class="row" style="gap:4px;margin-top:4px">${p.sites.map(x=>`<span class="src" style="background:${(REC_COL[x.record]||'#8b97a5')}1f;color:${REC_TXT[x.record]||'#4b5663'}" title="${esc(x.site)}: ${esc(x.record)}">${x.loc.toUpperCase()} ${esc(x.record)}</span>`).join('')}</div>`:'';
 const SRC_META={sprsound:{tag:'SPRSound',credit:'© Zhang et al., SPRSound',lic:'CC BY 4.0',licUrl:'https://creativecommons.org/licenses/by/4.0/',cite:'SPRSound open paediatric respiratory sound database (Zhang et al., IEEE TBioCAS 2022), CC BY 4.0'},
   kauh:{tag:'KAUH',credit:'© Fraiwan et al., KAUH lung sounds',lic:'CC BY 4.0',licUrl:'https://creativecommons.org/licenses/by/4.0/',cite:'KAUH lung sounds dataset (Fraiwan et al., Data in Brief 35:106913, 2021; Mendeley Data jwyy9np4gv v3), CC BY 4.0'},
   circor:{tag:'CirCor',credit:'© Oliveira et al., CirCor DigiScope',lic:'ODC-By 1.0',licUrl:'https://opendatacommons.org/licenses/by/1-0/',cite:'CirCor DigiScope phonocardiogram dataset (Oliveira et al., IEEE JBHI 26(6):2524–2535, 2022; PhysioNet 1.0.3), ODC-By 1.0'}};
@@ -1024,16 +1035,16 @@ function renderPatients(){
       <div class="kpi" style="--k:#0f6fde"><b>${nReal}</b><span>children · lungs (SPRSound)</span></div>
       <div class="kpi" style="--k:#1f9d55"><b>${nKauh}</b><span>adolescents/adults · lungs (KAUH)</span></div>
       <div class="kpi" style="--k:#d6336c"><b>${patients.filter(p=>p.source==='circor').length}</b><span>children · heart (CirCor)</span></div>
-      <div class="kpi" style="--k:var(--soft)"><b>${nRec}</b><span>recordings · ${total} anomalies detected</span></div>
+      <div class="kpi" style="--k:var(--soft)"><b>${nRec.toLocaleString()}</b><span>recordings · ${total.toLocaleString()} anomalies detected</span></div>
     </div>
     <div class="filters">
-      <select class="f" id="fDx" style="width:auto"><option value="">All diagnoses (${patients.length})</option>${Object.keys(dxCount).sort().map(d=>`<option ${LF.dx===d?'selected':''} value="${esc(d)}">${esc(d)} (${dxCount[d]})</option>`).join('')}</select>
-      <select class="f" id="fAge" style="width:auto">${AGE_GROUPS.map(([v,l])=>`<option value="${v}" ${LF.age===v?'selected':''}>${l}</option>`).join('')}</select>
+      <select class="f" id="fDx" style="width:auto" aria-label="Filter by diagnosis"><option value="">All diagnoses (${patients.length})</option>${Object.keys(dxCount).sort().map(d=>`<option ${LF.dx===d?'selected':''} value="${esc(d)}">${esc(d)} (${dxCount[d]})</option>`).join('')}</select>
+      <select class="f" id="fAge" style="width:auto" aria-label="Filter by age group">${AGE_GROUPS.map(([v,l])=>`<option value="${v}" ${LF.age===v?'selected':''}>${l}</option>`).join('')}</select>
       ${(()=>{const SRCS=[['','All datasets'],['sprsound','SPRSound · children · lungs'],['kauh','KAUH · adults · lungs'],['circor','CirCor · children · heart'],['upload','Your uploads']];
         const c=o=>o?patients.filter(p=>(p.source||'upload')===o).length:patients.length;
-        return `<select class="f" id="fSrc" style="width:auto">${SRCS.filter(([v])=>!v||c(v)).map(([v,l])=>`<option value="${v}" ${LF.src===v?'selected':''}>${l} (${c(v)})</option>`).join('')}</select>`})()}
-      <select class="f" id="fAbn" style="width:auto"><option value="">All patients</option><option value="abn" ${LF.abn==='abn'?'selected':''}>≥1 abnormal site (expert)</option><option value="norm" ${LF.abn==='norm'?'selected':''}>All sites normal</option></select>
-      <select class="f" id="fSort" style="width:auto"><option value="severity" ${LF.sort==='severity'?'selected':''}>Sort: severe & rare first</option><option value="age" ${LF.sort==='age'?'selected':''}>Sort: age</option><option value="dx" ${LF.sort==='dx'?'selected':''}>Sort: diagnosis</option></select>
+        return `<select class="f" id="fSrc" style="width:auto" aria-label="Filter by dataset">${SRCS.filter(([v])=>!v||c(v)).map(([v,l])=>`<option value="${v}" ${LF.src===v?'selected':''}>${l} (${c(v)})</option>`).join('')}</select>`})()}
+      <select class="f" id="fAbn" style="width:auto" aria-label="Filter by finding"><option value="">All patients</option><option value="abn" ${LF.abn==='abn'?'selected':''}>≥1 abnormal site (expert)</option><option value="norm" ${LF.abn==='norm'?'selected':''}>All sites normal</option></select>
+      <select class="f" id="fSort" style="width:auto" aria-label="Sort patients"><option value="severity" ${LF.sort==='severity'?'selected':''}>Sort: severe & rare first</option><option value="age" ${LF.sort==='age'?'selected':''}>Sort: age</option><option value="dx" ${LF.sort==='dx'?'selected':''}>Sort: diagnosis</option></select>
       <span class="hint">${list.length} shown</span></div>
     <div class="card tablecard"><table><thead><tr><th>Patient</th><th>Age · Sex</th><th>Diagnosis · expert label per site</th><th>Recorded at</th><th>Release</th><th>Analysis</th></tr></thead><tbody>${rows||`<tr><td colspan="6" class="empty">No patients match.</td></tr>`}</tbody></table></div>`;
   $('#view').querySelectorAll('tr.click').forEach(tr=>{tr.onclick=()=>location.hash='#patient-'+tr.dataset.id;
@@ -1102,10 +1113,10 @@ function renderPatient(id){
             <button class="btn primary" id="playPath">▶ Current${p.sites?' · '+esc(p.site.replace(' chest','')):''}</button><button class="btn" id="playNorm" title="${p.baseFrom==='control'?'This baseline is a DIFFERENT patient — a matched control':'This patient\'s own normal recording'}">▶ Baseline${p.sites?' · '+esc(p.baseSite.replace(' chest','')):''}</button><button class="btn" id="btnStop">■ Stop</button>
             <span class="time" id="timeLbl">0.00 s / ${dur.toFixed(2)} s</span>
             <span class="spacer"></span>
-            <span class="zoomctl">zoom <input type="range" id="zoom" min="40" max="400" step="10" value="${LIVE.zoom}"></span>
-            <select class="f" id="regMode" style="width:auto;padding:4px 8px" title="Regions shown on the lanes"><option value="detected">Regions: detected anomalies</option>${isReal?'<option value="expert">Regions: expert labels</option><option value="both">Regions: both</option>':''}<option value="none">Regions: off</option></select>
+            <span class="zoomctl">zoom <input type="range" id="zoom" aria-label="Waveform zoom" min="40" max="400" step="10" value="${LIVE.zoom}"></span>
+            <select class="f" id="regMode" style="width:auto;padding:4px 8px" title="Regions shown on the lanes" aria-label="Regions shown on the lanes"><option value="detected">Regions: detected anomalies</option>${isReal?'<option value="expert">Regions: expert labels</option><option value="both">Regions: both</option>':''}<option value="none">Regions: off</option></select>
             <button class="btn small" id="tglLoop">Loop</button>
-            <select class="f" id="rate" style="width:auto;padding:4px 8px"><option value="1">1×</option><option value="0.5">0.5× (slow)</option><option value="0.25">0.25×</option></select>
+            <select class="f" id="rate" aria-label="Playback speed" style="width:auto;padding:4px 8px"><option value="1">1×</option><option value="0.5">0.5× (slow)</option><option value="0.25">0.25×</option></select>
           </div>
           <div id="liveRoot">
             <div id="liveFallback" class="notice" style="display:none"></div>
@@ -2244,12 +2255,12 @@ async function renderLongevity(){
 async function renderHome(){
   $('#view').innerHTML='<div class="empty">Loading…</div>';
   const get=async u=>{try{return await cachedFetch(u,'json')}catch(e){return null}};
-  const [V,Mo,D]=await Promise.all([get('data/validation.json'),get('data/models.json'),get('data/discover.json')]);
+  const [V,Mo,D]=await Promise.all([get('data/validation.json'),get('data/models.json'),get('data/discover.json'),ensureIcbhi()]);
   if(location.hash!=='#home'&&location.hash!=='')return;
   window.__DISC=window.__DISC||D; MODELS=MODELS||Mo; VAL=VAL||V;
   const ready=REAL.status==='ready', nRec=patients.reduce((a,p)=>a+(p.sites?p.sites.length:2),0);
   const hours=[D&&D.n&&D.n.hours,D&&D.kauh&&D.kauh.n&&D.kauh.n.hours,D&&D.circor&&D.circor.n&&D.circor.n.hours,D&&D.cbemph&&D.cbemph.n&&D.cbemph.n.minutes/60,D&&D.apnea&&D.apnea.channels&&D.apnea.channels.trach&&D.apnea.channels.trach.hours].filter(x=>x>0);
-  const srcs=[...new Set(patients.map(p=>p.source))].filter(k=>SRC_META[k]).map(k=>SRC_META[k].tag).concat(D&&D.cbemph?['CB / emphysema']:[],D&&D.apnea?['PSG-Audio']:[]);
+  const srcs=[...new Set(patients.map(p=>p.source))].filter(k=>SRC_META[k]).map(k=>SRC_META[k].tag).concat(D&&D.cbemph?['CB / emphysema']:[],D&&D.apnea?['PSG-Audio']:[],ICBHI?['ICBHI 2017']:[]);
   const rep=id=>V&&V.reports.find(r=>r.id===id), mod=id=>Mo&&Mo.models.find(m=>m.id===id), met=(r,l)=>r&&r.metrics.find(m=>m.label===l);
   const mu=rep('murmur'),ap=rep('apnea'),rk=rep('resp_kauh'),rs=rep('resp_spr'),ag=rep('age'),hm=mod('heart_murmur'),ls=mod('lung_sound'),pc=mod('lung_pattern_child'),pa=mod('lung_pattern_adult');
   const AP=D&&D.apnea&&D.apnea.channels&&D.apnea.channels.trach, AG=D&&D.age;
@@ -2393,7 +2404,7 @@ function tipify(root){
   }
 }
 (function tipEngine(){
-  const box=document.createElement('div'); box.id='tipbox'; box.setAttribute('role','tooltip'); document.body.appendChild(box);
+  const box=document.createElement('div'); box.id='tipbox'; box.setAttribute('role','tooltip'); box.setAttribute('aria-label','Term definition'); box.setAttribute('aria-live','polite'); document.body.appendChild(box);
   let cur=null;
   const show=el=>{let h;
     if(el.dataset.k){const g=GLOSS[el.dataset.k]; if(!g)return; h=`<span class="tipcat">${esc(g.c)}</span><b>${esc(g.t)}</b><div>${esc(g.d)}</div>`}
@@ -2411,8 +2422,12 @@ function tipify(root){
   let pending=null; const view=document.getElementById('view');
   new MutationObserver(recs=>{
     if(!recs.some(r=>[...r.addedNodes].some(x=>x.nodeType===1)&&!(r.target.closest&&r.target.closest('[data-notip],.livebox,.tip'))))return;
-    clearTimeout(pending); pending=setTimeout(()=>tipify(view),60)}).observe(view,{childList:true,subtree:true});
+    clearTimeout(pending); pending=setTimeout(()=>{wrapTables(view);tipify(view)},60)}).observe(view,{childList:true,subtree:true});
 })();
+// Tables scroll inside their own container on narrow screens; the container is keyboard-focusable (WCAG scrollable region).
+function wrapTables(root){for(const t of root.querySelectorAll('table')){let p=t.parentElement,ok=false;
+  for(let q=p;q&&q!==root;q=q.parentElement){const o=getComputedStyle(q).overflowX;if(o==='auto'||o==='scroll'){ok=true;if(!q.hasAttribute('tabindex'))q.setAttribute('tabindex','0');break}}
+  if(ok)continue;const w=document.createElement('div');w.className='tblwrap';w.setAttribute('tabindex','0');p.insertBefore(w,t);w.appendChild(t)}}
 /* ---------- Glossary page ---------- */
 function renderGlossary(){
   const cats=[...new Set(Object.values(GLOSS).map(g=>g.c))];
@@ -2545,6 +2560,35 @@ function segViterbi(logE,hmm){ // logE[f][c] = log p(x|state c) up to a constant
   for(let f=nF-1;f>=0;f--){path[f]=idx[s][0];if(f>0)s=back[f][s]}
   return path;
 }
+// ---------- Spectrogram network for murmur (pipeline/train_cnn.py, PyTorch; weights in data/cnn_murmur.json) ----------
+// Input: log power of FFT bins 1–32 (31–1000 Hz) every 10 ms, normalised per recording (per-bin median removed, divided by
+// the recording's interquartile range) — the same formula in Python. Network: three 3×3 conv + ReLU + 2×2 max-pool blocks,
+// global average pool, one linear output; scored on 3-s windows (hop 1.5 s), recording score = mean window probability.
+const CNN_BINS=32, CNN_WIN=300, CNN_HOP=150;
+let CNN=null;
+async function ensureCnn(){ if(!CNN){try{CNN=await cachedFetch('data/cnn_murmur.json','json')}catch(e){CNN=null}} return CNN }
+function cnnSpec(x,nb=CNN_BINS){const nF=Math.max(0,Math.floor((x.length-FR.N)/FR.HOP)+1),B=new Float32Array(nF*nb),re=new Float64Array(FR.N);
+  for(let f=0;f<nF;f++){const o=f*FR.HOP;for(let i=0;i<FR.N;i++)re[i]=x[o+i]*HANN[i];const m=fftMag(re);for(let j=0;j<nb;j++){const v=m[j+1];B[f*nb+j]=Math.log10(v*v+1e-10)}}
+  return {nF,B,nb}}
+function cnnNorm(S){const {nF,B}=S,NB=S.nb||CNN_BINS,Z=new Float32Array(nF*NB),med=new Float64Array(NB);
+  for(let j=0;j<NB;j++){const v=new Float64Array(nF);for(let f=0;f<nF;f++)v[f]=B[f*NB+j];v.sort();med[j]=segQ(v,0.5)}
+  const d=new Float64Array(nF*NB);for(let f=0;f<nF;f++)for(let j=0;j<NB;j++)d[f*NB+j]=B[f*NB+j]-med[j];
+  const s=Float64Array.from(d).sort(),sc=Math.max(1e-6,segQ(s,0.75)-segQ(s,0.25));for(let i=0;i<d.length;i++)Z[i]=d[i]/sc;return Z}
+// conv 3×3 (padding 1) + ReLU on [C][H][W] Float32Arrays, then 2×2 max-pool (floor)
+function cnnConvPool(inp,C,H,W,w,b,O){const out=new Float32Array(O*H*W);
+  for(let o=0;o<O;o++)for(let c=0;c<C;c++){const ip=inp.subarray(c*H*W,(c+1)*H*W),wo=(o*C+c)*9;
+    for(let ky=0;ky<3;ky++)for(let kx=0;kx<3;kx++){const k=w[wo+ky*3+kx];if(!k)continue;
+      for(let y=0;y<H;y++){const yy=y+ky-1;if(yy<0||yy>=H)continue;const ob=o*H*W+y*W,ib=yy*W+kx-1;
+        for(let x=0;x<W;x++){const xx=x+kx-1;if(xx<0||xx>=W)continue;out[ob+x]+=k*ip[ib+x]}}}}
+  const H2=H>>1,W2=W>>1,P=new Float32Array(O*H2*W2);
+  for(let o=0;o<O;o++){const bo=b[o];for(let y=0;y<H2;y++)for(let x=0;x<W2;x++){let m=-Infinity;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++){const v=out[o*H*W+(2*y+dy)*W+2*x+dx]+bo;if(v>m)m=v}P[o*H2*W2+y*W2+x]=m>0?m:0}}
+  return {P,H:H2,W:W2}}
+function cnnWindow(M,Z,f0){let C=1,H=CNN_BINS,W=CNN_WIN,a=new Float32Array(H*W);   // input laid out [bin][frame]
+  for(let t=0;t<W;t++)for(let j=0;j<H;j++)a[j*W+t]=Z[(f0+t)*CNN_BINS+j];
+  for(const L of M.conv){const r=cnnConvPool(a,C,H,W,L.w,L.b,L.out);a=r.P;C=L.out;H=r.H;W=r.W}
+  let z=M.fc.b;for(let c=0;c<C;c++){let s=0;for(let i=0;i<H*W;i++)s+=a[c*H*W+i];z+=M.fc.w[c]*s/(H*W)}return 1/(1+Math.exp(-z))}
+function cnnMurmur(x){if(!CNN)return null;const Z=cnnNorm(cnnSpec(x)),nF=Z.length/CNN_BINS;if(nF<CNN_WIN)return null;
+  const ps=[];for(let f=0;f+CNN_WIN<=nF;f+=CNN_HOP)ps.push(cnnWindow(CNN,Z,f));return {p:ps.reduce((a,b)=>a+b,0)/ps.length,windows:ps}}
 async function ensureSeg(){ if(!SEG){try{SEG=await cachedFetch('data/segmenter.json','json')}catch(e){SEG=null}} return SEG }
 function segmentHeartSounds(x){
   if(!SEG)return null; const S=segBands(x); if(S.nF<50)return null;
@@ -2605,10 +2649,10 @@ async function renderAnalyze(){
     <p class="sub">Upload one auscultation recording. It is analysed in this browser with the platform’s own signal analysis, then compared with what the open datasets taught ${on.length} model${on.length===1?'':'s'}: <b>which labelled pattern does it resemble, and how often is that right on patients the model never saw</b>. The file never leaves your computer.</p>
     <div class="notice" style="margin-bottom:14px"><b>This is not a diagnosis.</b> The models were trained on public research recordings; they report resemblance to labelled patterns, with their measured accuracy. ${exp.length?`<b>${exp.map(m=>esc(m.title)).join(' and ')} failed validation</b> (no better than simple guessing on held-out patients) and run only as <b>experimental</b>, by the owner’s choice — their output is shown with their failure next to it. `:''}${dead.length?`${dead.map(m=>esc(m.title)).join(', ')} failed validation and ${dead.length===1?'is':'are'} switched off. `:''}Details at the bottom of this page.</div>
     <div class="card" id="anForm"><h2>1 · Recording</h2><div class="form-grid" style="grid-template-columns:repeat(4,minmax(0,1fr));gap:0 14px">
-      <div style="grid-column:1/3"><label class="f">Audio file (WAV, MP3, … — at least 5 s)</label><input class="f" id="anFile" type="file" accept="audio/*"></div>
-      <div><label class="f">Recorded over</label><select class="f" id="anType"><option value="lung">Chest wall — breath sounds</option><option value="heart">Heart valve area — heart sounds</option></select></div>
-      <div><label class="f">Site</label><select class="f" id="anSite"></select></div>
-      <div><label class="f">Age (years)</label><input class="f" id="anAge" type="number" min="0" max="120" step="0.1" placeholder="e.g. 6"></div>
+      <div style="grid-column:1/3"><label class="f" for="anFile">Audio file (WAV, MP3, … — at least 5 s)</label><input class="f" id="anFile" type="file" accept="audio/*"></div>
+      <div><label class="f" for="anType">Recorded over</label><select class="f" id="anType"><option value="lung">Chest wall — breath sounds</option><option value="heart">Heart valve area — heart sounds</option></select></div>
+      <div><label class="f" for="anSite">Site</label><select class="f" id="anSite"></select></div>
+      <div><label class="f" for="anAge">Age (years)</label><input class="f" id="anAge" type="number" min="0" max="120" step="0.1" placeholder="e.g. 6"></div>
       <div style="grid-column:2/5;align-self:end" class="row"><button class="btn primary" id="anGo">Analyze</button><span class="hint" id="anStatus"></span></div></div>
       <div class="row" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--line)"><span class="hint">No file at hand? Try a real recording from a patient the models <b>never saw</b> during training:</span>
         <button class="btn small" id="exHeart" data-tip="A held-out child whose expert annotation has a murmur at this valve — compare the model with the expert.">♥ Heart murmur example</button>
@@ -2680,8 +2724,8 @@ async function runAnalyze(fileOverride){
   st.textContent='Decoding and analysing…'; $('#anGo').disabled=true;
   try{
     const {x,srcDur}=await decodeToSR(file,MAX_ANALYSE_S); if(x.length<5*SR)throw new Error(`recording is ${(x.length/SR).toFixed(1)} s — at least 5 s is needed`);
-    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}; await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){} const G=segmentHeartSounds(x), hrv=G?hrvFromTimes(G.s1):null;
-    window.__analyze={feats,type,age,hrv,results:[]};
+    const A=analyzeSignal(x), lf=recordingFeatures(A), hf=heartFeatures(A), feats={...lf,...hf,...heartFeaturesExt(A),age}; await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){} const G=segmentHeartSounds(x), hrv=G?hrvFromTimes(G.s1):null; const CR=type==='heart'&&await ensureCnn()&&CNN.gate.deploy?cnnMurmur(x):null;
+    window.__analyze={feats,type,age,hrv,results:[],cnn:CR?{p:CR.p,windows:CR.windows.length}:null};
     const ms=MODELS.models.filter(m=>m.kind===type);
     // ageGate: a model whose training population excludes this age is not run at all (owner's decision 2026-11-11)
     const ageOk=m=>!m.ageGate||(age>=m.ageRange[0]&&age<(m.ageRange[0]===0?m.ageRange[1]:m.ageRange[1]+1e-9));
@@ -2693,11 +2737,11 @@ async function runAnalyze(fileOverride){
     window.__analyze.results=res.map(r=>({id:r.m.id,p:r.p,warn:r.warn,ageBlocked:r.ageBlocked}));
     const IR=type!=='heart'&&await ensureIcbhi()?icbhiScore(A,lf,age):null;
     if(IR)window.__analyze.icbhi={nCycles:IR.cyc.length,ag:IR.ag,ill:IR.ill.map(r=>({id:r.m.id,p:r.p,run:r.run,inAge:r.inAge}))};
-    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv,IR); window.__analyze.done=true; st.textContent='';
+    renderAnalyzeOut(file,x,srcDur,A,feats,type,site,age,res,hrv,IR,CR); window.__analyze.done=true; st.textContent='';
   }catch(e){st.textContent='Could not analyse: '+e.message}
   $('#anGo').disabled=false;
 }
-function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR){
+function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR,CR){
   const siteName=type==='heart'?(HEART_SITES.find(s=>s[0]===site)||[0,site])[1]:site, n1=v=>v==null?'—':v;
   $('#anOut').innerHTML=`<div class="card" style="margin-top:16px"><h2>2 · The signal</h2><p class="hint" style="margin-top:0">${esc(file.name)} · ${siteName} · ${age} y · ${srcDur.toFixed(1)} s${srcDur>MAX_ANALYSE_S?` (first ${MAX_ANALYSE_S} s analysed)`:''} · resampled to ${SR/1000} kHz</p>
       <div id="anWave" style="border:1px solid var(--line);border-radius:10px;padding:6px"></div><div class="row" style="margin-top:6px"><button class="btn small" id="anPlay">▶ Play</button></div>
@@ -2705,10 +2749,10 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR){
         ${type==='heart'?`<dt>Heart rate</dt><dd>${n1(f.hr)} bpm · ${f.nBeats} beats resolved (${n1(f.quietBeats)} quiet)</dd><dt>Systolic : diastolic energy</dt><dd>${f.sysDia==null?'— (too few clean beats)':f.sysDia+'×'} · consistency ${n1(f.consistency)}</dd><dt>Possible S3</dt><dd>${f.nS3} beat${f.nS3===1?'':'s'}</dd><dt>Heart-rate variability</dt><dd>${hrvText(hrv,age)}</dd>`
         :`<dt>Breathing rate</dt><dd>${f.rr==null?'—':f.rr+' /min'}${f.est?' <span class="hint">(phases estimated — approximate)</span>':''}</dd><dt>Crackle-like events</dt><dd>${f.crkRate} /s (${f.fineRate} /s fine)</dd><dt>Continuous (tonal) sound</dt><dd>${Math.round(100*f.tonFrac)} % of the time${f.tonHz?` · median ${f.tonHz} Hz`:''}</dd><dt>Spectral centroid / median frequency</dt><dd>${f.cen} Hz / ${n1(f.f50)} Hz</dd>`}
       </dl></div>
-    <div class="card" style="margin-top:16px"><h2>3 · What the models say</h2>${res.length?res.map((r,i)=>resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}
+    <div class="card" style="margin-top:16px" id="anModels"><h2>What the models say</h2>${CR?cnnBlock(CR,age):''}${res.length?res.map((r,i)=>(CR&&r.m.id==='heart_murmur'?'<p class="hint" style="margin:10px 0 4px">Previous murmur model (hand-made features), kept for comparison:</p>':'')+resultBlock(r,i)).join(''):'<p class="hint">No model covers this recording type.</p>'}
       <div class="notice" style="margin-top:10px">Research output, not a diagnosis. A flag means “recordings like this were often labelled this way in the training data”; the numbers beside it say how often that was right on patients the model never saw. Interpret with the history, the examination and proper investigations.</div></div>`;
-  $('#anOut').insertAdjacentHTML('beforeend',briefCard(type==='heart'?{type,age,hr:f.hr,hrv}:{type,age,cycles:IR?IR.cyc.length:0,wheezeCycles:IR?IR.cyc.filter(c=>c.pw>=0.5).length:0,rr:f.rr}));
-  if(IR){$('#anOut').insertAdjacentHTML('beforeend',icbhiCard(IR,f,age));const note=clinicalNote(IR,f,age,site);$('#icNote').textContent=note;
+  $('#anModels').insertAdjacentHTML('beforebegin',briefCard(type==='heart'?{type,age,hr:f.hr,hrv}:{type,age,cycles:IR?IR.cyc.length:0,wheezeCycles:IR?IR.cyc.filter(c=>c.pw>=0.5).length:0,rr:f.rr}));
+  if(IR){$('#anModels').insertAdjacentHTML('beforebegin',icbhiCard(IR,f,age));const note=clinicalNote(IR,f,age,site);$('#icNote').textContent=note;
     $('#icCopy').onclick=()=>{navigator.clipboard?.writeText(note).then(()=>toast('Summary copied')).catch(()=>{const r=document.createRange();r.selectNodeContents($('#icNote'));const sel=getSelection();sel.removeAllRanges();sel.addRange(r);toast('Select and copy the highlighted text')})}}
   if(window.WaveSurfer){try{if(anWS)anWS.destroy()}catch(e){}
     anWS=WaveSurfer.create({container:'#anWave',url:URL.createObjectURL(encodeWav(x)),height:64,sampleRate:SR,normalize:true,waveColor:'#8fb8ef',progressColor:'#0f6fde',cursorColor:'#0e1726',
@@ -2735,7 +2779,7 @@ function lgSystems(D){const A=D.age||{},SG=D.hrv&&D.hrv.segmenter,IA=A.icbhi,IR=
     {name:'Lungs',items:[
       {k:'Wheeze',st:IS&&IS.binary.wheezes.value>=0.7?'ok':'weak',m:IS?`per breath cycle AUC ${IS.binary.wheezes.value}`:'—',e:IR.wheeze?'reported wheeze predicted chronic-bronchitis death (Carpenter 1989)':''},
       {k:'Breathing rate',st:'bad',m:`repeatability ICC ${ra&&ra.iccRR!=null?ra.iccRR.toFixed(2):'—'}; biased in adults`,e:IR.rr?'night-time rate ≥ 16/min predicted mortality in older adults (Baumert 2019)':''},
-      {k:'Acoustic age',st:'none',m:IA&&IA.clocks.length?`no age signal in adults (KAUH; ICBHI p ${IA.clocks.map(c=>c.pPerm.toFixed(2)).join(' / ')})`:'no age signal in adults (KAUH)',e:'an ECG-age gap predicts mortality; no equivalent exists for breath sound'}]},
+      {k:'Acoustic age',st:'none',m:IA&&IA.clocks.length?`no age signal in adults (KAUH; ICBHI ${IA.clocks.filter(c=>c.nTest==null||c.nTest>=20).map(c=>`p ${c.pPerm.toFixed(2)}, ${c.nTest??c.patients} held out`).join('; ')}${IA.clocks.some(c=>c.nTest!=null&&c.nTest<20)?'; the one-microphone COPD arm is too small to tell':''})`:'no age signal in adults (KAUH)',e:'an ECG-age gap predicts mortality; no equivalent exists for breath sound'}]},
     {name:'Sleep',items:[
       {k:'Apnea–hypopnea index',st:ap?'pilot':'bad',m:ap&&ap.ahi?`${ap.patients} adults: under-counts by ${Math.abs(ap.ahi.bias).toFixed(0)} events/h on average`:'not validated',e:'severe sleep apnea (AHI ≥ 30) carried HR 1.46 for death (Punjabi 2009)'}]}];
   return `<div class="grid g3" style="gap:12px;margin-bottom:16px" id="lgSystems">${sys.map(s=>`<div class="card" style="margin:0"><h2 style="margin-top:0">${s.name}</h2>
@@ -2809,7 +2853,7 @@ function parseLabels(text){const lines=text.replace(/\r/g,'').split('\n').filter
 async function renderBatch(){
   $('#view').innerHTML='<h1>Batch analysis</h1><div class="empty">Loading models…</div>';
   try{MODELS=MODELS||await cachedFetch('data/models.json','json')}catch(e){$('#view').innerHTML=`<h1>Batch analysis</h1><div class="notice">Models not available: ${esc(e.message)}</div>`;return}
-  await ensureIcbhi(); await ensureSeg(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){}
+  await ensureIcbhi(); await ensureSeg(); await ensureCnn(); try{window.__DISC=window.__DISC||await cachedFetch('data/discover.json','json')}catch(e){}
   if(location.hash!=='#batch')return;
   $('#view').innerHTML=`<h1>Batch analysis</h1>
     <p class="sub">Analyse many recordings at once with the same signal analysis and models as <a href="#analyze">Analyze a recording</a>. Add a labels file and the page measures how accurate each validated model is <b>on your recordings</b>, and says what the numbers mean in words. Files are analysed in this browser and never uploaded.</p>
@@ -2852,7 +2896,7 @@ async function runBatch(files,L,dType,dAge){
         if(age<m.ageRange[0]||age>m.ageRange[1])row.warn.push(`age outside ${m.id} training range`);
         const out=m.features.filter(k=>{const r=m.range[k],v=feats[k];return r&&v!=null&&r[0]!=null&&(v<r[0]||v>r[1])});if(out.length)row.warn.push(`unusual: ${out.join(', ')}`)}
       if(type==='lung'&&ICBHI){const R=icbhiScore(A,lf,age);row.cyc={n:R.cyc.length,pc:Math.max(0,...R.cyc.map(c=>c.pc)),pw:Math.max(0,...R.cyc.map(c=>c.pw)),nc:R.cyc.filter(c=>c.pc>=0.5).length,nw:R.cyc.filter(c=>c.pw>=0.5).length}}
-      if(type==='heart'){row.hr=feats.hr;const G=SEG?segmentHeartSounds(x):null;if(G){const h=hrvFromTimes(G.s1);row.hrSeg=h.hr;row.rmssd=h.rmssd}}else row.rr=lf.rr;
+      if(type==='heart'){row.hr=feats.hr;if(CNN&&CNN.gate.deploy){const C=cnnMurmur(x);row.cnn=C?C.p:null}const G=SEG?segmentHeartSounds(x):null;if(G){const h=hrvFromTimes(G.s1);row.hrSeg=h.hr;row.rmssd=h.rmssd}}else row.rr=lf.rr;
     }catch(err){row.err=String(err.message||err)}
     BATCH.rows.push(row)}
   BATCH.busy=false;$('#bGo').disabled=false;$('#bStop').hidden=true;
@@ -2861,7 +2905,10 @@ async function runBatch(files,L,dType,dAge){
 }
 // The questions a labelled batch can answer, each tied to a published held-out result for comparison.
 function batchQuestions(){const Q=[],M=id=>MODELS.models.find(m=>m.id===id),hm=M('heart_murmur'),ls=M('lung_sound'),S=ICBHI&&ICBHI.models.find(m=>m.id==='icbhi_sound');
-  if(hm){const f=hm.test.flags[1];Q.push({id:'murmur',title:'Murmur (heart-sound model)',type:'heart',model:hm,cond:'a murmur',unit:'recordings',
+  if(CNN&&CNN.gate.deploy){const t=CNN.test;Q.push({id:'murmur',title:'Murmur (spectrogram network)',type:'heart',model:null,cond:'a murmur',unit:'recordings',
+    truth:r=>r.label&&r.label.heart?r.label.heart==='murmur':null,score:r=>r.cnn??null,flag:r=>r.cnn==null?null:r.cnn>=CNN.threshold,
+    pub:{sens:t.sens,spec:t.spec,auc:t.auc,where:`${t.patients} held-out CirCor patients`}})}
+  if(hm){const f=hm.test.flags[1];Q.push({id:CNN&&CNN.gate.deploy?'murmur-prev':'murmur',title:CNN&&CNN.gate.deploy?'Murmur (previous feature model, for comparison)':'Murmur (heart-sound model)',type:'heart',model:hm,cond:'a murmur',unit:'recordings',
     truth:r=>r.label&&r.label.heart?r.label.heart==='murmur':null,score:r=>r.res[hm.id]&&r.res[hm.id].p?r.res[hm.id].p[1]:null,flag:r=>r.res[hm.id]&&r.res[hm.id].flags?r.res[hm.id].flags[1]:null,
     pub:{sens:f.sens,spec:f.spec,auc:hm.test.perClass[1].auc,where:`${hm.nTestPatients} held-out CirCor patients`}})}
   if(ls){const fN=ls.test.flags[0];Q.push({id:'abnormal',title:'Abnormal breath sound (breath-sound model)',type:'lung',model:ls,cond:'an adventitious sound',unit:'recordings',
@@ -2955,13 +3002,13 @@ function batchTrends(){const rows=BATCH.rows.filter(r=>!r.err&&r.patient&&r.date
   draw(0); $('#bTrendSel').onchange=e=>draw(+e.target.value);
 }
 function batchResultText(r){const parts=[];
-  if(r.type==='heart'){const m=r.res.heart_murmur;if(m&&m.p)parts.push(`murmur ${Math.round(100*m.p[1])} %${m.flags[1]?' <b>flag</b>':''}`);if(r.hr)parts.push(`HR ${Math.round(r.hr)}`)}
+  if(r.type==='heart'){const m=r.res.heart_murmur;if(r.cnn!=null)parts.push(`murmur ${Math.round(100*r.cnn)} %${r.cnn>=CNN.threshold?' <b>flag</b>':''}`);else if(m&&m.p)parts.push(`murmur ${Math.round(100*m.p[1])} %${m.flags[1]?' <b>flag</b>':''}`);if(r.hr)parts.push(`HR ${Math.round(r.hr)}`)}
   else{const m=r.res.lung_sound;if(m&&m.p){const k=m.p.indexOf(Math.max(...m.p));parts.push(`${esc(MODELS.models.find(x=>x.id==='lung_sound').classes[k])} ${Math.round(100*m.p[k])} %`)}
     if(r.cyc)parts.push(`crackles in ${r.cyc.nc}/${r.cyc.n} cycles, wheeze in ${r.cyc.nw}/${r.cyc.n}`)}
   return parts.join(' · ')||'—'}
-function batchCsv(){const ls=MODELS.models.find(m=>m.id==='lung_sound'),H=['file','type','age','site','patient','label','murmur_p','murmur_flag',...(ls?ls.classes.map(c=>'lung_'+c.split(' ')[0]+'_p'):[]),'cycles','crackle_cycles','wheeze_cycles','error'];
+function batchCsv(){const ls=MODELS.models.find(m=>m.id==='lung_sound'),H=['file','type','age','site','patient','label','murmur_network_p','murmur_network_flag','murmur_p','murmur_flag',...(ls?ls.classes.map(c=>'lung_'+c.split(' ')[0]+'_p'):[]),'cycles','crackle_cycles','wheeze_cycles','error'];
   const q=v=>v==null?'':/[",\n]/.test(String(v))?`"${String(v).replace(/"/g,'""')}"`:String(v);
-  return [H.join(','),...BATCH.rows.map(r=>{const m=r.res.heart_murmur,l=r.res.lung_sound;return [r.file,r.type,r.age,r.site,r.patient,r.label&&r.label.raw,m&&m.p?m.p[1].toFixed(4):'',m&&m.flags?(m.flags[1]?1:0):'',
+  return [H.join(','),...BATCH.rows.map(r=>{const m=r.res.heart_murmur,l=r.res.lung_sound;return [r.file,r.type,r.age,r.site,r.patient,r.label&&r.label.raw,r.cnn!=null?r.cnn.toFixed(4):'',r.cnn!=null&&CNN?(r.cnn>=CNN.threshold?1:0):'',m&&m.p?m.p[1].toFixed(4):'',m&&m.flags?(m.flags[1]?1:0):'',
     ...(ls?ls.classes.map((c,k)=>l&&l.p?l.p[k].toFixed(4):''):[]),r.cyc?r.cyc.n:'',r.cyc?r.cyc.nc:'',r.cyc?r.cyc.nw:'',r.err].map(q).join(',')})].join('\n')}
 function copyText(t,msg){(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast(msg)).catch(()=>{const ta=document.createElement('textarea');ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand('copy');toast(msg)}catch(e){toast('Copy not available here')}ta.remove()})}
 // ---------- ICBHI-trained sound-type and illness models, explanations, clinical summary (web/data/icbhi_models.json) ----------
@@ -3016,7 +3063,7 @@ function icbhiCard(R,lf,age){const M=ICBHI,S=R.S,t=S.test,F=icbhiFindings(R,lf,a
       <div style="margin:6px 0">Most similar: <b>${esc(m.classes[top])}</b> (${Math.round(100*r.p[top])} %) · ${m.classes.map((c,k)=>`${esc(c)} ${Math.round(100*r.p[k])} %`).join(' · ')}</div>
       <div class="hint">Why: ${ord.map(([c,i])=>{const k=m.features[i];return `${esc((FEAT_TEXT[k]||[k])[0])} ${fmtFeat(k,r.x[i])} ${c>0?'→ towards':'→ away from'} ${esc(m.classes[top])}`}).join('; ')}.</div>
       <div class="hint" style="margin-top:4px">Track record (each patient scored by a model that never saw them, ${m.nPatients} patients): “${esc(m.classes[top])}” AUC ${pc.auc?pc.auc.value:'—'}${pc.auc?` (95 % CI ${pc.auc.lo}–${pc.auc.hi})`:''}; age alone ${m.ageOnly.macroAuc}.${r.out.length?` Unusual vs training: ${r.out.map(k=>esc((FEAT_TEXT[k]||[k])[0])).join(', ')}.`:''}</div></div>`}).join('');
-  return `<div class="card" style="margin-top:16px" id="icbhiCard"><h2>4 · Breath-cycle sounds and illness pattern <span class="hint" style="font-weight:400">· trained on ICBHI 2017</span></h2>
+  return `<div class="card" style="margin-top:16px" id="icbhiCard"><h2>Breath-cycle sounds and illness pattern <span class="hint" style="font-weight:400">· trained on ICBHI 2017</span></h2>
     <div class="grid g2"><div><dl class="kv" style="grid-template-columns:150px 1fr">${F.L.map(x=>`<dt>${esc(x.k)}</dt><dd>${esc(x.v)}</dd>`).join('')}</dl>
       <p class="hint">Sound model on ${S.nTestPatients} held-out patients (${S.nTestCycles.toLocaleString()} cycles): crackles AUC ${b.crackles.value} (${b.crackles.lo}–${b.crackles.hi}), wheezes AUC ${b.wheezes.value} (${b.wheezes.lo}–${b.wheezes.hi}); ICBHI score ${S.icbhi.score} % (sensitivity ${S.icbhi.se} %, specificity ${S.icbhi.sp} %). Device alone: ICBHI score ${S.deviceOnly.icbhi.score} %.</p></div>
       <div style="position:relative;height:${Math.max(120,40+R.cyc.length*14)}px"><canvas id="c-icCyc"></canvas></div></div>
@@ -3049,6 +3096,14 @@ function expBlock(r,i){const m=r.m,t=m.test,top=r.p.indexOf(Math.max(...r.p)),pc
       <li>For “${esc(m.classes[top])}”, held-out AUC was <b>${pc.auc?pc.auc.value:'—'}</b>${pc.auc?` (95 % CI ${pc.auc.lo}–${pc.auc.hi})`:''} — 0.5 is a coin toss.</li>
       <li>${m.classes.map((c,k)=>`${esc(c)} ${t.perClass[k].auc?t.perClass[k].auc.value:'—'}`).join(' · ')} <span class="hint">(per-group AUC)</span></li></ul>
       <p class="hint">Bars use the same flag levels as the validated models, but a flag from this model carries almost no information.</p></div></div></div>`}
+function cnnBlock(CR,age){const M=CNN,t=M.test,v=M.vsCurrent,fl=CR.p>=M.threshold,b=(M.byBand||[]).find(x=>x.band===hrvBandOf(age));
+  return `<div class="finding" style="cursor:default;margin-bottom:10px" id="cnnBlock"><div class="row" style="justify-content:space-between"><b>Murmur at this valve — spectrogram network</b><span class="pill ok">passed validation</span></div>
+    <div style="margin:6px 0">Murmur probability <b>${Math.round(100*CR.p)} %</b> (mean of ${CR.windows.length} 3-s windows) — ${fl?'<b class="bad-t">flagged</b>':'not flagged'} (flag level ${Math.round(100*M.threshold)} %).</div>
+    <ul class="bedside"><li>On ${t.patients} children it never saw (${t.recordings} valve recordings): AUC <b>${t.auc.value}</b> (${t.auc.lo}–${t.auc.hi}); at the flag level it finds ${t.sens.value} % of murmur valves and leaves ${t.spec.value} % of others unflagged.</li>
+      <li>It replaced the feature model (AUC ${v.aucCurrent} on the same recordings; difference +${v.delta}, 95 % CI ${v.ci[0]} to ${v.ci[1]}).</li>
+      ${b?`<li>In ${esc(b.band.toLowerCase())}s: AUC ${b.auc.value} (${b.auc.lo}–${b.auc.hi}), sensitivity ${b.sens.value} %, specificity ${b.spec.value} %.</li>`:''}
+      ${M.robustness?`<li>On 32 kbps MP3 copies of ${M.robustness.recordings} recordings the probability moved by a median ${M.robustness.medianAbsShift} points (95th percentile ${M.robustness.p95AbsShift}); the flag changed in ${M.robustness.flagChanged}.</li>`:''}
+      <li class="hint">Trained with PyTorch on CirCor children (Brazil, one stethoscope type); adults and other stethoscopes are not tested. Not a diagnosis.</li></ul></div>`}
 function resultBlock(r,i){const m=r.m,t=m.test;
   if(r.ageBlocked)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: a ${esc(String(window.__analyze.age))}-year-old is outside the ages this model was trained on (${m.ageRange[0]===0?'under '+m.ageRange[1]:m.ageRange[0]+'–'+m.ageRange[1]} y).</span></div>`;
   if(!r.p)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: failed validation (${m.gate.reasons.map(esc).join('; ')}).</span></div>`;
