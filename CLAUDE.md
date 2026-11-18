@@ -564,6 +564,13 @@ The notes below are the history behind tasks 1–8; tasks 1 (murmur) and 3 (HeAR
   pre-CirCor build from before the first commit; it is stale and was left untouched.
 - Publish `web/` only. Never publish `raw/`, `build/`, `meta/` or `tests/`.
 
+## MedGemma report drafts (2026-11-18) — research, not on the pages
+`python3 pipeline/medgemma_draft.py [n]` (google/medgemma-4b-it, HAI-DEF terms, CPU ~9 GB RAM, ~1 min per draft) drafts a
+summary from the page's structured findings only (no audio, no expert label, no diagnosis; heart recordings get cardiac
+findings only). Mechanical checks: numbers traceable, "not a diagnosis", no diagnosis named, no clinician-implying words,
+findings attributed to the right site. **12 drafts: numbers always traceable, but 3 of 12 misattribute a finding**
+(and one more is ambiguous on reading) → not fit to use unreviewed; owner decision pending. Do not put drafts on the pages.
+
 ## Remote data store (2026-11-18) — `pipeline/remote.py`
 The machine's disk is small and replaced between sessions, so `raw/` and the expensive `build/` folders live in a
 **private** Hugging Face dataset repository (`$AUSCULTADB_REMOTE`, default `<HF user>/auscultadb-data`). Same paths as on

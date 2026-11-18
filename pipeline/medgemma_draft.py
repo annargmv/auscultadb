@@ -87,14 +87,30 @@ def check(draft, src, dx_words):
             'pass': not attribution(draft, src) and not bad and not dx and bool(re.search(r'not (a|intended as a|for) diagnos', low)) and not [w for w in BANNED if w in low] and not [w for w in HUMAN if w in low]}
 
 
+def dx_list(idx):
+    w = sorted({p['disease'] for p in idx['patients'] if p.get('disease')} - {'Healthy', 'Normal', 'None'}, key=len)
+    return [x for x in w if not re.search(r'\d|/|murmur', x, re.I)] + ['pneumonia', 'asthma', 'COPD', 'bronchitis', 'heart failure', 'bronchiolitis', 'murmur grade']
+
+
+def summary(out):
+    return {'drafts': len(out), 'passed': sum(o['check']['pass'] for o in out), 'withUnsupportedNumbers': sum(bool(o['check']['unsupported']) for o in out),
+            'namingDiagnosis': sum(bool(o['check']['namesDiagnosis']) for o in out), 'missingNotDiagnosis': sum(not o['check']['saysNotDiagnosis'] for o in out),
+            'impliesClinician': sum(bool(o['check']['impliesClinician']) for o in out), 'misattributed': sum(bool(o['check']['misattributed']) for o in out)}
+
+
+def recheck():
+    f = META / 'medgemma_drafts.json'; R = json.loads(f.read_text()); dx = dx_list(json.loads((WEB_DATA / 'index.json').read_text()))
+    for o in R['drafts']: o['check'] = check(o['draft'], o['input'], dx)
+    R['summary'] = summary(R['drafts']); f.write_text(json.dumps(R, indent=1, ensure_ascii=False)); print(R['summary'])
+
+
 def main(n):
     from transformers import AutoProcessor, AutoModelForImageTextToText
     torch.set_num_threads(int(os.environ.get('THREADS', '4'))); tok = os.environ.get('HF_TOKEN', 'proxy-injected')
     idx = json.loads((WEB_DATA / 'index.json').read_text()); rng = np.random.default_rng(SEED)
     shards = {}
     for f in (WEB_DATA / 'd').glob('*.json'): shards.update(json.loads(f.read_text()))
-    dx_words = sorted({p['disease'] for p in idx['patients'] if p.get('disease')} - {'Healthy', 'Normal', 'None'}, key=len)
-    dx_words = [w for w in dx_words if not re.search(r'\d|/', w)] + ['pneumonia', 'asthma', 'COPD', 'bronchitis', 'heart failure', 'bronchiolitis', 'murmur grade']
+    dx_words = dx_list(idx)
     pick = []
     for src in ('sprsound', 'kauh', 'circor'):
         P = [p for p in idx['patients'] if p['src'] == src and p['key'] in shards]; pick += [P[i] for i in rng.choice(len(P), min(n, len(P)), replace=False)]
@@ -112,10 +128,10 @@ def main(n):
            'decoding': 'greedy, max 200 new tokens, bf16 on CPU', 'system': SYSTEM, 'shownOnPages': False,
            'summary': {'drafts': len(out), 'passed': sum(o['check']['pass'] for o in out), 'withUnsupportedNumbers': sum(bool(o['check']['unsupported']) for o in out),
                        'namingDiagnosis': sum(bool(o['check']['namesDiagnosis']) for o in out), 'missingNotDiagnosis': sum(not o['check']['saysNotDiagnosis'] for o in out), 'impliesClinician': sum(bool(o['check']['impliesClinician']) for o in out), 'misattributed': sum(bool(o['check']['misattributed']) for o in out)},
-           'reviewed': False, 'note': 'Mechanical checks only. Whether each number is attached to the right finding still needs a clinician to read the draft.',
+           'reviewed': False, 'manualRead': None, 'note': 'Mechanical checks only. Whether each number is attached to the right finding still needs a clinician to read the draft.',
            'drafts': out}
     (META / 'medgemma_drafts.json').write_text(json.dumps(res, indent=1, ensure_ascii=False)); print(res['summary'], '->', META / 'medgemma_drafts.json')
 
 
 if __name__ == '__main__':
-    main(int(sys.argv[1]) if len(sys.argv) > 1 else 4)
+    recheck() if sys.argv[1:] == ['--recheck'] else main(int(sys.argv[1]) if len(sys.argv) > 1 else 4)

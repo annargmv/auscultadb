@@ -21,14 +21,18 @@ and report on another, and nothing is shown on the pages unless it passes its ga
      features and with the spectrogram networks on the same held-out patients; report on Validation and Discoveries 9.
   5. HeAR cannot run in the browser (size); results are research only unless a small distilled model passes the gate.
 
-### 2. MedGemma to draft the written report (CLAUDE.md task 4)
-- **Status:** not started. Same Google terms as HeAR (`google/medgemma-4b-it`); this machine now has 15 GB RAM, enough for
-  4B on CPU (slow: minutes per report).
-- **Missing:** model access (as above) and an **owner decision**: MedGemma writes free text, which conflicts with the
-  "numbers only from validation outputs" rule unless it is constrained.
-- **To apply:** accept the terms; run it offline in the pipeline only on the structured findings already shown
-  (`clinicalNote`, `longevityBrief`), never on audio; store drafts as clearly labelled "AI-drafted, not reviewed"; add a
-  check that every number in a draft appears in the source findings. It cannot run in the static site.
+### 2. MedGemma to draft the written report (CLAUDE.md task 4) — **tested 2026-11-18; not fit to use unreviewed**
+- **Done:** `pipeline/medgemma_draft.py` runs `google/medgemma-4b-it` offline (CPU, bf16, ~1 min per draft) on the page's own
+  structured findings — never the audio, the expert label or the diagnosis. Checks per draft: every number appears in the
+  input; it says "not a diagnosis"; no diagnosis named; no phrasing that implies a clinician listened; **every finding named
+  in a sentence exists at every site that sentence names**. Results in `meta/medgemma_drafts.json`
+  (`--recheck` re-scores stored drafts).
+- **Result (12 drafts, 4 each SPRSound / KAUH / CirCor):** all numbers traceable, but **3 of 12 put a finding at the wrong
+  site or contradict themselves**, and 1 more lists rates without saying which filter mode they come from (found by
+  reading, not by the check). The first run, before heart recordings were limited to cardiac findings, had 5 of 12 wrong.
+- **Missing:** an owner decision. The drafts read fluently but are wrong often enough that each would need a clinician to
+  check it line by line, so they are **not shown on the pages**. Options: drop the idea; try a larger model (27B — too big
+  for this machine); or generate the summary with a fixed template from the same structured findings (no model, no errors).
 
 ### 3. Remove or approve network hosts added during research — **done 2026-11-18**
 - Removed `pubs.aip.org`, `bigr.nl`, `www.longevity-ai.com`, `longevity-ai.com`; added `cdn-lfs-us-1.hf.co` and
