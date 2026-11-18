@@ -564,7 +564,25 @@ The notes below are the history behind tasks 1–8; tasks 1 (murmur) and 3 (HeAR
   pre-CirCor build from before the first commit; it is stale and was left untouched.
 - Publish `web/` only. Never publish `raw/`, `build/`, `meta/` or `tests/`.
 
+## Remote data store (2026-11-18) — `pipeline/remote.py`
+The machine's disk is small and replaced between sessions, so `raw/` and the expensive `build/` folders live in a
+**private** Hugging Face dataset repository (`$AUSCULTADB_REMOTE`, default `<HF user>/auscultadb-data`). Same paths as on
+disk; folders with more than 1,000 files are stored as ~1 GB tar parts under `archives/<folder>/` (HF allows ≤ 10,000 files
+per directory). `MANIFEST.json` holds size, sha256, licence and upload time for every file.
+```bash
+python3 pipeline/remote.py status                     # remote vs local, per folder
+python3 pipeline/remote.py pull raw/circor build/cnn  # restore after a fresh machine (sha256-checked)
+python3 pipeline/remote.py push raw/icbhi             # upload new or changed files
+python3 pipeline/remote.py free raw/psg_audio         # delete local copies whose sha256 matches the remote; keeps anything else
+```
+- Stored (9.7 GB, 13,307 files): raw/circor, raw/icbhi, raw/psg_audio, build/cnn, build/icbhi_cnn, build/icbhi_wav, build/seg.
+  Round trip checked (free → pull → every sha256 matches).
+- The script **refuses to push to a repository that is not private** — ICBHI is research-only (rule 3). Never make it public.
+- Auth: the HF token is a network secret of the `auscultadb` environment; code uses `HF_TOKEN=proxy-injected`.
+- `raw/psg_audio` was freed locally on 2026-11-18 (disk); `pull raw/psg_audio` before rerunning psg_audio_validate.js.
+
 ## Cloud environment
 This repo's sessions run on the personal environment **auscultadb** (not Default): package registries plus
-`huggingface.co`, `cdn-lfs.huggingface.co`, `cas-bridge.xethub.hf.co`, `us.aws.cdn.hf.co` (HF file downloads) and
-`www.scidb.cn`, and `physionet.org` (CirCor). The HF hosts are also what task 3 (HeAR) needs, together with a token.
+`huggingface.co`, `cdn-lfs.huggingface.co`, `cdn-lfs-us-1.hf.co`, `cas-bridge.xethub.hf.co`, `cas-server.xethub.hf.co`,
+`us.aws.cdn.hf.co` (HF downloads and uploads), `www.scidb.cn` and `physionet.org` (CirCor). A Hugging Face token is saved
+as a network secret for `huggingface.co`; HeAR and MedGemma 4B-it access were granted 2026-11-18.

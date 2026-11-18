@@ -30,12 +30,15 @@ and report on another, and nothing is shown on the pages unless it passes its ga
   (`clinicalNote`, `longevityBrief`), never on audio; store drafts as clearly labelled "AI-drafted, not reviewed"; add a
   check that every number in a draft appears in the source findings. It cannot run in the static site.
 
-### 3. Remove or approve network hosts added during research
-- **Status:** the environment allows `pubs.aip.org`, `bigr.nl`, `www.longevity-ai.com`, `longevity-ai.com` (added while
-  checking sources) — no longer needed. `download.pytorch.org` (small CPU-only PyTorch) could not be approved from the
-  mobile app.
-- **To apply:** owner decides; remove the four hosts in the environment settings, and approve `download.pytorch.org` from
-  claude.ai on a computer if a smaller torch install is wanted (PyPI torch works, ~8 GB with unused GPU libraries).
+### 3. Remove or approve network hosts added during research — **done 2026-11-18**
+- Removed `pubs.aip.org`, `bigr.nl`, `www.longevity-ai.com`, `longevity-ai.com`; added `cdn-lfs-us-1.hf.co` and
+  `cas-server.xethub.hf.co` (Hugging Face uploads for the remote data store). `download.pytorch.org` still not approved —
+  PyPI torch works.
+
+### Remote data store — **done 2026-11-18**
+- `pipeline/remote.py` keeps `raw/` and the expensive `build/` folders on a private Hugging Face dataset repository
+  (9.7 GB, 13,307 files, sha256 manifest). Large downloads in items 4–7 no longer depend on this machine's disk: push what
+  you fetch, `free` it locally, `pull` it when needed. See CLAUDE.md "Remote data store".
 
 ---
 
@@ -47,12 +50,14 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 - **Missing:** new PSG-Audio patients — one set to fit the correction, a second to report on (the 10 pilot patients are
   already used for the reported numbers). Disk: the HF mirror's EDF files are ~0.7 GB per patient-hour before
   decimation; ~8 GB free now.
-- **To apply:** free disk (e.g. delete `build/cnn` and `build/icbhi_cnn`, ~1.5 GB, regenerable); download 10 + 10 new
+- **To apply:** make room with `python3 pipeline/remote.py free build/cnn build/icbhi_cnn` (stored on the private remote,
+  restored with `pull`); download 10 + 10 new
   patients a few at a time with `pipeline/psg_audio_prep.py`, keeping only the 8-kHz microphones; add the floor
   subtraction as an *additive* option in `computeFlow` (low percentile of band RMS); fit on set A, report on set B with
   `psg_audio_validate.js` / `psg_audio_discover.py`; keep `npm run test:ahi` passing.
-- **Also possible with the existing pilot:** PSG-Audio's flow channel gives a true overnight breathing rate — use it to test
-  the candidate breathing-rate estimator (item 8) without new downloads.
+- **Also possible:** PSG-Audio's flow channel gives a true overnight breathing rate to test the candidate breathing-rate
+  estimator (item 8). The pilot prep kept only the two 8-kHz microphones, so the flow (and the `.rml` breath timing) must be
+  downloaded again from the HF mirror for the same 10 patients; `raw/psg_audio` itself is on the remote (`pull raw/psg_audio`).
 
 ### 5. Healthy sleepers and children for apnea specificity (CLAUDE.md task 7)
 - **Status:** blocked — no open dataset found with breath sound recorded alongside a scored sleep study in healthy adults
@@ -113,15 +118,16 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 ## C. Engineering work, no blocker — just time
 
 ### 13. Dark mode
-- **Missing:** colour tokens. The page has many hard-coded colours (`#fff`, chart colours, chips).
+- **Status:** not started. **Missing:** colour tokens — the page has ~310 hard-coded colours (`#fff` ×31, chart colours,
+  chips, canvas drawing in JS).
 - **To apply:** move every colour to CSS variables on `:root`, add `@media (prefers-color-scheme: dark)` values, re-check
-  contrast (WCAG 4.5:1) and Chart.js colours in both themes, add an e2e screenshot in dark mode.
+  contrast (WCAG 4.5:1) and Chart.js / canvas colours in both themes, add an e2e screenshot in dark mode. A day of careful
+  work; do it as its own change so a contrast regression is easy to find.
 
-### 14. Remaining accessibility warnings (axe)
-- wavesurfer.js's own scroll areas are not keyboard-focusable (inside its shadow DOM) — patch via its `shadowRoot` after
-  creation or ask upstream; empty `<th>` cells (minor) — add visually hidden labels; the tooltip box sits outside a
-  landmark (moving it into `<main>` breaks it because main is re-rendered) — give it `role="complementary"` or mount it
-  in a persistent landmark outside `#view`.
+### 14. Remaining accessibility warnings (axe) — **done 2026-11-18**
+- wavesurfer scroll areas get `tabindex=0`, `role=region` and a name after each waveform loads (`wsA11y`); empty `<th>`
+  cells carry visually hidden labels (`.sr-only`); the tooltip box is mounted in an `<aside aria-label="Term definitions">`
+  outside `#view`, so it sits in a landmark and survives re-renders.
 
 ### 15. First-load size
 - `index.json` is ~690 KB because it lists every site of every patient. Split it into a small list summary and per-patient
@@ -131,6 +137,5 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 - Could be implemented, but no dataset here has inspiration/expiration timings to validate it. Needs phase-annotated
   recordings first.
 
-### 17. Continuous integration
-- `.github/workflows/test.yml` was added 2026-11-18 and runs on pull requests; confirm the first run is green and fix any
-  environment difference (Playwright browser download, fonts).
+### 17. Continuous integration — **done**
+- `.github/workflows/test.yml` ran green on the pull request and on the merge to `main` (2026-11-18, runs 1 and 2).
