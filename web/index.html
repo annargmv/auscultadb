@@ -1156,7 +1156,7 @@ function renderPatient(id){
         </div>
         ${cmp&&cmp.length?`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Expert annotation vs. automatic analysis</h2><span class="hint">current recording · click a row to play the event</span></div>
           <p class="hint" style="margin:6px 0 10px">SPRSound physicians labelled each breath event. The detector labels the same time window CAS (continuous: wheeze / rhonchi / stridor), DAS (discontinuous: crackles) or Normal. Agreement: <b>${cmp.filter(e=>e.agree).length}/${cmp.length}</b> events exact · <b>${cmp.filter(e=>e.abnAgree).length}/${cmp.length}</b> normal-vs-abnormal.</p>
-          <table id="cmpT"><thead><tr><th>#</th><th>Time</th><th>Expert label</th><th>Expert class</th><th>Automatic</th><th>Evidence</th><th></th></tr></thead><tbody>${cmp.map((e,i)=>`<tr class="click" data-i="${i}"><td class="mono">${i+1}</td><td class="mono">${e.start.toFixed(2)}–${e.end.toFixed(2)} s</td><td><span class="swatch" style="background:${EXP_COL[e.type]||'#999'}"></span>${esc(e.type)}</td><td>${e.expert}</td><td>${e.ours}</td><td class="hint">tonal ${e.tonal.toFixed(2)} s · ${e.crackles} crackle-like transients</td><td>${e.agree?'<span class="ok-t">✓</span>':e.abnAgree?'<span class="hint">≈ type differs</span>':'<span class="bad-t">✗</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}
+          <table id="cmpT"><thead><tr><th>#</th><th>Time</th><th>Expert label</th><th>Expert class</th><th>Automatic</th><th>Evidence</th><th><span class="sr-only">Agreement</span></th></tr></thead><tbody>${cmp.map((e,i)=>`<tr class="click" data-i="${i}"><td class="mono">${i+1}</td><td class="mono">${e.start.toFixed(2)}–${e.end.toFixed(2)} s</td><td><span class="swatch" style="background:${EXP_COL[e.type]||'#999'}"></span>${esc(e.type)}</td><td>${e.expert}</td><td>${e.ours}</td><td class="hint">tonal ${e.tonal.toFixed(2)} s · ${e.crackles} crackle-like transients</td><td>${e.agree?'<span class="ok-t">✓</span>':e.abnAgree?'<span class="hint">≈ type differs</span>':'<span class="bad-t">✗</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}
       </div>
     </div>`;
   // wire up
@@ -1464,6 +1464,8 @@ function encodeWav(x){
   for(let i=0;i<n;i++)v.setInt16(44+2*i,Math.round(clamp(x[i],-1,1)*32767),true);
   return new Blob([b],{type:'audio/wav'});
 }
+/* wavesurfer's scroll area lives in its shadow DOM; make it keyboard-reachable and named (axe scrollable-region-focusable) */
+function wsA11y(ws,name){try{const sc=ws.getWrapper().parentElement;if(sc&&!sc.hasAttribute('tabindex')){sc.tabIndex=0;sc.setAttribute('role','region');sc.setAttribute('aria-label',name)}}catch(e){}}
 const liveLibOk=()=>!!(window.WaveSurfer&&WaveSurfer.create&&WaveSurfer.Regions&&WaveSurfer.Spectrogram&&WaveSurfer.Timeline);
 function destroyLive(){
   if(!live)return; cancelAnimationFrame(live.raf);
@@ -1494,7 +1496,7 @@ function buildLive(p,r,a){
     const ws=WaveSurfer.create({container:el,url:urls[which],height:58,sampleRate:SR,minPxPerSec:LIVE.zoom,autoScroll:true,autoCenter:true,normalize:true,
       waveColor:col.wave,progressColor:col.prog,cursorColor:'#15202b',cursorWidth:2,dragToSeek:true,hideScrollbar:false,plugins});
     const L={ws,regions,which,ready:false};
-    ws.on('ready',()=>{L.ready=true;ws.setPlaybackRate(player.rate,true);live&&live.setRegions&&live.setRegions();if(live&&Object.values(live.lanes).every(l=>l.ready)){live.ok=true;$('#lanePathSt').textContent='';$('#laneNormSt').textContent='';if(LIVE.autoplay){LIVE.autoplay=false;live.play('path',0)}}});
+    ws.on('ready',()=>{wsA11y(ws,(which==='path'?'Current':'Baseline')+' recording waveform');L.ready=true;ws.setPlaybackRate(player.rate,true);live&&live.setRegions&&live.setRegions();if(live&&Object.values(live.lanes).every(l=>l.ready)){live.ok=true;$('#lanePathSt').textContent='';$('#laneNormSt').textContent='';if(LIVE.autoplay){LIVE.autoplay=false;live.play('path',0)}}});
     ws.on('error',e=>{fb.style.display='block';fb.textContent='Live view error: '+(e&&e.message||e)});
     ws.on('interaction',t=>{ if(!live)return; const other=which==='path'?'normal':'path'; if(!ws.isPlaying()){live.which=which;current.which=which;player.pos=t;const tg=clamp(live.map(which,t),0,live.lanes[other].ws.getDuration()||0);live.lanes[other].ws.setTime(tg);live.centre(live.lanes[other],tg);live.tick(true)} });
     ws.on('finish',()=>{ if(!live||live.which!==which)return; if(player.loop&&live.segEnd==null){live.play(which,0)} else {player.playing=false;updatePlayerUI();live.tick(true)} });
@@ -1797,6 +1799,23 @@ function apneaChart(A){
 }
 // ---- 16 · age signal. Every sentence below is chosen by the numbers in discover.json['age'].
 const ageVerdict=c=>c.significant?'<span class="pill ok">signal on held-out data</span>':c.pPerm<0.05?'<span class="pill warn">weak — CI includes zero</span>':'<span class="pill">no signal</span>';
+// ---- 9 · Google HeAR embeddings vs this platform's models (research only; HeAR cannot run in the page). Words follow the numbers.
+function hearCard(H){if(!H||!(H.icbhi||H.circor))return '';const n=DISCOVER_MAP.findIndex(x=>x.id==='hear')+1;
+  const ci=a=>a?`${a.value} (${a.lo}–${a.hi})`:'—',sgn=v=>(v>0?'+':'')+v.toFixed(3);
+  const word=v=>v.verdict==='better'?'<span class="pill ok">HeAR better</span>':v.verdict==='worse'?'<span class="pill bad">HeAR worse</span>':'<span class="pill warn">no clear difference</span>';
+  const rows=[];
+  if(H.icbhi)for(const q of ['crackles','wheezes']){const r=H.icbhi[q];if(!r)continue;for(const [k,v] of Object.entries(r.vs))rows.push(`<tr><td>ICBHI · ${q} per breath cycle</td><td class="mono">${r.n.toLocaleString()} cycles · ${r.patients} patients</td><td class="mono">${ci(r.auc)}</td><td>${esc(k)}</td><td class="mono">${ci(v.auc)}</td><td class="mono">${sgn(v.delta)} (${v.ci[0]} to ${v.ci[1]})</td><td>${word(v)}</td></tr>`)}
+  if(H.circor){const r=H.circor;for(const [k,v] of Object.entries(r.vs))rows.push(`<tr><td>CirCor · murmur per valve recording</td><td class="mono">${r.n.toLocaleString()} recordings · ${r.patients} patients</td><td class="mono">${ci(r.auc)}</td><td>${esc(k)}</td><td class="mono">${ci(v.auc)}</td><td class="mono">${sgn(v.delta)} (${v.ci[0]} to ${v.ci[1]})</td><td>${word(v)}</td></tr>`)}
+  const all=[...(H.icbhi?['crackles','wheezes'].map(q=>H.icbhi[q]).filter(Boolean):[]),...(H.circor?[H.circor]:[])].flatMap(r=>Object.values(r.vs));
+  const nb=all.filter(v=>v.verdict==='better').length,nw=all.filter(v=>v.verdict==='worse').length;
+  const dv=H.icbhi&&H.icbhi.deviceFromEmbedding;
+  return `<div class="card" id="d-hear"><h2>${n} · Google HeAR embeddings against this platform's models</h2>
+    <p class="hint" style="margin-top:0">${esc(H.model)}. ${esc(H.input.icbhi)} (ICBHI); ${esc(H.input.circor)} (CirCor). ${esc(H.probe)}. Each comparison uses the same held-out patients as the model it is compared with; the difference in AUC has a patient-bootstrap 95 % CI, and “better” means the whole interval is above 0. Rules were fixed before the embeddings were scored.</p>
+    <div style="overflow-x:auto"><table><thead><tr><th>Question</th><th>Held out</th><th>HeAR + linear probe, AUC</th><th>Compared with</th><th>Its AUC (same cases)</th><th>Difference, 95 % CI</th><th><span class="sr-only">Verdict</span></th></tr></thead><tbody>${rows.join('')}</tbody></table></div>
+    <p>${nb===all.length?'HeAR with a linear probe beat every comparison model on the same held-out patients.':nb?`HeAR beat ${nb} of ${all.length} comparisons; ${nw?`it was worse in ${nw}, and `:''}the rest show no clear difference.`:nw?`HeAR was worse in ${nw} of ${all.length} comparisons and showed no clear advantage in the others.`:'No comparison shows a clear difference: the confidence intervals include 0.'}
+      ${dv?` The embedding also carries the stethoscope: a linear probe names the ICBHI recording device correctly in ${Math.round(100*dv.accuracy)} % of held-out cycles (always guessing the commonest device: ${Math.round(100*dv.majority)} %). In ICBHI the device tracks diagnosis and age, so any sound model there can partly learn the device.`:''}</p>
+    ${H.circor&&H.circor.byBand&&H.circor.byBand.length?`<p class="hint">CirCor by age band (HeAR vs network AUC): ${H.circor.byBand.map(b=>`${esc(b.band.toLowerCase())}s ${b.hear?b.hear.value:'—'} vs ${b.network?b.network.value:'—'} (${b.recordings} recordings)`).join(' · ')}.</p>`:''}
+    <p class="hint">Research comparison only: HeAR is a 303-million-parameter transformer and does not run in this page. Nothing on Analyze or Batch uses it. Licence: Health AI Developer Foundations terms; no ICBHI audio is published (rule 3).</p></div>`}
 function ageCard(A){
   const n=DISCOVER_MAP.findIndex(x=>x.id==='age')+1;
   if(!A)return `<div class="card" id="d-age"><h2>${n} · Biological-age signal in auscultation</h2><div class="notice">Not computed yet — run <span class="mono">python3 pipeline/age_discover.py</span> then <span class="mono">merge.py --bump</span>.</div></div>`;
@@ -1806,7 +1825,7 @@ function ageCard(A){
   return `<div class="card" id="d-age"><h2>${n} · Biological-age signal in auscultation — can sound support a longevity marker?</h2>
     <p class="hint" style="margin-top:0">In other modalities the gap between a model’s predicted age and real age tracks survival: the ECG-age gap predicts all-cause mortality (${esc(A.refs[0].cite)}, PMID ${A.refs[0].pmid}), and resting heart rate is itself linked to mortality (${esc(A.refs[1].cite)}, PMID ${A.refs[1].pmid}). <b>No dataset here has follow-up or survival data, so longevity is not measured on this page.</b> What can be tested is the precondition: does the sound carry age at all? Fit on ${Math.round(100*(1-A.testFrac))} % of patients, scored on the held-out ${Math.round(100*A.testFrac)} % (seed ${A.seed}, computed ${esc(String(A.generated).slice(0,10))}).</p>
     <h3>Breath-sound age clock</h3>
-        <div style="overflow-x:auto"><table><thead><tr><th>Data</th><th>Patients train / test</th><th>Test error</th><th>Guess-the-mean error</th><th>Gain, 95 % CI</th><th>Permutation p</th><th></th></tr></thead><tbody>${row(a)}${ch.map(row).join('')}</tbody></table></div>
+        <div style="overflow-x:auto"><table><thead><tr><th>Data</th><th>Patients train / test</th><th>Test error</th><th>Guess-the-mean error</th><th>Gain, 95 % CI</th><th>Permutation p</th><th><span class="sr-only">Verdict</span></th></tr></thead><tbody>${row(a)}${ch.map(row).join('')}</tbody></table></div>
         <p class="hint">${a.significant?`In adults the clock beats the null on held-out subjects (Spearman ρ = ${a.rho}).`:`<b>Adults: no age signal.</b> On ${a.nTest} held-out KAUH subjects (${a.ageRange[0]}–${a.ageRange[1]} y) the clock misses by ${a.mae} y — the same as guessing the training mean (${a.maeNull} y); permutation p = ${a.pPerm.toFixed(2)}.`}
         ${sig.length?` Children: ${sig.map(c=>`${esc(c.release)} beats the null by ${(c.maeNull-c.mae).toFixed(2)} y (ρ = ${c.rho})`).join('; ')} — statistically real but ${sig.every(c=>c.maeNull-c.mae<0.5)?'clinically negligible (a few weeks of age)':'small'}, and ${ch.length-sig.length} of ${ch.length} releases show nothing, so it does not generalise across recording batches.`:` Children: no release shows a signal that survives its CI.`}
         ${anyBreath?'':' The detector features describe the abnormal sounds they were built for, not the person’s age.'}</p>
@@ -1818,7 +1837,7 @@ function ageCard(A){
         <div style="position:relative;height:230px"><canvas id="c-agehr"></canvas></div>
         <p class="hint">Bars: 10th–90th percentile of acoustic heart rate in ${h.refN} training-split patients with no murmur and a normal outcome (line = median). Dots: median of the ${h.nTest} held-out patients per band. ${h.significant?`Heart rate falls with age band on held-out data (ρ = ${h.rho}, ${fmtP(h.pRho)}): the heart-sound detector recovers normal cardiac maturation, so the heart channel <b>does</b> carry age.`:'No age trend on held-out data.'} This matches known physiology and serves as a check on the measurement.</p>
         <h3>Does heart rate for age flag the sick?</h3>
-        <table><thead><tr><th>Comparison (held-out)</th><th>Normal</th><th>Abnormal</th><th>Effect r</th><th></th></tr></thead><tbody>
+        <table><thead><tr><th>Comparison (held-out)</th><th>Normal</th><th>Abnormal</th><th>Effect r</th><th><span class="sr-only">p value</span></th></tr></thead><tbody>
           <tr><td>HR-for-age deviation (z)</td><td class="mono">${o.z.medA}</td><td class="mono">${o.z.medB}</td><td class="mono">${fmtR(o.z.r)}</td><td class="mono">${fmtP(o.z.p)}</td></tr>
           <tr><td>Size of deviation |z|</td><td class="mono">${o.absZ.medA}</td><td class="mono">${o.absZ.medB}</td><td class="mono">${fmtR(o.absZ.r)}</td><td class="mono">${fmtP(o.absZ.p)}</td></tr>
           ${Object.entries(o.byCampaign).map(([c,m])=>`<tr><td class="hint">within campaign ${esc(c)}</td><td class="mono">${m.medA}</td><td class="mono">${m.medB}</td><td class="mono">${fmtR(m.r)}</td><td class="mono">${fmtP(m.p)}</td></tr>`).join('')}
@@ -1850,6 +1869,7 @@ async function renderDiscover(){
   const MP=id=>DISCOVER_MAP.find(x=>x.id===id)||{};
   if(D.probe&&D.probe.n)MP('probe').d=`SPRSound 2022–2024 (${D.probe.n[0]} children)`;
   if(D.cbemph&&D.cbemph.n){const c=D.cbemph.n;MP('cbemph').m=`${c.recordings} recordings (${c.cb} CB, ${c.emphysema} emphysema) on the same Littmann 3200 as KAUH, against KAUH’s ${c.kauhHealthy.D} healthy adults in all three filter modes; plus a CB-vs-emphysema probe`}
+  if(D.hear&&(D.hear.icbhi||D.hear.circor))Object.assign(MP('hear'),{st:'result',m:'HeAR embeddings of 2-s windows (one per breath cycle; up to four per valve recording), linear probe, same held-out patients as the shipped models',d:'ICBHI 2017 (research licence) + CirCor'});
   const KH=patients.filter(p=>p.source==='kauh'&&p.control&&p.age!=null).map(p=>p.age);
   if(KH.length)MP('life').m=`Same spectral-centroid reference on healthy children (SPRSound) and healthy adolescents/adults ${Math.min(...KH)}–${Math.max(...KH)} y (KAUH), per age group`;
   if(D.apnea&&D.apnea.channels&&D.apnea.channels.trach){const c=D.apnea.channels.trach;Object.assign(MP('apnea'),{st:'result',
@@ -1877,16 +1897,16 @@ async function renderDiscover(){
     <div class="card" id="d-hidden"><h2>2 · Subtle differences at “normal” sites of sick children</h2>
       <div class="grid g2">
         <div><div style="position:relative;height:240px"><canvas id="c-hidden"></canvas></div></div>
-        <div><table><thead><tr><th>Measure (expert-Normal sites)</th><th>Healthy controls</th><th>Sick children</th><th>Effect r</th><th></th></tr></thead><tbody>
+        <div><table><thead><tr><th>Measure (expert-Normal sites)</th><th>Healthy controls</th><th>Sick children</th><th>Effect r</th><th><span class="sr-only">p value</span></th></tr></thead><tbody>
           ${[['cen','Spectral centroid (Hz), median'],['crkRate','Crackle-like transients /s, mean'],['fineRate','Fine-crackle-like /s, mean'],['tonFrac','Tonal time fraction, mean']].map(([k,l])=>{const m=h[k].all;if(!m)return '';const A=k==='cen'?m.medA:(m.meanA??m.medA),B=k==='cen'?m.medB:(m.meanB??m.medB);return `<tr><td>${l}</td><td class="mono">${A.toFixed(k==='tonFrac'?3:k==='cen'?0:2)}</td><td class="mono">${B.toFixed(k==='tonFrac'?3:k==='cen'?0:2)}</td><td class="mono">${fmtR(m.r)}</td><td class="mono ${m.p<0.05?'bad-t':''}">${fmtP(m.p)}</td></tr>`}).join('')}
         </tbody></table>
         <h3 style="margin-top:12px">Same comparison within each release (recording batch)</h3>
-        <table><thead><tr><th>Release</th><th>Controls / sick-normal recordings</th><th>Centroid (Hz)</th><th></th></tr></thead><tbody>
+        <table><thead><tr><th>Release</th><th>Controls / sick-normal recordings</th><th>Centroid (Hz)</th><th><span class="sr-only">p value</span></th></tr></thead><tbody>
           ${(D.hiddenByRelease||[]).filter(x=>x.cen).map(x=>`<tr><td>${x.release}</td><td class="mono">${x.ctrlRec} / ${x.sickNormalRec}</td><td class="mono">${x.cen.medA.toFixed(0)} → ${x.cen.medB.toFixed(0)}</td><td class="mono ${x.cen.p<0.05?'bad-t':''}">${fmtP(x.cen.p)}</td></tr>`).join('')}
         </tbody></table></div></div>
       <h3 style="margin-top:12px">By diagnosis — spectral centroid at expert-Normal sites vs healthy controls</h3>
       <div class="grid g2"><div style="position:relative;height:${Math.max(180,(D.hiddenByDx||[]).length*28)}px"><canvas id="c-hiddenDx"></canvas></div>
-      <table><thead><tr><th>Diagnosis</th><th>Children</th><th>Effect r</th><th></th></tr></thead><tbody>${(D.hiddenByDx||[]).filter(x=>x.cen).sort((a,b)=>b.cen.r-a.cen.r).map(x=>`<tr><td>${esc(x.dx)}</td><td class="mono">${x.children}</td><td class="mono">${fmtR(x.cen.r)}</td><td class="mono ${x.cen.p<0.05?'bad-t':''}">${fmtP(x.cen.p)}</td></tr>`).join('')}</tbody></table></div>
+      <table><thead><tr><th>Diagnosis</th><th>Children</th><th>Effect r</th><th><span class="sr-only">p value</span></th></tr></thead><tbody>${(D.hiddenByDx||[]).filter(x=>x.cen).sort((a,b)=>b.cen.r-a.cen.r).map(x=>`<tr><td>${esc(x.dx)}</td><td class="mono">${x.children}</td><td class="mono">${fmtR(x.cen.r)}</td><td class="mono ${x.cen.p<0.05?'bad-t':''}">${fmtP(x.cen.p)}</td></tr>`).join('')}</tbody></table></div>
       <p class="hint">Effect r = rank-biserial correlation (positive: sick children higher). ${h.cen.all&&h.cen.all.p<0.05?'Sites that experts labelled normal in sick children are, on average, slightly higher-pitched and contain more crackle-like transients than healthy children’s — a possible sign of subclinical change. The difference holds in most age groups (not at 9–12 y) and within the 2022 and 2023 releases (guarding against age and recording-batch effects). It tracks disease burden: largest in bronchiolitis and severe pneumonia, smaller in non-severe pneumonia and asthma, not significant in bronchitis — and reversed in upper-respiratory infection (11 children), a disease of the upper airway rather than the lungs. Groups under ~15 children are fragile.':'No consistent difference found.'} Effect sizes are small; this is a hypothesis for prospective testing.</p></div>
 
     <div class="card" id="d-spatial"><h2>3 · Where on the chest abnormal sounds appear, by disease</h2>
@@ -1897,7 +1917,7 @@ async function renderDiscover(){
       <p class="hint">Expert labels, children with ≥3 recorded sites. Among children with any abnormal site, the share of abnormal sites in asthma vs non-severe pneumonia: ${D.focal.asthma_vs_pneumonia?`${(D.focal.asthma_vs_pneumonia.medA*100).toFixed(0)} % vs ${(D.focal.asthma_vs_pneumonia.medB*100).toFixed(0)} % (${fmtP(D.focal.asthma_vs_pneumonia.p)})`:'—'}.</p></div>
 
     <div class="card" id="d-severity"><h2>4 · Severe vs non-severe pneumonia</h2>
-      <table><thead><tr><th>Measure (one value per child)</th><th>Non-severe</th><th>Severe</th><th>Children</th><th>Effect r</th><th></th></tr></thead><tbody>
+      <table><thead><tr><th>Measure (one value per child)</th><th>Non-severe</th><th>Severe</th><th>Children</th><th>Effect r</th><th><span class="sr-only">p value</span></th></tr></thead><tbody>
         ${sevRow('fracAbnSites','Share of abnormal sites (expert)')}${sevRow('crkRate','Crackle-like transients /s')}${sevRow('fineRate','Fine-crackle-like /s')}${sevRow('tonFrac','Tonal time fraction')}${sevRow('cen','Spectral centroid',' Hz')}${sevRow('rr','Breathing rate (acoustic)',' /min')}${sevRow('hr','Heart rate (acoustic)',' bpm')}
       </tbody></table>
       <p class="hint">Age check: median age non-severe ${D.severityAge?D.severityAge.medA.toFixed(1):'—'} y vs severe ${D.severityAge?D.severityAge.medB.toFixed(1):'—'} y (${fmtP(D.severityAge&&D.severityAge.p)}) — ${D.severityAge&&D.severityAge.p<0.05?'severe cases are younger, so rate differences are partly age effects.':'no strong age difference.'} Breathing and heart rate are unreliable from short clips (see 6).</p></div>
@@ -1917,7 +1937,7 @@ async function renderDiscover(){
 
     <div class="card" id="d-audit"><h2>7 · Label audit — “normal” recordings worth re-listening</h2>
       <p class="hint" style="margin-top:0">${au.nFlagged} of ${au.nNormal.toLocaleString()} expert-Normal recordings (${(100*au.nFlagged/au.nNormal).toFixed(1)} %) show sustained tonal sound (≥10 % of the time) or ≥3 fine-crackle-like transients per second. These are candidates for a second listen, not errors — heart sounds, crying and stethoscope noise can trigger the detector.</p>
-      <div style="max-height:360px;overflow:auto"><table><thead><tr><th>Recording</th><th>Age</th><th>Diagnosis</th><th>Why flagged</th><th></th></tr></thead><tbody>
+      <div style="max-height:360px;overflow:auto"><table><thead><tr><th>Recording</th><th>Age</th><th>Diagnosis</th><th>Why flagged</th><th><span class="sr-only">Listen</span></th></tr></thead><tbody>
         ${au.top.map(c=>`<tr><td class="mono">${esc(c.name)}<div class="hint">${c.loc}${c.labelSrc==='events'?' · label from events':''}</div></td><td>${fmtAge(c.age)}</td><td>${esc(c.disease||'—')}</td><td class="hint">${esc(c.why)}</td><td>${cohortKeys.has(c.key)?`<a href="#patient-spr-${c.key}" data-loc="${c.loc}" class="auditGo">listen →</a>`:'<span class="hint">not in browsable set</span>'}</td></tr>`).join('')}
       </tbody></table></div></div>
 
@@ -1925,6 +1945,7 @@ async function renderDiscover(){
       <p class="hint" style="margin-top:0">Borrowed from Google’s wearable hypertension study (short windows → one person-level embedding → regularised logistic regression). Here: ${q.n[0]} children from the releases that have controls (${q.n[1]} sick, ${q.n[2]} healthy), only their expert-Normal sites, six sound features averaged per child. AUC from 5-fold cross-validation, repeated 20×; 0.5 = chance.</p>
       <div class="grid g2"><table><thead><tr><th>Inputs</th><th>AUC</th></tr></thead><tbody>${row('age','Age only')}${row('release','Recording batch only (confound check)')}${row('sound','Sound features')}${row('all','Sound + age + batch')}${['BioCAS2022','BioCAS2024'].map(r=>q['within_'+r]?`<tr><td>Sound + age, within ${r} only (${q['within_'+r][0]} children, ${q['within_'+r][1]} healthy)</td><td class="mono">${q['within_'+r][2].toFixed(2)}</td></tr>`:'').join('')}</tbody></table>
       <p class="hint">${q.sound<0.65?`Weak. Pooled across releases the sound score reaches AUC ${q.sound.toFixed(2)}, but part of that is the recording batch (batch alone ${q.release.toFixed(2)}), and within a single release it falls to ${Math.min(q.within_BioCAS2022[2],q.within_BioCAS2024[2]).toFixed(2)}–${Math.max(q.within_BioCAS2022[2],q.within_BioCAS2024[2]).toFixed(2)}. So the “hidden abnormality” in section 2 is real on average but too small to screen an individual child with these six hand-made features. This is the gap a learned encoder (Google HeAR, analysis 9) is meant to close.`:`The child-level score separates the groups beyond batch and age.`}</p></div></div>`})():''}
+    ${hearCard(D.hear)}
     ${D.kauh?(()=>{const K=D.kauh,L=K.life,G=D.growth;return `<div class="card" id="d-life"><h2>10 · Across the lifespan — healthy children and healthy adults</h2>
       <div class="grid g2"><div style="position:relative;height:280px"><canvas id="c-life"></canvas></div>
       <p class="hint">Median spectral centroid of healthy recordings per age group: ${G.nControls} healthy-control recordings from SPRSound children (Yunting stethoscope) and ${L.n} healthy KAUH subjects${KH.length?` aged ${Math.min(...KH)}–${Math.max(...KH)}`:''} (Littmann 3200, diaphragm mode). Within each dataset the curve is flat — children ρ = ${G.rhoControls.toFixed(2)} (${fmtP(G.pControls)}), adults ρ = ${L.rho.toFixed(2)} (${fmtP(L.p)}). The jump between the two curves is the stethoscope and its filter, not age: in KAUH the same recordings sit at ${K.modes.byMode.B.cen.toFixed(0)} Hz in bell mode, ${K.modes.byMode.D.cen.toFixed(0)} Hz in diaphragm and ${K.modes.byMode.E.cen.toFixed(0)} Hz in extended. A true lifespan curve needs one device across all ages (ICBHI has children to elderly on the same devices).</p></div></div>
@@ -2025,10 +2046,10 @@ async function renderDiscover(){
       <h3>Apnea / AHI scoring is untested on real data</h3>
       <p class="hint" style="margin-top:0">The AASM scoring runs and passes its test suite (11/11), but that test uses a <b>synthetic</b> audio file — nothing here has been scored against a real night. Two limits are structural rather than bugs: breath sound alone cannot separate <b>obstructive from central</b> events, and with no <b>SpO₂</b> channel hypopneas are scored on the airflow drop only, without the desaturation criterion the AASM rules also allow.</p>
       <h3>Google models — HeAR and MedGemma</h3>
-      <p class="hint" style="margin-top:0">Both need a Hugging Face token issued after accepting Google's Health AI Developer Foundations terms, plus <span class="mono">huggingface.co</span> reachable from this workspace; MedGemma also needs more memory than the machine has (4B ≈ 8 GB). HeAR would embed the breath sounds; MedGemma takes text and images only — it would draft the written report from the structured findings, never listen to the audio.</p>
+      <p class="hint" style="margin-top:0">${D.hear?`Access to both was granted under Google's Health AI Developer Foundations terms. HeAR was run offline on ICBHI and CirCor (analysis ${DISCOVER_MAP.findIndex(x=>x.id==='hear')+1}); it is too large for the page. MedGemma takes text and images only: it is tested offline on drafting the written report from the structured findings, with every number in a draft checked against the input, and its drafts are not shown on these pages.`:`Both need a Hugging Face token issued after accepting Google's Health AI Developer Foundations terms, plus <span class="mono">huggingface.co</span> reachable from this workspace. HeAR would embed the breath sounds; MedGemma takes text and images only — it would draft the written report from the structured findings, never listen to the audio.`}</p>
       <h3>What each of these holds up</h3>
       <table style="max-width:900px"><thead><tr><th>#</th><th>Analysis</th><th>State</th><th>What it needs</th></tr></thead><tbody>
-        <tr><td class="mono">9</td><td>HeAR embeddings vs hand-made features</td><td><span class="pill warn">blocked</span></td><td>Hugging Face token + network access</td></tr>
+        <tr><td class="mono">9</td><td>HeAR embeddings vs hand-made features</td><td>${D.hear?'<span class="pill ok">result above</span>':'<span class="pill warn">blocked</span>'}</td><td>${D.hear?'Done on ICBHI and CirCor; the SPRSound comparison needs its audio back on disk':'Hugging Face token + network access'}</td></tr>
         <tr><td class="mono">12</td><td>Overnight apnea / AHI against PSG</td><td>${D.apnea?'<span class="pill ok">pilot result below</span>':'<span class="pill warn">blocked</span>'}</td><td>${D.apnea?'More PSG-Audio patients would tighten the estimate; the pilot already answers the question':'PhysioNet overnight sleep data'}</td></tr>
         <tr><td class="mono">10</td><td>Breath sounds across the lifespan</td><td><span class="pill ok">result below</span></td><td>Has a result, but the child/adult step is the stethoscope, not age — a true curve needs ICBHI (children to elderly on one device)</td></tr>
         <tr><td class="mono">11</td><td>Adult diseases</td><td><span class="pill ok">result below</span></td><td>Answered on KAUH; more adult data would strengthen it</td></tr>
@@ -2218,7 +2239,7 @@ async function renderLongevity(){
     ${A?ageCard(A):'<div class="notice">The biological-age analysis has not been computed yet.</div>'}
     ${IA&&IA.clocks.length?`<div class="card" style="margin-top:16px" id="lg-icbhiAge"><h2>Second adult test of the age clock — ICBHI 2017</h2>
       <p class="hint" style="margin-top:0">Same method as above (ridge on the page’s breath-sound measurements, fit on 60 % of patients, scored on the other 40 %, compared with always guessing the training patients’ mean age). ICBHI is independent of KAUH: other countries, other stethoscopes.</p>
-      <div style="overflow-x:auto"><table><thead><tr><th>Group</th><th>Patients <span class="hint">(held out)</span></th><th>Error of the clock</th><th>Error of guessing the mean</th><th>Gain, 95 % CI</th><th>Permutation p</th><th></th></tr></thead><tbody>
+      <div style="overflow-x:auto"><table><thead><tr><th>Group</th><th>Patients <span class="hint">(held out)</span></th><th>Error of the clock</th><th>Error of guessing the mean</th><th>Gain, 95 % CI</th><th>Permutation p</th><th><span class="sr-only">Verdict</span></th></tr></thead><tbody>
       ${IA.clocks.map(c=>{
         // The verdict rests on the HELD-OUT patients, not the group total. A negative from a very
         // small test set is absence of evidence, not evidence of absence - its CI is too wide to
@@ -2404,7 +2425,7 @@ function tipify(root){
   }
 }
 (function tipEngine(){
-  const box=document.createElement('div'); box.id='tipbox'; box.setAttribute('role','tooltip'); box.setAttribute('aria-label','Term definition'); box.setAttribute('aria-live','polite'); document.body.appendChild(box);
+  const box=document.createElement('div'); box.id='tipbox'; box.setAttribute('role','tooltip'); box.setAttribute('aria-label','Term definition'); box.setAttribute('aria-live','polite'); const lm=document.createElement('aside'); lm.setAttribute('aria-label','Term definitions'); lm.appendChild(box); document.body.appendChild(lm);
   let cur=null;
   const show=el=>{let h;
     if(el.dataset.k){const g=GLOSS[el.dataset.k]; if(!g)return; h=`<span class="tipcat">${esc(g.c)}</span><b>${esc(g.t)}</b><div>${esc(g.d)}</div>`}
@@ -2757,7 +2778,7 @@ function renderAnalyzeOut(file,x,srcDur,A,f,type,site,age,res,hrv,IR,CR){
   if(window.WaveSurfer){try{if(anWS)anWS.destroy()}catch(e){}
     anWS=WaveSurfer.create({container:'#anWave',url:URL.createObjectURL(encodeWav(x)),height:64,sampleRate:SR,normalize:true,waveColor:'#8fb8ef',progressColor:'#0f6fde',cursorColor:'#0e1726',
       plugins:[WaveSurfer.Spectrogram.create({height:110,labels:true,frequencyMin:0,frequencyMax:2000,fftSamples:256,noverlap:192,scale:'linear',colorMap:'roseus',sampleRate:SR})]});
-    anWS.on('ready',()=>{window.__anReady=true}); window.__anReady=false;
+    anWS.on('ready',()=>{wsA11y(anWS,'Uploaded recording waveform');window.__anReady=true}); window.__anReady=false;
     $('#anPlay').onclick=()=>anWS.playPause()}
   res.forEach((r,i)=>{if(!r.p)return;const el=$('#ar-'+i);if(!el||!window.Chart)return;const m=r.m;
     anCharts.push(new Chart(el,{type:'bar',data:{labels:m.classes,datasets:[{label:'probability',data:r.p.map(v=>Math.round(1000*v)/10),backgroundColor:r.p.map((v,k)=>v>=m.thresholds[k]?'rgba(214,69,69,.75)':'rgba(15,111,222,.45)')},
@@ -2957,7 +2978,7 @@ function renderBatchOut(){BATCH.charts.forEach(c=>{try{c.destroy()}catch(e){}});
       <p class="hint" style="margin-top:0">Labels file: ${L.n} rows${L.cols.patient?' with patient IDs':''}.${L.unknown.length?` Labels not understood (ignored): ${L.unknown.map(esc).join(', ')}.`:''} Thresholds are the models’ own, fixed on their training data.</p>
       ${E.length?E.map((e,i)=>`<div class="finding" style="cursor:default;margin-bottom:12px"><div class="row" style="justify-content:space-between"><b>${esc(e.q.title)}</b><span class="hint">${e.n} ${e.unit} · ${e.P} with, ${e.N} without</span></div>
         <div class="grid g2" style="margin-top:8px"><div><ul class="bedside">${batchWords(e,preP).map(w=>`<li>${w}</li>`).join('')}</ul></div>
-        <div>${e.enough?`<table class="mono" style="font-size:12px"><thead><tr><th></th><th>${esc(e.q.cond)}</th><th>without</th></tr></thead><tbody>
+        <div>${e.enough?`<table class="mono" style="font-size:12px"><thead><tr><th><span class="sr-only">Condition</span></th><th>${esc(e.q.cond)}</th><th>without</th></tr></thead><tbody>
           <tr><td>flagged</td><td>${e.tp}</td><td>${e.fp}</td></tr><tr><td>not flagged</td><td>${e.fn}</td><td>${e.tn}</td></tr></tbody></table>
           <div class="hint">PPV ${Math.round(e.ppv.v)} % (${Math.round(e.ppv.lo)}–${Math.round(e.ppv.hi)}) · NPV ${Math.round(e.npv.v)} % (${Math.round(e.npv.lo)}–${Math.round(e.npv.hi)}) at this batch’s rate of ${Math.round(100*e.P/e.n)} %.</div>
           ${e.n>=30?`<div style="position:relative;height:150px;margin-top:6px"><canvas id="bCal-${i}"></canvas></div>`:''}`:''}</div></div></div>`).join('')

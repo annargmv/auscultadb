@@ -138,6 +138,10 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     const ap = await pg.evaluate(() => { const c = document.querySelector('#d-apnea'); return c && { chart: !!c.querySelector('#c-apnea'), rows: c.querySelectorAll('table tr').length,
       same: /same code as an upload/.test(c.innerText), off: /Audio stays off this site/.test(c.innerText), live: !document.querySelector('#dToc a[data-jump="d-apnea"]').classList.contains('pending') } });
     check(ap && ap.chart && ap.rows > 8 && ap.same && ap.off && ap.live, `apnea validation section rendered (${ap ? ap.rows : 0} rows, PSG-Audio, page's own scoring)`);
+    // 9 · Google HeAR vs this platform's models (research only): rendered from discover.json['hear'] when present
+    const hz = await pg.evaluate(() => { const c = document.querySelector('#d-hear'); return { has: !!(window.__DISC && window.__DISC.hear), c: c && { rows: c.querySelectorAll('tbody tr').length,
+      research: /does not run in this page/.test(c.innerText), ci: /\(-?\d\.\d+ to -?\d\.\d+\)/.test(c.innerText) } } });
+    check(!hz.has || (hz.c && hz.c.rows >= 1 && hz.c.research && hz.c.ci), hz.has ? `HeAR section rendered (${hz.c ? hz.c.rows : 0} comparisons, CIs shown, research-only note)` : 'HeAR section absent (no discover.json[hear])');
     // 16 · age signal: data-driven, held-out, never claims longevity
     const ag = await pg.evaluate(() => { const c = document.querySelector('#d-age'); return c && { clock: !!c.querySelector('#c-ageclock'), hr: !!c.querySelector('#c-agehr'),
       rows: c.querySelectorAll('table tr').length, honest: /longevity is not measured/.test(c.innerText), pmid: /PMID 34433816/.test(c.innerText) } });

@@ -460,10 +460,38 @@ def cnn_lung():
         'verdict': 'No reliable gain over the current cycle model; not deployed.'}
 
 
+def hear():
+    """Google HeAR embeddings + linear probe vs the platform's models (hear_probe.py): research comparison, not used by the pages."""
+    f = META / 'hear_probe.json'
+    if not f.exists(): return None
+    H = json.load(open(f)); ex, bed, cases = [], [], []
+    for lab, r in ([(f"ICBHI {q} per cycle", H['icbhi'][q]) for q in ('crackles', 'wheezes') if 'icbhi' in H] + ([('CirCor murmur per valve recording', H['circor'])] if 'circor' in H else [])):
+        ex.append({'label': f'{lab} — HeAR (AUC)', 'value': r['auc']['value'], 'lo': r['auc']['lo'], 'hi': r['auc']['hi'], 'n': r['n'], 'explain': f"held-out, {r['patients']} patients"})
+        for k, v in r['vs'].items():
+            ex.append({'label': f'{lab} — HeAR minus {k} (ΔAUC)', 'value': v['delta'], 'lo': v['ci'][0], 'hi': v['ci'][1], 'n': r['patients'], 'explain': f"{k} AUC {v['auc']['value']} on the same cases; patient bootstrap 95 % CI"})
+            bed.append(f"{lab}: HeAR AUC {r['auc']['value']} vs {k} {v['auc']['value']} — difference {v['delta']:+.3f} (95 % CI {v['ci'][0]} to {v['ci'][1]}): {v['verdict']}.")
+            cases.append(v['verdict'])
+    nb = cases.count('better'); dv = (H.get('icbhi') or {}).get('deviceFromEmbedding')
+    lim = ['HeAR (303 M parameters) cannot run in the page; a deployable version would need distillation and its own validation.',
+           'CirCor input is the first 8 s of each recording (four 2-s windows); the network sees the whole recording.',
+           'SPRSound and KAUH not compared: their audio is not on this machine.']
+    if dv: lim.insert(0, f"The embedding identifies the ICBHI recording device in {round(100 * dv['accuracy'])} % of held-out cycles (commonest device {round(100 * dv['majority'])} %); in ICBHI the device tracks age and diagnosis.")
+    return {
+        'id': 'hear', 'title': 'Google HeAR embeddings with a linear probe (research comparison)', 'discover': 'd-hear', 'evidence': 'research',
+        'question': 'Do general health-audio embeddings (HeAR) find crackles, wheezes and murmurs better than the models built here?',
+        'intendedUse': 'Research comparison only. Not used by the pages.',
+        'population': {'n': sum(e['n'] for e in ex if 'HeAR (AUC)' in e['label']), 'text': f"Held-out patients of each comparison model: ICBHI {(H.get('icbhi') or {}).get('testPatients', '—')} patients, CirCor {(H.get('circor') or {}).get('testPatients', '—')} patients. {ICBHI_CITE}; CirCor DigiScope 1.0.3."},
+        'reference': 'ICBHI experts\' per-cycle crackle / wheeze labels; CirCor experts\' per-valve murmur labels.',
+        'indexTest': f"{H['model']}; {H['probe']}.",
+        'independence': 'Internal: the same frozen held-out patients as the shipped models; rules fixed before scoring; nothing tuned on them.',
+        'metrics': [], 'subgroups': [], 'extra': ex, 'bedside': bed, 'limits': lim,
+        'verdict': ('HeAR beat every comparison.' if nb == len(cases) else f'HeAR beat {nb} of {len(cases)} comparisons; the others show no gain or a loss.' if nb else 'No reliable gain over the models built here.') + ' Not deployed.'}
+
+
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung(), rr_icbhi(), murmur_refit()) if r]
+    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung(), rr_icbhi(), murmur_refit(), hear()) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}
