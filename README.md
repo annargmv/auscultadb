@@ -112,4 +112,4 @@ python3 pipeline/merge.py --add circor   # append to web/data, leaving the other
 
 `web/audio` and `web/data` contain derived copies of the CC BY and ODC-By recordings and labels. Keep the attribution when you share the site.
 
-See `CLAUDE.md` for the architecture, the code map and open tasks.
+See `CLAUDE.md` for the architecture and the code map, and `OPEN_WORK.md` for what is not done yet and how to finish it.

@@ -499,6 +499,8 @@ arousal channel exists; Levine I–VI used properly.
    needs. Report infants separately rather than inside a pooled figure.
 
 ## Open tasks (priority order)
+**`OPEN_WORK.md` is the current list** (2026-11-18): every unfinished item with what is missing and the steps to finish it.
+The notes below are the history behind tasks 1–8; tasks 1 (murmur) and 3 (HeAR token saved, access pending) moved on.
 1. **Cardiac detector recalibration — the CirCor validation says it is needed.**
    - Measured on all 941 patients / 3,118 recordings, thresholds unchanged (`meta/circor_validation.json`):
      per patient **sens 40 % (71/179), spec 99 % (687/694)**; per valve sens 30 %, spec 99.6 %.
