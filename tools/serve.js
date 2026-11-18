@@ -6,5 +6,10 @@ http.createServer((q, r) => {
   let f = path.join(WEB, decodeURIComponent(q.url.split('?')[0]));
   if (fs.existsSync(f) && fs.statSync(f).isDirectory()) f = path.join(f, 'index.html');
   if (!f.startsWith(WEB) || !fs.existsSync(f)) { r.writeHead(404); r.end('not found'); return }
-  r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r);
+  // No cache headers at all let the browser apply heuristic caching, so an edited page keeps
+  // serving the old copy until a hard reload — confusing during development, and the page's own
+  // Cache Storage sits on top of it. Tell the browser never to reuse a response here.
+  r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream',
+    'Cache-Control': 'no-store, no-cache, must-revalidate', 'Pragma': 'no-cache', 'Expires': '0' });
+  fs.createReadStream(f).pipe(r);
 }).listen(PORT, () => console.log(`AuscultaDB on http://localhost:${PORT}`));
