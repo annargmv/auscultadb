@@ -2779,7 +2779,7 @@ function lgSystems(D){const A=D.age||{},SG=D.hrv&&D.hrv.segmenter,IA=A.icbhi,IR=
     {name:'Lungs',items:[
       {k:'Wheeze',st:IS&&IS.binary.wheezes.value>=0.7?'ok':'weak',m:IS?`per breath cycle AUC ${IS.binary.wheezes.value}`:'—',e:IR.wheeze?'reported wheeze predicted chronic-bronchitis death (Carpenter 1989)':''},
       {k:'Breathing rate',st:'bad',m:`repeatability ICC ${ra&&ra.iccRR!=null?ra.iccRR.toFixed(2):'—'}; biased in adults`,e:IR.rr?'night-time rate ≥ 16/min predicted mortality in older adults (Baumert 2019)':''},
-      {k:'Acoustic age',st:'none',m:IA&&IA.clocks.length?`no age signal in adults (KAUH; ICBHI p ${IA.clocks.map(c=>c.pPerm.toFixed(2)).join(' / ')})`:'no age signal in adults (KAUH)',e:'an ECG-age gap predicts mortality; no equivalent exists for breath sound'}]},
+      {k:'Acoustic age',st:'none',m:IA&&IA.clocks.length?`no age signal in adults (KAUH; ICBHI ${IA.clocks.filter(c=>c.nTest==null||c.nTest>=20).map(c=>`p ${c.pPerm.toFixed(2)}, ${c.nTest??c.patients} held out`).join('; ')}${IA.clocks.some(c=>c.nTest!=null&&c.nTest<20)?'; the one-microphone COPD arm is too small to tell':''})`:'no age signal in adults (KAUH)',e:'an ECG-age gap predicts mortality; no equivalent exists for breath sound'}]},
     {name:'Sleep',items:[
       {k:'Apnea–hypopnea index',st:ap?'pilot':'bad',m:ap&&ap.ahi?`${ap.patients} adults: under-counts by ${Math.abs(ap.ahi.bias).toFixed(0)} events/h on average`:'not validated',e:'severe sleep apnea (AHI ≥ 30) carried HR 1.46 for death (Punjabi 2009)'}]}];
   return `<div class="grid g3" style="gap:12px;margin-bottom:16px" id="lgSystems">${sys.map(s=>`<div class="card" style="margin:0"><h2 style="margin-top:0">${s.name}</h2>

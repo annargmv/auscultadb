@@ -139,8 +139,9 @@ npm run build:discover   # only re-run the statistics from meta/features
     one SPRSound release beats the null by 0.13 y, heart rate tracks age band (ρ −0.43), and HR-for-age does **not**
     separate CirCor outcome (p 0.45). No dataset here has survival data — never describe anything as a longevity predictor.
 12b. `icbhi_age.py` adds `discover.json['age']['icbhi']` (same `clock()`; needs meta/features/icbhi.jsonl): a second, independent
-    adult test. **No age signal** — ICBHI adults MAE 8.07 vs null 8.03 y (perm p 0.61, 76 patients); COPD on one microphone
-    (AKG C417L) 7.39 vs 7.32 y (p 0.81, 32 patients). It also stores two PubMed-checked marker references read by the Longevity
+    adult test. **No age signal** — ICBHI adults MAE 8.07 vs null 8.03 y (perm p 0.61, 76 patients, 30 held out); COPD on one
+    microphone (AKG C417L) 7.39 vs 7.32 y (p 0.81, 32 patients but only 13 held out — **too few to tell**, gain CI −0.60 to +0.52 y;
+    the owner's correction 2026-11-17: cite it as uninformative, not as a confirmation). It also stores two PubMed-checked marker references read by the Longevity
     page: Baumert 2019 (PMID 31151958; nocturnal RR ≥ 16/min → all-cause HR 1.18 men / 1.50 women) and Carpenter 1989
     (PMID 2506967; *reported* wheeze → chronic-bronchitis death MR 10.5). No population study links auscultated crackles to
     mortality (searched 2026-11-17), so crackles are not listed.
