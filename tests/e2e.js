@@ -298,6 +298,13 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(rs.stamp && rs.foot, 'live data stamp and generated footer shown');
     await pg.screenshot({ path: path.join(OUT, 'sites.png'), fullPage: true });
   } catch (e) { check(false, e.message) }
+  // phone: the menu button opens all pages; no page scrolls sideways
+  await pg.setViewportSize({ width: 390, height: 800 }); await pg.goto(url('#validation')); await pg.waitForSelector('#v-murmur', { timeout: 30000 }); await pg.waitForTimeout(400);
+  const ph0 = await pg.evaluate(() => ({ hidden: getComputedStyle(document.querySelector('#mainnav')).display === 'none', wide: document.documentElement.scrollWidth > window.innerWidth + 1 }));
+  await pg.click('#navToggle'); await pg.waitForTimeout(150);
+  const ph1 = await pg.evaluate(() => ({ links: [...document.querySelectorAll('#mainnav a')].filter(a => a.getBoundingClientRect().width > 0).length, exp: document.querySelector('#navToggle').getAttribute('aria-expanded') }));
+  check(ph0.hidden && !ph0.wide && ph1.links >= 10 && ph1.exp === 'true', `phone: menu closed by default, opens ${ph1.links} pages; validation page fits the screen width`);
+  await pg.setViewportSize({ width: 1360, height: 1000 });
   check(errors.length === 0, 'no page errors' + (errors.length ? ': ' + errors.join(' | ') : ''));
   await close();
 })();

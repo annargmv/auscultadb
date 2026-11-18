@@ -386,10 +386,33 @@ def cnn_murmur():
         'verdict': 'Passed its gate and replaced the previous murmur model; internal validation only.'}
 
 
+def cnn_lung():
+    """Crackle / wheeze spectrogram network on ICBHI (train_lung_cnn.py): a comparison, not used by the pages."""
+    f = META / 'cnn_lung.json'
+    if not f.exists(): return None
+    M = json.load(open(f)); t = M['test']; c, w = t['crackles'], t['wheezes']
+    ex = [{'label': f"{n.capitalize()} per cycle — network (AUC)", 'value': r['auc']['value'], 'lo': r['auc']['lo'], 'hi': r['auc']['hi'], 'n': t['cycles'], 'explain': f"held-out; current cycle model on the same cycles {r['aucCurrentSame']}"} for n, r in (('crackles', c), ('wheezes', w))]
+    ex += [{'label': f"Gain over the current cycle model — {n} (ΔAUC)", 'value': r['delta'], 'lo': r['ci'][0], 'hi': r['ci'][1], 'n': t['patients'], 'explain': 'patient bootstrap 95 % CI'} for n, r in (('crackles', c), ('wheezes', w))]
+    return {
+        'id': 'cnn_lung', 'title': 'Crackle / wheeze spectrogram network per breath cycle (PyTorch, ICBHI)', 'discover': None, 'evidence': 'research',
+        'question': 'Does a network on the spectrogram find crackles and wheezes per breath cycle better than the current cycle model?',
+        'intendedUse': 'Research comparison only. Not used by the pages: it did not meet the replacement rule set before training.',
+        'population': {'n': t['cycles'], 'text': f"{t['cycles']:,} expert-annotated breath cycles from {t['patients']} held-out ICBHI patients (the same patients the current cycle model is scored on). {ICBHI_CITE}."},
+        'reference': 'Per-cycle crackle and wheeze labels from the ICBHI experts.',
+        'indexTest': f"Convolutional network on the log-power spectrogram 31–2000 Hz, one 2.56-s window centred on each cycle, two outputs; trained on {M['train']['patients']} other patients, epoch chosen on {M['train']['validationPatients']} training-side patients.",
+        'independence': 'Internal: held-out patients of the same database; nothing tuned on them.',
+        'metrics': [], 'subgroups': [], 'extra': ex,
+        'bedside': [f"Wheezes: AUC {w['auc']['value']} against {w['aucCurrentSame']} for the current model — a gain of {w['delta']} whose 95 % CI ({w['ci'][0]} to {w['ci'][1]}) includes no gain.",
+                    f"Crackles: AUC {c['auc']['value']} against {c['aucCurrentSame']} — no improvement.",
+                    'Rule set before training: replace the current model only if the mean gain has a CI above 0. Not met, so the pages keep the current model.'],
+        'limits': ['ICBHI is noisy and small (126 patients); crackle labels are per cycle, not per event.', 'Research licence: no ICBHI audio on this site.'],
+        'verdict': 'No reliable gain over the current cycle model; not deployed.'}
+
+
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models()) if r]
+    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung()) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}
