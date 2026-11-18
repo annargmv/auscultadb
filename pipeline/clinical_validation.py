@@ -386,6 +386,31 @@ def cnn_murmur():
         'verdict': 'Passed its gate and replaced the previous murmur model; internal validation only.'}
 
 
+def murmur_refit():
+    """sysDia cut-off refitted on CirCor training patients (murmur_refit.py), scored on held-out patients."""
+    f = META / 'murmur_refit.json'
+    if not f.exists(): return None
+    R = json.load(open(f)); a, y = R['shipped'], R['youden']
+    tp, P = y['sens']['k'], y['sens']['n']; tn, N = y['spec']['k'], y['spec']['n']
+    metrics, L = two_by_two(tp, P - tp, N - tn, tn, 'valve recordings with a murmur', 'valve recordings')
+    return {
+        'id': 'murmur_refit', 'title': 'Murmur rule — cut-off refitted on a training split (systolic : diastolic ratio)', 'discover': 'd-heart', 'evidence': 'development',
+        'question': 'Would a better cut-off on the systolic : diastolic energy ratio find more murmurs?',
+        'intendedUse': 'Research: recalibration of the rule-based murmur finding (open task 1). The pages use the spectrogram network for murmur.',
+        'population': {'n': R['testRecordings'], 'text': f"{R['testRecordings']} valve recordings from {R['testPatients']} held-out CirCor children; cut-offs fitted on {R['trainRecordings']} recordings of other patients."},
+        'reference': 'Per-valve murmur annotation by the CirCor experts.',
+        'indexTest': f"Ratio alone, flagged at ≥ {y['cut']}× (Youden point on training patients) instead of the shipped 2.5×. {R['note']}.",
+        'independence': 'Cut-off chosen on training patients only; scored on held-out patients.',
+        'metrics': metrics, **L, 'subgroups': [],
+        'extra': [{'label': 'Ratio ROC AUC (held-out)', 'value': R['auc']['value'], 'lo': R['auc']['lo'], 'hi': R['auc']['hi'], 'n': R['testRecordings'], 'explain': 'threshold-free'},
+                  {'label': 'Shipped 2.5× on the same recordings: sensitivity (%)', 'value': a['sens']['value'], 'lo': a['sens']['lo'], 'hi': a['sens']['hi'], 'n': a['sens']['n'], 'explain': f"specificity {a['spec']['value']} %"}],
+        'bedside': [per100(metrics[0]['value'], metrics[1]['value']),
+                    f"Against the shipped 2.5×: {y['sens']['value'] - a['sens']['value']:+.1f} points of sensitivity for {y['spec']['value'] - a['spec']['value']:+.1f} points of specificity.",
+                    'The spectrogram network does better than either cut-off on the same children (see its report).'],
+        'limits': ['The ratio alone ignores the beat-resolution and heart-rate conditions of the full rule.', 'Precomputed patient-page findings still use the shipped 2.5×.'],
+        'verdict': 'A refitted cut-off trades specificity for sensitivity; the network supersedes it for new recordings.'}
+
+
 def rr_icbhi():
     """Breathing rate vs ICBHI expert cycles (rr_validate.py): external for the shipped estimator."""
     f = META / 'rr_validation.json'
@@ -436,7 +461,7 @@ def cnn_lung():
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung(), rr_icbhi()) if r]
+    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung(), rr_icbhi(), murmur_refit()) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}

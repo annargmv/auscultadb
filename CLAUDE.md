@@ -275,6 +275,26 @@ in training; a recording = mean of 3-s window probabilities (hop 1.5 s). Seed 20
   Validation (`development`: internal held-out). Not tested: MP3 uploads, adults, other stethoscopes.
 - Changing `cnnSpec`/`cnnNorm` means rerunning `npm run build:cnn`.
 
+## Round of fixes (2026-11-18)
+- **Crackle/wheeze spectrogram network** (`pipeline/icbhi_spec.js` → `train_lung_cnn.py`, PyTorch; 64 bins 31–2000 Hz, one
+  2.56-s window per expert cycle, two outputs). Same ICBHI held-out patients: crackles AUC 0.606 vs current 0.611,
+  wheezes 0.718 vs 0.68 (Δ CI -0.016 to 0.099). **Did not meet the replacement rule (mean-Δ CI above 0) → not
+  deployed**; weights in `meta/cnn_lung.json` (research), report `cnn_lung` on Validation.
+- **Breathing rate vs ICBHI expert cycles** (`pipeline/rr_validate.py` → `meta/rr_validation.json`, report `rr_icbhi`, external):
+  shipped estimator MAE 5.66/min (limits -17.9 to 20.0), ρ 0.491; candidate (envelope autocorrelation, tuned on
+  training patients) MAE 4.94, reduction CI -0.56 to 2.29 → **not adopted**. Children: 8.35 vs 3.67
+  (few recordings). Audit item 3 is now measured, not fixed.
+- **Murmur rule cut-off refit** (`pipeline/murmur_refit.py` → `meta/murmur_refit.json`, report `murmur_refit`): ratio alone,
+  held-out AUC 0.76; shipped 2.5× sens 52.1 / spec 94.8; refitted 1.886× sens 61.2 / spec 88.7.
+  Precomputed findings keep 2.5×; the network handles new recordings (open task 1 closed this way).
+- **Speed:** CirCor shards of 4 patients (`merge.SHARD_BY`, `pipeline/reshard.py`): one CirCor page load ~1 MB instead of ~5 MB.
+- **Phone + accessibility:** `#navToggle` menu (< 900 px), `wrapTables()` (tables scroll in a focusable `.tblwrap`), forms
+  stack < 700 px, `REC_TXT` (label-chip text ≥ 5.8:1), `.bad-t` #b42d2d, aria-labels on filters/zoom/speed/region, `for=`
+  on Analyze labels, tooltip named, links underlined in text, `prefers-reduced-motion`. Remaining axe items: wavesurfer's
+  own scroll regions (inside its shadow DOM), empty table headers (minor), tooltip outside a landmark (moving it into
+  `<main>` breaks it — main is re-rendered).
+- **Repo:** `.github/workflows/test.yml` runs `npm test`, `test:ahi`, `test:corsa` on PRs; `requirements.txt` pinned.
+
 ## Batch analysis and local validation (`#batch`, 2026-11-17)
 `renderBatch` / `runBatch` / `batchQuestions` / `batchEval` / `batchWords` (page). Many files (multi-select or a folder) are
 analysed in the browser with exactly the Analyze code and models; nothing is uploaded. Optional labels CSV (`parseLabels`):
@@ -473,7 +493,7 @@ arousal channel exists; Levine I–VI used properly.
    under-counting when continuous adventitious sound masks cycle boundaries. **`scoreFlow` rejects
    implausible periods using `ageNormRR`, so apnea scoring inherits this bias.** Fix with the
    detector work in task 1/2, not by adjusting the norms.
-4. **Infant cardiac detection is close to useless** — 3/25 murmurs found (12 %) against 45 % in
+4. **Infant cardiac detection was close to useless** for the rule (the murmur network reaches AUC 0.84 in infants, specificity 78 %) — 3/25 murmurs found (12 %) against 45 % in
    children. At a median 143 bpm diastole is too short for the S1/S2 separation the murmur rule
    needs. Report infants separately rather than inside a pooled figure.
 
