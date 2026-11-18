@@ -32,7 +32,7 @@ Owner: Anna, a HealthTech software engineer (Python/React).
 web/            the static site — this is what gets served/published
   index.html    the whole app (≈370 KB): UI + all signal analysis (see "Code map")
   data/index.json      patients, sites, labels, findings summary, validation; `version` = cache key
-  data/d/<n>.json      per-patient precomputed analysis, 20 patients per shard
+  data/d/<n>.json      per-patient precomputed analysis, 20 patients per shard (CirCor 4: `merge.SHARD_BY`; `pipeline/reshard.py <src>` re-shards without recomputing)
   data/discover.json   Discoveries results
   audio/<key>.json     {"<recording>.mp3": base64 MP3} — one bundle per patient
 pipeline/       data pipeline (Python + Node/Playwright)
@@ -516,8 +516,9 @@ arousal channel exists; Levine I–VI used properly.
 - The artifact hosts at most **512 files**.
 - One publish call takes **≤256 paths** (files + removals) and **≤64 MB**.
 - Only text and HTML/JSON extensions are served (no `.bin`, no `.mp3`), which is why audio is base64 JSON and the analysis is sharded.
-- Current artifact: claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW (published 2026-11-16 from `web/`, all 451 files: page, 27 data
-  files, 423 audio bundles; 4 publishes of ≤ 58 MB). Republish the same way after data changes.
+- Current artifact: claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW (published 2026-11-16 from `web/`; now 477 files after the CirCor
+  re-shard: page, 53 data files, 423 audio bundles; publish in batches of ≤ 58 MB). After a re-shard, remove the old shard
+  paths that no longer exist in the same publish.
 - Older artifact claude.ai/artifact/JawqvH3vX7cXXqbo94SXDB (slug `8e68b339-2080-481b-822f-6581919abf92`) holds a
   pre-CirCor build from before the first commit; it is stale and was left untouched.
 - Publish `web/` only. Never publish `raw/`, `build/`, `meta/` or `tests/`.

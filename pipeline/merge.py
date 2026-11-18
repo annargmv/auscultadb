@@ -28,6 +28,7 @@ import collections, base64, datetime, json, sys
 from paths import BUILD, META, WEB, WEB_DATA, WEB_AUDIO
 
 SHARD = 20
+SHARD_BY = {'circor': 4}   # patients per shard by source (artifact file limit 511: 22 → 46 shard files)
 CAS_T, DAS_T = ('wheeze', 'rhonchus', 'stridor'), ('fine_crackle', 'coarse_crackle', 'rub')
 
 
@@ -61,9 +62,11 @@ def circor_validation(cf):
 
 def write_patients(patients, audio, first_shard=0):
     """Shard the per-patient analysis and bundle the playback audio. Returns the shards written."""
-    shards = {}
-    for i, p in enumerate(patients):
-        p['shard'] = first_shard + i // SHARD
+    shards = {}; cur, n, last = first_shard - 1, 0, None
+    for p in patients:
+        size = SHARD_BY.get(p.get('src'), SHARD)          # CirCor details are ~270 KB each: smaller shards keep one page load ~1 MB
+        if p.get('src') != last or n >= size: cur, n, last = cur + 1, 0, p.get('src')
+        p['shard'] = cur; n += 1
         shards.setdefault(p['shard'], {})[p['key']] = json.load(open(BUILD / 'p' / f"{p['key']}.json"))
         if audio:
             names = sorted({s['file'].split('#')[1] for s in p['sites']})
