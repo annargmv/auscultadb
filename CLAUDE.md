@@ -272,7 +272,8 @@ in training; a recording = mean of 3-s window probabilities (hop 1.5 s). Seed 20
 - Page: `cnnSpec` / `cnnNorm` / `cnnConvPool` / `cnnWindow` / `cnnMurmur`, weights in `web/data/cnn_murmur.json` (277 KB),
   `ensureCnn()`. JS = PyTorch to ~1e-7 (e2e parity). ~50 ms per window. Analyze shows it first (`cnnBlock`) with the feature
   model below "for comparison"; Batch's murmur question uses it (`murmur-prev` = feature model). Report `cnn_murmur` on
-  Validation (`development`: internal held-out). Not tested: MP3 uploads, adults, other stethoscopes.
+  Validation (`development`: internal held-out). MP3 (`pipeline/cnn_codec.js`, 465 site MP3 copies vs WAV): median shift 0.1 pt,
+  95th pct 0.3 pt, 1 flag changed. Not tested: adults, other stethoscopes.
 - Changing `cnnSpec`/`cnnNorm` means rerunning `npm run build:cnn`.
 
 ## Round of fixes (2026-11-18)

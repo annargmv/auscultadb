@@ -378,11 +378,13 @@ def cnn_murmur():
         'independence': 'Internal: held-out patients of the same database, never used for training, epoch choice or threshold. Same campaigns and stethoscope, so accuracy on other devices and adults is unknown.',
         'metrics': metrics, **L, 'subgroups': sub,
         'extra': [{'label': 'ROC AUC', 'value': t['auc']['value'], 'lo': t['auc']['lo'], 'hi': t['auc']['hi'], 'n': t['recordings'], 'explain': 'held-out; 0.5 = coin toss'},
-                  {'label': 'Gain over the feature model (ΔAUC)', 'value': v['delta'], 'lo': v['ci'][0], 'hi': v['ci'][1], 'n': t['patients'], 'explain': f"same recordings; feature model AUC {v['aucCurrent']}; patient bootstrap 95 % CI"}],
+                  {'label': 'Gain over the feature model (ΔAUC)', 'value': v['delta'], 'lo': v['ci'][0], 'hi': v['ci'][1], 'n': t['patients'], 'explain': f"same recordings; feature model AUC {v['aucCurrent']}; patient bootstrap 95 % CI"}]
+                 + ([{'label': 'Compressed audio: median probability shift (points)', 'value': M['robustness']['medianAbsShift'], 'lo': None, 'hi': None, 'n': M['robustness']['recordings'],
+                      'explain': f"8 kHz 32 kbps MP3 vs original WAV; 95th percentile {M['robustness']['p95AbsShift']} points; flag changed in {M['robustness']['flagChanged']} of {M['robustness']['recordings']}"}] if M.get('robustness') else []),
         'bedside': [per100(metrics[0]['value'], metrics[1]['value']), f'A flag {ri} (LR+ {L["lrPos"]["value"]}); no flag {ro} (LR− {L["lrNeg"]["value"]}).',
                     f"It replaced the feature model: better on the same children by {v['delta']} AUC (95 % CI {v['ci'][0]} to {v['ci'][1]}), in every age band."],
         'limits': ['Children from one country and one stethoscope type; adults and other devices untested.', 'Infants: more false flags (lower specificity) than older children.',
-                   'Compressed (MP3) uploads not yet tested for this model.'],
+                   'Compressed audio tested only as the site’s own 32 kbps MP3 copies of CirCor recordings.' if M.get('robustness') else 'Compressed (MP3) uploads not yet tested for this model.'],
         'verdict': 'Passed its gate and replaced the previous murmur model; internal validation only.'}
 
 

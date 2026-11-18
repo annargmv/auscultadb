@@ -3092,6 +3092,7 @@ function cnnBlock(CR,age){const M=CNN,t=M.test,v=M.vsCurrent,fl=CR.p>=M.threshol
     <ul class="bedside"><li>On ${t.patients} children it never saw (${t.recordings} valve recordings): AUC <b>${t.auc.value}</b> (${t.auc.lo}–${t.auc.hi}); at the flag level it finds ${t.sens.value} % of murmur valves and leaves ${t.spec.value} % of others unflagged.</li>
       <li>It replaced the feature model (AUC ${v.aucCurrent} on the same recordings; difference +${v.delta}, 95 % CI ${v.ci[0]} to ${v.ci[1]}).</li>
       ${b?`<li>In ${esc(b.band.toLowerCase())}s: AUC ${b.auc.value} (${b.auc.lo}–${b.auc.hi}), sensitivity ${b.sens.value} %, specificity ${b.spec.value} %.</li>`:''}
+      ${M.robustness?`<li>On 32 kbps MP3 copies of ${M.robustness.recordings} recordings the probability moved by a median ${M.robustness.medianAbsShift} points (95th percentile ${M.robustness.p95AbsShift}); the flag changed in ${M.robustness.flagChanged}.</li>`:''}
       <li class="hint">Trained with PyTorch on CirCor children (Brazil, one stethoscope type); adults and other stethoscopes are not tested. Not a diagnosis.</li></ul></div>`}
 function resultBlock(r,i){const m=r.m,t=m.test;
   if(r.ageBlocked)return `<div class="finding" style="border-left-color:#c9d1dc;cursor:default"><b>${esc(m.title)}</b> — <span class="hint">not run: a ${esc(String(window.__analyze.age))}-year-old is outside the ages this model was trained on (${m.ageRange[0]===0?'under '+m.ageRange[1]:m.ageRange[0]+'–'+m.ageRange[1]} y).</span></div>`;
