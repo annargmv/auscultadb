@@ -386,6 +386,30 @@ def cnn_murmur():
         'verdict': 'Passed its gate and replaced the previous murmur model; internal validation only.'}
 
 
+def rr_icbhi():
+    """Breathing rate vs ICBHI expert cycles (rr_validate.py): external for the shipped estimator."""
+    f = META / 'rr_validation.json'
+    if not f.exists(): return None
+    R = json.load(open(f)); a, c = R['shipped'], R['candidate']
+    ex = [{'label': 'Mean absolute error, shipped estimator (breaths/min)', 'value': a['mae'], 'lo': None, 'hi': None, 'n': R['recordings'], 'explain': f"bias {a['bias']}, 95 % limits {a['loa'][0]} to {a['loa'][1]}; {a['within3']} % within ±3/min; ρ {a['rho']}"},
+          {'label': 'Mean absolute error, candidate estimator (breaths/min)', 'value': c['mae'], 'lo': None, 'hi': None, 'n': R['recordings'], 'explain': f"{c['within3']} % within ±3/min; ρ {c['rho']}; tuned on training patients only"},
+          {'label': 'Error reduction by the candidate (breaths/min)', 'value': R['reduction']['mae'], 'lo': R['reduction']['ci'][0], 'hi': R['reduction']['ci'][1], 'n': R['patients'], 'explain': 'patient bootstrap 95 % CI; adopted only if the CI is above 0'}]
+    ex += [{'label': f"{g['group'].capitalize()}: error shipped / candidate", 'value': g['maeShipped'], 'lo': None, 'hi': None, 'n': g['recordings'], 'explain': f"candidate {g['maeCandidate']} breaths/min"} for g in R['byGroup']]
+    return {
+        'id': 'rr_icbhi', 'title': 'Breathing rate from breath sound — against expert-marked breath cycles (ICBHI)', 'discover': None, 'evidence': 'external',
+        'question': 'How many breaths per minute is this patient taking?',
+        'intendedUse': 'Research and teaching: the breathing rate shown on patient pages and Analyze.',
+        'population': {'n': R['recordings'], 'text': f"{R['recordings']} recordings (≥ 3 annotated cycles) from {R['patients']} held-out ICBHI patients, children and adults. {ICBHI_CITE}."},
+        'reference': '60 ÷ the median length of the respiratory cycles marked by the ICBHI experts in that recording.',
+        'indexTest': 'Shipped: cycle detector in analyzeSignal (unchanged since before ICBHI). Candidate: autocorrelation of the 125–1000 Hz sound envelope, lag 1–8 s.',
+        'independence': 'External for the shipped estimator (set before ICBHI). The candidate was tuned on other ICBHI patients.',
+        'metrics': [], 'subgroups': [], 'extra': ex,
+        'bedside': [f"The shipped rate is off by {a['mae']} breaths/min on average, and one recording can be off by {abs(a['loa'][0]):.0f} to {a['loa'][1]:.0f}/min — too wide to call tachypnoea from one clip.",
+                    f"The candidate is closer ({c['mae']}/min) but the gain ({R['reduction']['mae']}, CI {R['reduction']['ci'][0]} to {R['reduction']['ci'][1]}) is not certain, so it is {'adopted' if R['adopt'] else 'not adopted'}."],
+        'limits': ['Expert cycles define the reference; they are hand-marked, not from a flow sensor.', 'Clips of ~20 s: a handful of breaths each.'],
+        'verdict': 'Not reliable enough for clinical use; reported for transparency.'}
+
+
 def cnn_lung():
     """Crackle / wheeze spectrogram network on ICBHI (train_lung_cnn.py): a comparison, not used by the pages."""
     f = META / 'cnn_lung.json'
@@ -412,7 +436,7 @@ def cnn_lung():
 def main():
     I = json.load(open(WEB_DATA / 'index.json')); D = json.load(open(WEB_DATA / 'discover.json'))
     old = json.load(open(WEB_DATA / 'validation.json')) if (WEB_DATA / 'validation.json').exists() else {}
-    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung()) if r]
+    reports = [r for r in (murmur(I), cnn_murmur(), resp_spr(I), resp_kauh(I), icbhi_rules(), apnea(), hrv(D), age(D), icbhi_models(), cnn_lung(), rr_icbhi()) if r]
     out = {'generated': datetime.datetime.now(datetime.timezone.utc).isoformat(),
            'engine': 'Seismometer 0.5.0 (Epic, open source): Agresti–Coull and Hanley–McNeil intervals; likelihood ratios by the log method',
            'reports': reports, 'ml': old.get('ml')}
