@@ -475,6 +475,10 @@ def hear():
     lim = ['HeAR (303 M parameters) cannot run in the page; a deployable version would need distillation and its own validation.',
            'CirCor input is the first 8 s of each recording (four 2-s windows); the network sees the whole recording.',
            'SPRSound and KAUH not compared: their audio is not on this machine.']
+    Cs = sorted({r['C'] for r in [*(H['icbhi'][q] for q in ('crackles', 'wheezes') if 'icbhi' in H), *([H['circor']] if 'circor' in H else [])]})
+    if Cs == [0.01]: lim.append('Every probe chose C = 0.01, the strongest regularisation in the grid fixed beforehand; the grid was not widened after seeing this.')
+    big = max((H.get('icbhi') or {}).get('wheezes', {}).get('byDevice') or [{}], key=lambda d: d.get('cycles', 0))
+    if big.get('auc'): lim.append(f"Within one device ({big['device']}, {big['cycles']:,} held-out cycles) HeAR's wheeze AUC is {big['auc']['value']}, so the wheeze result is not only the device.")
     if dv: lim.insert(0, f"The embedding identifies the ICBHI recording device in {round(100 * dv['accuracy'])} % of held-out cycles (commonest device {round(100 * dv['majority'])} %); in ICBHI the device tracks age and diagnosis.")
     return {
         'id': 'hear', 'title': 'Google HeAR embeddings with a linear probe (research comparison)', 'discover': 'd-hear', 'evidence': 'research',

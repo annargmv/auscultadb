@@ -8,27 +8,34 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 
 ## A. Ready to start as soon as one thing is provided
 
-### 1. Google HeAR embeddings for breath sounds (CLAUDE.md task 3, Discoveries 9)
-- **Status:** blocked on model access. A Hugging Face token is saved in the `auscultadb` environment (network secret for
-  `huggingface.co`, works — `whoami` returns 200), but the model answers *"you are not in the authorized list"*.
-- **Missing:** approval for `google/hear-pytorch` on the owner's Hugging Face account.
-- **To apply:**
-  1. Owner: open https://huggingface.co/google/hear-pytorch logged in, accept the Health AI Developer Foundations terms.
-  2. `pip install transformers` (HeAR loads with `trust_remote_code`), download `pytorch_model.bin` (~ size on the card).
-  3. New `pipeline/hear_embed.py`: resample each recording to 16 kHz, cut 2-s windows, embed, mean-pool per recording
-     (CirCor from `raw/circor`, ICBHI from `build/icbhi_wav`; SPRSound audio is not on disk, see item 6).
-  4. Linear probe with the same patient splits (`models.json` / `icbhi_models.json` testPids), compared with the current
-     features and with the spectrogram networks on the same held-out patients; report on Validation and Discoveries 9.
-  5. HeAR cannot run in the browser (size); results are research only unless a small distilled model passes the gate.
+### 1. Google HeAR embeddings for breath sounds (CLAUDE.md task 3, Discoveries 9) — **done 2026-11-19**
+- `pipeline/hear_embed.py` (ICBHI: one 2-s window per expert cycle; CirCor: up to four 2-s windows per valve recording,
+  16 kHz; ~50 min each on CPU) → `build/hear/*.npz` (also on the remote store) → `pipeline/hear_probe.py` (linear probe,
+  rules fixed beforehand) → `meta/hear_probe.json`, `discover.json['hear']`.
+- **Result (2026-11-19, same frozen held-out patients):** ICBHI crackles AUC 0.618 vs current cycle model
+  0.611 (Δ +0.006, CI -0.034 to 0.053: no clear difference); **wheezes 0.737 vs 0.68
+  (Δ +0.057, CI 0.006 to 0.117: better)**; CirCor murmur 0.814 vs the murmur network 0.91 (Δ -0.096:
+  worse) and vs the feature model 0.825 (no clear difference). The embedding names the ICBHI device in
+  89 % of held-out cycles (commonest 67 %), but within one device the wheeze AUC holds. Discoveries 9 and
+  report `hear` on Validation. Every probe chose C = 0.01 (edge of the fixed grid; not widened afterwards).
+- **Still open:** HeAR cannot run in the page (303 M parameters). To use the wheeze gain: distil it into a small network
+  that runs in the browser and validate that network on the same held-out patients (replacement rule as for the CNNs);
+  SPRSound / KAUH comparison needs their audio back (`raw/sprsound` re-clone; KAUH from Mendeley) — push them to the remote.
 
-### 2. MedGemma to draft the written report (CLAUDE.md task 4)
-- **Status:** not started. Same Google terms as HeAR (`google/medgemma-4b-it`); this machine now has 15 GB RAM, enough for
-  4B on CPU (slow: minutes per report).
-- **Missing:** model access (as above) and an **owner decision**: MedGemma writes free text, which conflicts with the
-  "numbers only from validation outputs" rule unless it is constrained.
-- **To apply:** accept the terms; run it offline in the pipeline only on the structured findings already shown
-  (`clinicalNote`, `longevityBrief`), never on audio; store drafts as clearly labelled "AI-drafted, not reviewed"; add a
-  check that every number in a draft appears in the source findings. It cannot run in the static site.
+### 2. MedGemma to draft the written report (CLAUDE.md task 4) — **tested; replaced by a fixed template (2026-11-19)**
+- **Done:** `pipeline/medgemma_draft.py` runs `google/medgemma-4b-it` offline (CPU, bf16, ~1 min per draft) on the page's own
+  structured findings — never the audio, the expert label or the diagnosis. Checks per draft: every number appears in the
+  input; it says "not a diagnosis"; no diagnosis named; no phrasing that implies a clinician listened; **every finding named
+  in a sentence exists at every site that sentence names**. Results in `meta/medgemma_drafts.json`
+  (`--recheck` re-scores stored drafts).
+- **Result (12 drafts, 4 each SPRSound / KAUH / CirCor):** all numbers traceable, but **3 of 12 put a finding at the wrong
+  site or contradict themselves**, and 1 more lists rates without saying which filter mode they come from (found by
+  reading, not by the check). The first run, before heart recordings were limited to cardiac findings, had 5 of 12 wrong.
+- **Decision (owner, 2026-11-19): use a fixed template instead.** The patient page has a **Written summary** card
+  (`writtenSummary(p)`): every site's precomputed findings in fixed sentences, stored values copied unrounded, heart
+  recordings report cardiac findings only, ends with "not a diagnosis" and a pointer to the Validation page. Scored with
+  the same checks on the same 12 patients (`node pipeline/summary_export.js && python3 pipeline/medgemma_draft.py --template`):
+  **template 12 / 12 pass, MedGemma 9 / 12** (3 misattributions). MedGemma drafts stay off the pages.
 
 ### 3. Remove or approve network hosts added during research — **done 2026-11-18**
 - Removed `pubs.aip.org`, `bigr.nl`, `www.longevity-ai.com`, `longevity-ai.com`; added `cdn-lfs-us-1.hf.co` and

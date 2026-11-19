@@ -28,7 +28,7 @@ from huggingface_hub import HfApi, snapshot_download   # noqa: E402
 
 LICENCE = {'raw/circor': 'ODC-By 1.0', 'raw/icbhi': 'research use only (ICBHI 2017) — never public', 'raw/psg_audio': 'CC BY 4.0',
            'build/icbhi_wav': 'derived from ICBHI — research use only', 'build/icbhi_cnn': 'derived from ICBHI — research use only',
-           'build/cnn': 'derived from CirCor — ODC-By 1.0', 'build/seg': 'derived from CirCor — ODC-By 1.0'}
+           'build/cnn': 'derived from CirCor — ODC-By 1.0', 'build/hear': 'HeAR embeddings (HAI-DEF terms) of ICBHI (research use only) and CirCor (ODC-By 1.0)', 'build/seg': 'derived from CirCor — ODC-By 1.0'}
 SKIP = {'.git', '__pycache__', '.DS_Store'}
 PACK_OVER, PART_BYTES = 1000, 1_000_000_000   # folders with more files are stored as ~1 GB tar parts (HF: ≤ 10,000 files per directory)
 api = HfApi(token=os.environ['HF_TOKEN'])

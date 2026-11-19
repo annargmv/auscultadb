@@ -1,0 +1,932 @@
+{
+ "generated": "2026-11-18T20:47:34.375069+00:00",
+ "model": "google/medgemma-4b-it",
+ "licence": "Health AI Developer Foundations terms",
+ "decoding": "greedy, max 200 new tokens, bf16 on CPU",
+ "system": "You draft a short auscultation summary for a clinician from structured machine findings. Rules: use only facts and numbers that appear in the input, copied exactly; do not calculate new numbers; do not name a disease or diagnosis; say once that this is research output and not a diagnosis; the findings come from automatic sound analysis, so write \"the analysis detected\" and never \"heard\", \"revealed\" or \"auscultation showed\"; plain clinical prose, at most 120 words, no headings, no lists.",
+ "shownOnPages": false,
+ "summary": {
+  "drafts": 12,
+  "passed": 9,
+  "withUnsupportedNumbers": 0,
+  "namingDiagnosis": 0,
+  "missingNotDiagnosis": 0,
+  "impliesClinician": 0,
+  "misattributed": 3
+ },
+ "reviewed": false,
+ "note": "Mechanical checks only. Whether each number is attached to the right finding still needs a clinician to read the draft.",
+ "drafts": [
+  {
+   "key": "41115356",
+   "src": "sprsound",
+   "input": {
+    "age_years": 4,
+    "sex": "M",
+    "recording": "paediatric lung sounds",
+    "sites": [
+     {
+      "site": "Left posterior chest",
+      "duration_s": 15.36,
+      "breathing_rate_per_min_estimated": 8.88,
+      "heart_rate_bpm": 181.8,
+      "findings": [
+       {
+        "type": "coarse_crackle",
+        "phase": "unassigned",
+        "pos": " expiration",
+        "count": 18,
+        "detail": "18 coarse transients (median 2CD 8.5 ms, ~235 Hz) over 4 of 4 cycles (incl. edge partials); 56 % unassigned, mostly . Baseline recording: 5 transients."
+       }
+      ]
+     },
+     {
+      "site": "Left lateral chest",
+      "duration_s": 15.36,
+      "breathing_rate_per_min_estimated": 15,
+      "heart_rate_bpm": 111.1,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected coarse crackles on the left posterior chest during expiration, with a breathing rate of 8.88 breaths per minute and a heart rate of 181.8 beats per minute. The findings were present over 4 of 4 cycles, with 18 coarse transients detected. The left lateral chest showed no findings.",
+   "check": {
+    "numbers": 5,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 59,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 35.1
+  },
+  {
+   "key": "41277654",
+   "src": "sprsound",
+   "input": {
+    "age_years": 11.7,
+    "sex": "M",
+    "recording": "paediatric lung sounds",
+    "sites": [
+     {
+      "site": "Left posterior chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 31.41,
+      "heart_rate_bpm": 95.2,
+      "findings": [
+       {
+        "type": "coarse_crackle",
+        "phase": "unassigned",
+        "pos": " expiration",
+        "count": 41,
+        "detail": "41 coarse transients (median 2CD 11.3 ms, ~178 Hz) over 1 of 1 cycles (incl. edge partials); 100 % unassigned, mostly . Baseline recording: 17 transients."
+       },
+       {
+        "type": "rub",
+        "phase": "inspiratory & expiratory",
+        "pos": "late inspiration → early expiration",
+        "count": 12,
+        "detail": "Repetitive, regularly spaced creaking transients (median spacing 72 ms) recurring in both phases of 1 cycles, dominant 179 Hz. Absent in baseline (17 transients)."
+       }
+      ]
+     },
+     {
+      "site": "Left lateral chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 17.24,
+      "heart_rate_bpm": 181.8,
+      "findings": []
+     },
+     {
+      "site": "Right posterior chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 21.35,
+      "heart_rate_bpm": 57.1,
+      "findings": []
+     },
+     {
+      "site": "Right lateral chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 22.39,
+      "heart_rate_bpm": 80,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected coarse crackles at the left posterior chest with a breathing rate of 31.41 breaths per minute and a heart rate of 95.2 bpm. The analysis detected a rub at the left posterior chest with a breathing rate of 31.41 breaths per minute and a heart rate of 95.2 bpm. The analysis detected a rub at the left lateral chest with a breathing rate of 17.24 breaths per minute and a heart rate of 181.8 bpm. The analysis detected no findings at the right posterior chest with a breathing rate of 21.35 breaths per minute and a heart rate of 57.1 bpm. The analysis detected no findings at the right lateral chest with a breathing rate of 22.39 breaths per minute and a heart rate of 80 bpm.",
+   "check": {
+    "numbers": 10,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 138,
+    "misattributed": [
+     "rub not found at the site named: The analysis detected a rub at the left lateral chest with a breathing rate of 17.24 breat"
+    ],
+    "pass": false
+   },
+   "seconds": 82.2
+  },
+  {
+   "key": "41246720",
+   "src": "sprsound",
+   "input": {
+    "age_years": 4.2,
+    "sex": "M",
+    "recording": "paediatric lung sounds",
+    "sites": [
+     {
+      "site": "Left posterior chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 19.05,
+      "heart_rate_bpm": 166.7,
+      "findings": [
+       {
+        "type": "coarse_crackle",
+        "phase": "inspiratory",
+        "pos": "mid inspiration",
+        "count": 8,
+        "detail": "8 coarse transients (median 2CD 11.1 ms, ~180 Hz) over 2 of 3 cycles (incl. edge partials); 100 % inspiratory, mostly mid. Baseline recording: 4 transients."
+       }
+      ]
+     },
+     {
+      "site": "Left lateral chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 8.42,
+      "heart_rate_bpm": 55,
+      "findings": []
+     },
+     {
+      "site": "Right posterior chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 27.03,
+      "heart_rate_bpm": 85.7,
+      "findings": [
+       {
+        "type": "rhonchus",
+        "phase": "inspiratory",
+        "pos": "throughout inspiration",
+        "count": 2,
+        "detail": "Polyphonic rhonchi — 2 segments, total 0.3 s across 2 of 5 cycles, dominant pitch 156–156 Hz. Baseline tonal content: 0.0 s."
+       }
+      ]
+     },
+     {
+      "site": "Right lateral chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 26.79,
+      "heart_rate_bpm": 162.2,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected coarse crackles at the left posterior chest, with 8 transients over 2 of 3 cycles in mid inspiration. Rhonchi were also detected at the right posterior chest, with 2 segments of polyphonic rhonchi across 2 of 5 cycles. The patient is a 4.2-year-old male.",
+   "check": {
+    "numbers": 7,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 55,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 37.9
+  },
+  {
+   "key": "64824049",
+   "src": "sprsound",
+   "input": {
+    "age_years": 1.5,
+    "sex": "F",
+    "recording": "paediatric lung sounds",
+    "sites": [
+     {
+      "site": "Left posterior chest",
+      "duration_s": 15.36,
+      "breathing_rate_per_min_estimated": 19.48,
+      "heart_rate_bpm": 88.2,
+      "findings": [
+       {
+        "type": "rhonchus",
+        "phase": "breath sound (phase uncertain)",
+        "pos": "throughout expiration",
+        "count": 5,
+        "detail": "Monophonic rhonchi — 5 segments, total 1.9 s across 5 of 5 cycles, dominant pitch 156–188 Hz. Baseline tonal content: 0.0 s."
+       }
+      ]
+     },
+     {
+      "site": "Right posterior chest",
+      "duration_s": 15.36,
+      "breathing_rate_per_min_estimated": 21.43,
+      "heart_rate_bpm": 111.1,
+      "findings": [
+       {
+        "type": "rhonchus",
+        "phase": "inspiratory",
+        "pos": "throughout inspiration",
+        "count": 5,
+        "detail": "Monophonic rhonchi — 5 segments, total 0.9 s across 4 of 6 cycles, dominant pitch 156–188 Hz. Baseline tonal content: 0.0 s."
+       }
+      ]
+     },
+     {
+      "site": "Right lateral chest",
+      "duration_s": 9.216,
+      "breathing_rate_per_min_estimated": 48.39,
+      "heart_rate_bpm": 54.5,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected rhonchi in the left posterior chest, present throughout expiration, with a total duration of 1.9 seconds across 5 of 5 cycles, and a dominant pitch of 156–188 Hz. The analysis detected rhonchi in the right posterior chest, present throughout inspiration, with a total duration of 0.9 seconds across 4 of 6 cycles, and a dominant pitch of 156–188 Hz. The analysis detected rhonchi in the right lateral chest, with no findings.",
+   "check": {
+    "numbers": 10,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 82,
+    "misattributed": [
+     "finding and \"no findings\" for the same site: The analysis detected rhonchi in the right lateral chest, with no findings."
+    ],
+    "pass": false
+   },
+   "seconds": 55.5
+  },
+  {
+   "key": "K057",
+   "src": "kauh",
+   "input": {
+    "age_years": 42,
+    "sex": "M",
+    "recording": "adult lung sounds",
+    "sites": [
+     {
+      "site": "Posterior right lower chest · bell mode",
+      "duration_s": 15.984,
+      "breathing_rate_per_min_estimated": 25,
+      "heart_rate_bpm": 150,
+      "findings": []
+     },
+     {
+      "site": "Posterior right lower chest · diaphragm mode",
+      "duration_s": 15.984,
+      "breathing_rate_per_min_estimated": 21.82,
+      "heart_rate_bpm": 171.4,
+      "findings": [
+       {
+        "type": "wheeze",
+        "phase": "unassigned",
+        "pos": "throughout expiration",
+        "count": 6,
+        "detail": "Monophonic wheeze — 6 segments, total 1.3 s across 1 of 7 cycles, dominant pitch 250–375 Hz. Baseline tonal content: 1.2 s."
+       }
+      ]
+     },
+     {
+      "site": "Posterior right lower chest · extended mode",
+      "duration_s": 15.984,
+      "breathing_rate_per_min_estimated": 21.82,
+      "heart_rate_bpm": 150,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected a monophonic wheeze, 6 segments, total 1.3 s across 1 of 7 cycles, dominant pitch 250–375 Hz. Baseline tonal content: 1.2 s. The patient is a 42-year-old male. The recording is of adult lung sounds. The heart rate is 150 bpm. The breathing rate is 25 breaths per minute. The breathing rate is 21.82 breaths per minute. The heart rate is 171.4 bpm.",
+   "check": {
+    "numbers": 12,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 74,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 55.1
+  },
+  {
+   "key": "K006",
+   "src": "kauh",
+   "input": {
+    "age_years": 81,
+    "sex": "M",
+    "recording": "adult lung sounds",
+    "sites": [
+     {
+      "site": "Posterior right lower chest · bell mode",
+      "duration_s": 28.528,
+      "breathing_rate_per_min_estimated": 9.58,
+      "heart_rate_bpm": 162.2,
+      "findings": []
+     },
+     {
+      "site": "Posterior right lower chest · diaphragm mode",
+      "duration_s": 28.528,
+      "breathing_rate_per_min_estimated": 11.15,
+      "heart_rate_bpm": 162.2,
+      "findings": [
+       {
+        "type": "rhonchus",
+        "phase": "inspiratory",
+        "pos": "throughout inspiration",
+        "count": 5,
+        "detail": "Monophonic rhonchi — 5 segments, total 0.6 s across 2 of 6 cycles, dominant pitch 94–94 Hz. Baseline tonal content: 0.9 s."
+       }
+      ]
+     },
+     {
+      "site": "Posterior right lower chest · extended mode",
+      "duration_s": 28.528,
+      "breathing_rate_per_min_estimated": 11.15,
+      "heart_rate_bpm": 162.2,
+      "findings": [
+       {
+        "type": "rhonchus",
+        "phase": "inspiratory",
+        "pos": "throughout inspiration",
+        "count": 8,
+        "detail": "Monophonic rhonchi — 8 segments, total 1.2 s across 5 of 6 cycles, dominant pitch 125–156 Hz. Baseline tonal content: 0.2 s."
+       }
+      ]
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected rhonchi in the posterior right lower chest. The findings include monophonic rhonchi, inspiratory phase, throughout inspiration, 5 segments, total 0.6 s across 2 of 6 cycles, dominant pitch 94–94 Hz. Baseline tonal content: 0.9 s. The analysis detected monophonic rhonchi, inspiratory phase, throughout inspiration, 8 segments, total 1.2 s across 5 of 6 cycles, dominant pitch 125–156 Hz. Baseline tonal content: 0.2 s.",
+   "check": {
+    "numbers": 14,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 74,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 58.9
+  },
+  {
+   "key": "K043",
+   "src": "kauh",
+   "input": {
+    "age_years": 15,
+    "sex": "M",
+    "recording": "adult lung sounds",
+    "sites": [
+     {
+      "site": "Posterior left middle chest · bell mode",
+      "duration_s": 14.832,
+      "breathing_rate_per_min_estimated": 7.86,
+      "heart_rate_bpm": 153.8,
+      "findings": []
+     },
+     {
+      "site": "Posterior left middle chest · diaphragm mode",
+      "duration_s": 14.832,
+      "breathing_rate_per_min_estimated": 7.5,
+      "heart_rate_bpm": 153.8,
+      "findings": [
+       {
+        "type": "wheeze",
+        "phase": "inspiratory",
+        "pos": "throughout inspiration",
+        "count": 8,
+        "detail": "Monophonic wheeze — 8 segments, total 2.0 s across 2 of 3 cycles, dominant pitch 219–281 Hz. Baseline tonal content: 1.0 s."
+       },
+       {
+        "type": "coarse_crackle",
+        "phase": "expiratory",
+        "pos": "mid expiration",
+        "count": 7,
+        "detail": "7 coarse transients (median 2CD 8.1 ms, ~246 Hz) over 3 of 3 cycles (incl. edge partials); 86 % expiratory, mostly mid. Baseline recording: 0 transients."
+       }
+      ]
+     },
+     {
+      "site": "Posterior left middle chest · extended mode",
+      "duration_s": 14.832,
+      "breathing_rate_per_min_estimated": 25.1,
+      "heart_rate_bpm": 153.8,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected a monophonic wheeze, inspiratory, throughout inspiration, 8 segments, total 2.0 s across 2 of 3 cycles, dominant pitch 219–281 Hz. The analysis detected 7 coarse crackles, expiratory, mid expiration, 7 transients, median 2CD 8.1 ms, ~246 Hz, over 3 of 3 cycles (incl. edge partials); 86 % expiratory, mostly mid. Baseline recording: 0 transients.",
+   "check": {
+    "numbers": 15,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 65,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 51.8
+  },
+  {
+   "key": "K030",
+   "src": "kauh",
+   "input": {
+    "age_years": 18,
+    "sex": "F",
+    "recording": "adult lung sounds",
+    "sites": [
+     {
+      "site": "Posterior right middle chest · bell mode",
+      "duration_s": 12.144,
+      "breathing_rate_per_min_estimated": 19.87,
+      "heart_rate_bpm": 153.8,
+      "findings": []
+     },
+     {
+      "site": "Posterior right middle chest · diaphragm mode",
+      "duration_s": 12.144,
+      "breathing_rate_per_min_estimated": 28.17,
+      "heart_rate_bpm": 153.8,
+      "findings": [
+       {
+        "type": "rhonchus",
+        "phase": "inspiratory",
+        "pos": "throughout inspiration",
+        "count": 5,
+        "detail": "Monophonic rhonchi — 5 segments, total 0.7 s across 4 of 7 cycles, dominant pitch 94–188 Hz. Baseline tonal content: 0.1 s."
+       }
+      ]
+     },
+     {
+      "site": "Posterior right middle chest · extended mode",
+      "duration_s": 12.144,
+      "breathing_rate_per_min_estimated": 28.17,
+      "heart_rate_bpm": 153.8,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected rhonchi in the posterior right middle chest during inspiration. The rhonchi were monophonic, present throughout inspiration, and counted as 5 segments, totaling 0.7 seconds across 4 of 7 cycles. The dominant pitch was 94–188 Hz, with a baseline tonal content of 0.1 seconds.",
+   "check": {
+    "numbers": 7,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 54,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 36.3
+  },
+  {
+   "key": "C68204",
+   "src": "circor",
+   "input": {
+    "age_years": 14,
+    "sex": "M",
+    "recording": "paediatric heart sounds",
+    "sites": [
+     {
+      "site": "Aortic valve · 2nd right intercostal space",
+      "duration_s": 18.24,
+      "heart_rate_bpm": 73.2,
+      "findings": []
+     },
+     {
+      "site": "Mitral valve · 5th left intercostal space, apex",
+      "duration_s": 15.392,
+      "heart_rate_bpm": 77.9,
+      "findings": []
+     },
+     {
+      "site": "Pulmonary valve · 2nd left intercostal space",
+      "duration_s": 11.184,
+      "heart_rate_bpm": 75,
+      "findings": []
+     },
+     {
+      "site": "Tricuspid valve · 4th left intercostal space",
+      "duration_s": 12.448,
+      "heart_rate_bpm": 76.9,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected aortic valve sounds at 2nd right intercostal space with a duration of 18.24 seconds and a heart rate of 73.2 bpm. Mitral valve sounds were detected at 5th left intercostal space, apex with a duration of 15.392 seconds and a heart rate of 77.9 bpm. Pulmonary valve sounds were detected at 2nd left intercostal space with a duration of 11.184 seconds and a heart rate of 75 bpm. Tricuspid valve sounds were detected at 4th left intercostal space with a duration of 12.448 seconds and a heart rate of 76.9 bpm.",
+   "check": {
+    "numbers": 12,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 102,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 67.3
+  },
+  {
+   "key": "C2530",
+   "src": "circor",
+   "input": {
+    "age_years": 6,
+    "sex": "F",
+    "recording": "paediatric heart sounds",
+    "sites": [
+     {
+      "site": "Aortic valve · 2nd right intercostal space",
+      "duration_s": 23.6,
+      "heart_rate_bpm": 111.1,
+      "findings": []
+     },
+     {
+      "site": "Mitral valve · 5th left intercostal space, apex",
+      "duration_s": 26.688,
+      "heart_rate_bpm": 115.4,
+      "findings": []
+     },
+     {
+      "site": "Pulmonary valve · 2nd left intercostal space",
+      "duration_s": 13.056,
+      "heart_rate_bpm": 117.6,
+      "findings": []
+     },
+     {
+      "site": "Tricuspid valve · 4th left intercostal space",
+      "duration_s": 14.992,
+      "heart_rate_bpm": 115.4,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected the following heart sounds: Aortic valve at 2nd right intercostal space, duration 23.6 seconds, heart rate 111.1 bpm; Mitral valve at 5th left intercostal space, apex, duration 26.688 seconds, heart rate 115.4 bpm; Pulmonary valve at 2nd left intercostal space, duration 13.056 seconds, heart rate 117.6 bpm; Tricuspid valve at 4th left intercostal space, duration 14.992 seconds, heart rate 115.4 bpm.",
+   "check": {
+    "numbers": 12,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 72,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 63.5
+  },
+  {
+   "key": "C68306",
+   "src": "circor",
+   "input": {
+    "age_years": 6,
+    "sex": "F",
+    "recording": "paediatric heart sounds",
+    "sites": [
+     {
+      "site": "Aortic valve · 2nd right intercostal space",
+      "duration_s": 21.248,
+      "heart_rate_bpm": 101.7,
+      "findings": []
+     },
+     {
+      "site": "Mitral valve · 5th left intercostal space, apex",
+      "duration_s": 21.648,
+      "heart_rate_bpm": 93.8,
+      "findings": [
+       {
+        "type": "murmur",
+        "phase": "cardiac (systole)",
+        "pos": "between S1 and S2",
+        "count": 35,
+        "detail": "Mid-frequency (120–450 Hz) energy during systole is 28.6× diastole (baseline 0.6×) over 35 beats, HR ≈ 94 bpm — consistent with a systolic murmur."
+       }
+      ]
+     },
+     {
+      "site": "Pulmonary valve · 2nd left intercostal space",
+      "duration_s": 23.184,
+      "heart_rate_bpm": 89.6,
+      "findings": [
+       {
+        "type": "murmur",
+        "phase": "cardiac (systole)",
+        "pos": "between S1 and S2",
+        "count": 36,
+        "detail": "Mid-frequency (120–450 Hz) energy during systole is 49.3× diastole (baseline 1.5×) over 36 beats, HR ≈ 90 bpm — consistent with a systolic murmur."
+       }
+      ]
+     },
+     {
+      "site": "Tricuspid valve · 4th left intercostal space",
+      "duration_s": 31.392,
+      "heart_rate_bpm": 98.4,
+      "findings": [
+       {
+        "type": "murmur",
+        "phase": "cardiac (systole)",
+        "pos": "between S1 and S2",
+        "count": 48,
+        "detail": "Mid-frequency (120–450 Hz) energy during systole is 14.9× diastole (baseline 1.3×) over 48 beats, HR ≈ 98 bpm — consistent with a systolic murmur."
+       }
+      ]
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected systolic murmurs at the aortic, mitral, pulmonary, and tricuspid valves. The murmur at the aortic valve had a duration of 21.248 seconds at 101.7 bpm, with a systolic energy of 28.6 times the diastolic baseline over 35 beats. The murmur at the mitral valve had a duration of 21.648 seconds at 93.8 bpm, with a systolic energy of 49.3 times the diastolic baseline over 36 beats. The murmur at the pulmonary valve had a duration of 23.184 seconds at 89.6 bpm, with a systolic energy of 14.9 times the diastolic baseline over 48 beats. The murmur at the tricuspid valve had a duration of 31.392 seconds at 98.4 bpm, with a systolic energy",
+   "check": {
+    "numbers": 14,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 124,
+    "misattributed": [
+     "murmur not found at the site named: The analysis detected systolic murmurs at the aortic, mitral, pulmonary, and tricuspid val",
+     "murmur not found at the site named: The murmur at the aortic valve had a duration of 21.248 seconds at 101.7 bpm, with a systo"
+    ],
+    "pass": false
+   },
+   "seconds": 85.8
+  },
+  {
+   "key": "C85042",
+   "src": "circor",
+   "input": {
+    "age_years": 0.5,
+    "sex": "M",
+    "recording": "paediatric heart sounds",
+    "sites": [
+     {
+      "site": "Aortic valve · 2nd right intercostal space",
+      "duration_s": 19.552,
+      "heart_rate_bpm": 136.4,
+      "findings": [
+       {
+        "type": "dmurmur",
+        "phase": "cardiac (diastole)",
+        "pos": "after S2",
+        "count": 14,
+        "detail": "Mid-frequency energy during diastole exceeds systole (ratio 94.2×, baseline 5.2×)."
+       }
+      ]
+     },
+     {
+      "site": "Mitral valve · 5th left intercostal space, apex",
+      "duration_s": 18.688,
+      "heart_rate_bpm": 113.2,
+      "findings": []
+     },
+     {
+      "site": "Pulmonary valve · 2nd left intercostal space",
+      "duration_s": 21.664,
+      "heart_rate_bpm": 113.2,
+      "findings": []
+     },
+     {
+      "site": "Tricuspid valve · 4th left intercostal space",
+      "duration_s": 19.504,
+      "heart_rate_bpm": 115.4,
+      "findings": []
+     }
+    ]
+   },
+   "draft": "This is research output and not a diagnosis. The analysis detected a diastolic murmur at the aortic valve, after S2, with 14 counts, mid-frequency energy during diastole exceeding systole (ratio 94.2×, baseline 5.2×). The mitral valve, at the apex, showed no findings. The pulmonary and tricuspid valves showed no findings.",
+   "check": {
+    "numbers": 3,
+    "unsupported": [],
+    "saysNotDiagnosis": true,
+    "namesDiagnosis": [],
+    "banned": [],
+    "impliesClinician": [],
+    "words": 50,
+    "misattributed": [],
+    "pass": true
+   },
+   "seconds": 35.2
+  }
+ ],
+ "manualRead": {
+  "by": "Claude (not a clinician)",
+  "date": "2026-11-18",
+  "text": "Every draft read against its input. The 3 drafts the attribution check flags are real errors (a rub moved to a site without one; \"rhonchi … with no findings\" for the same site; a murmur reported at the aortic valve, which had none). K057 passes the checks but lists two heart rates and two breathing rates without saying which filter mode each came from. The other 8 drafts match their input. A clinician has not reviewed them."
+ },
+ "template": {
+  "what": "the page's writtenSummary(): fixed template over the same structured findings, no language model",
+  "summary": {
+   "drafts": 12,
+   "passed": 12,
+   "withUnsupportedNumbers": 0,
+   "namingDiagnosis": 0,
+   "missingNotDiagnosis": 0,
+   "impliesClinician": 0,
+   "misattributed": 0
+  },
+  "items": [
+   {
+    "key": "41115356",
+    "src": "sprsound",
+    "text": "Automatic analysis of 2 chest recordings (SPRSound), 4 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected coarse crackles (18 events); estimated breathing rate 8.88/min.\nNo findings at: Left lateral chest (estimated breathing rate 15/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 5,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 57,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "41277654",
+    "src": "sprsound",
+    "text": "Automatic analysis of 4 chest recordings (SPRSound), 11.7 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected coarse crackles (41 events); pleural friction rub (12 events, inspiratory and expiratory); estimated breathing rate 31.41/min.\nNo findings at: Left lateral chest (estimated breathing rate 17.24/min); Right posterior chest (estimated breathing rate 21.35/min); Right lateral chest (estimated breathing rate 22.39/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 8,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 79,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "41246720",
+    "src": "sprsound",
+    "text": "Automatic analysis of 4 chest recordings (SPRSound), 4.2 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected coarse crackles (8 events, inspiratory); estimated breathing rate 19.05/min.\nRight posterior chest: the analysis detected rhonchi (2 events, inspiratory); estimated breathing rate 27.03/min.\nNo findings at: Left lateral chest (estimated breathing rate 8.42/min); Right lateral chest (estimated breathing rate 26.79/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 8,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 79,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "64824049",
+    "src": "sprsound",
+    "text": "Automatic analysis of 3 chest recordings (SPRSound), 1.5 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected rhonchi (5 events, phase uncertain); estimated breathing rate 19.48/min.\nRight posterior chest: the analysis detected rhonchi (5 events, inspiratory); estimated breathing rate 21.43/min.\nNo findings at: Right lateral chest (estimated breathing rate 48.39/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 7,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 72,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K057",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 42 y. Research output, not a diagnosis.\nPosterior right lower chest · diaphragm mode: the analysis detected wheeze (6 events); estimated breathing rate 21.82/min.\nNo findings at: Posterior right lower chest · bell mode (estimated breathing rate 25/min); Posterior right lower chest · extended mode (estimated breathing rate 21.82/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 6,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 75,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K006",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 81 y. Research output, not a diagnosis.\nPosterior right lower chest · diaphragm mode: the analysis detected rhonchi (5 events, inspiratory); estimated breathing rate 11.15/min.\nPosterior right lower chest · extended mode: the analysis detected rhonchi (8 events, inspiratory); estimated breathing rate 11.15/min.\nNo findings at: Posterior right lower chest · bell mode (estimated breathing rate 9.58/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 7,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 83,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K043",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 15 y. Research output, not a diagnosis.\nPosterior left middle chest · diaphragm mode: the analysis detected wheeze (8 events, inspiratory); coarse crackles (7 events, expiratory); estimated breathing rate 7.5/min.\nNo findings at: Posterior left middle chest · bell mode (estimated breathing rate 7.86/min); Posterior left middle chest · extended mode (estimated breathing rate 25.1/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 7,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 81,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K030",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 18 y. Research output, not a diagnosis.\nPosterior right middle chest · diaphragm mode: the analysis detected rhonchi (5 events, inspiratory); estimated breathing rate 28.17/min.\nNo findings at: Posterior right middle chest · bell mode (estimated breathing rate 19.87/min); Posterior right middle chest · extended mode (estimated breathing rate 28.17/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 6,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 76,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C68204",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 14 y. Research output, not a diagnosis.\nNo findings at: Aortic valve · 2nd right intercostal space (heart rate 73.2 bpm); Mitral valve · 5th left intercostal space, apex (heart rate 77.9 bpm); Pulmonary valve · 2nd left intercostal space (heart rate 75 bpm); Tricuspid valve · 4th left intercostal space (heart rate 76.9 bpm).\nLung-sound detector output on heart-valve recordings is not reported (Aortic valve · 2nd right intercostal space).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 11,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 95,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C2530",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 6 y. Research output, not a diagnosis.\nNo findings at: Aortic valve · 2nd right intercostal space (heart rate 111.1 bpm); Mitral valve · 5th left intercostal space, apex (heart rate 115.4 bpm); Pulmonary valve · 2nd left intercostal space (heart rate 117.6 bpm); Tricuspid valve · 4th left intercostal space (heart rate 115.4 bpm).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 10,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 79,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C68306",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 6 y. Research output, not a diagnosis.\nMitral valve · 5th left intercostal space, apex: the analysis detected systolic murmur (measured over 35 beats); heart rate 93.8 bpm.\nPulmonary valve · 2nd left intercostal space: the analysis detected systolic murmur (measured over 36 beats); heart rate 89.6 bpm.\nTricuspid valve · 4th left intercostal space: the analysis detected systolic murmur (measured over 48 beats); heart rate 98.4 bpm.\nNo findings at: Aortic valve · 2nd right intercostal space (heart rate 101.7 bpm).\nLung-sound detector output on heart-valve recordings is not reported (Tricuspid valve · 4th left intercostal space).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 14,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 122,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C85042",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 6 mo. Research output, not a diagnosis.\nAortic valve · 2nd right intercostal space: the analysis detected diastolic murmur (measured over 14 beats); heart rate 136.4 bpm.\nNo findings at: Mitral valve · 5th left intercostal space, apex (heart rate 113.2 bpm); Pulmonary valve · 2nd left intercostal space (heart rate 113.2 bpm); Tricuspid valve · 4th left intercostal space (heart rate 115.4 bpm).\nLung-sound detector output on heart-valve recordings is not reported (Aortic valve · 2nd right intercostal space).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 12,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 104,
+     "misattributed": [],
+     "pass": true
+    }
+   }
+  ]
+ }
+}
