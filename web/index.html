@@ -145,7 +145,10 @@ textarea.f{min-height:60px;resize:vertical}
 .src{font-size:11px;font-weight:600;border-radius:6px;padding:1px 7px;white-space:nowrap}
 .src.real{background:#e4f6ec;color:#176b3c}.src.syn{background:#f1eefc;color:#5b3fb0}
 .ok-t{color:var(--ok);font-weight:700}.bad-t{color:#b42d2d;font-weight:700}
-.cm td,.cm th{text-align:center}.cm td.diag{background:#e4f6ec;font-weight:700}
+.cm td,.cm th{text-align:center}.cm td.diag{outline:2px solid #1f9d55;outline-offset:-2px;font-weight:700}
+.cm td.hm{color:#15202b;font-weight:600}.cm td.z{color:#c9d1dc}
+.cmkey{display:flex;align-items:center;gap:6px;font-size:11px;color:#8b97a5;margin-top:6px}
+.cmkey i{display:inline-block;width:14px;height:10px;border-radius:2px}
 .lane{border:1px solid var(--line);border-radius:10px;padding:8px 10px 4px;background:#fff;position:relative}
 .lane.ghost{background:#fafbfc}
 .lane .lhead{display:flex;align-items:center;gap:8px;font-size:12.5px;margin-bottom:4px}
@@ -1802,7 +1805,16 @@ function apneaCard(A){
         <p class="hint">Each dot is one patient. PSG AHI = expert events per hour of scored sleep; acoustic AHI = events per hour of recording, because sound alone cannot tell sleep from wake. Dashed: perfect agreement; dotted lines: severity cut-offs 5 / 15 / 30.</p></div>
       <div><h3>Which expert events the sound finds</h3><table><thead><tr><th>Expert type</th><th>Events</th><th>Found</th></tr></thead><tbody>${['OA','CA','MA','H'].filter(k=>BT[k]&&BT[k].n).map(k=>`<tr><td>${tn[k]}</td><td class="mono">${BT[k].n}</td><td class="mono">${pc(BT[k].sens)}</td></tr>`).join('')}</tbody></table>
         <h3 style="margin-top:12px">Severity class (adult 5 / 15 / 30 per h)</h3>
-        <table class="cm"><thead><tr><th>PSG ↓ · sound →</th>${['normal','mild','moderate','severe'].map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${['normal','mild','moderate','severe'].map(a=>`<tr><th>${a}</th>${['normal','mild','moderate','severe'].map(b=>`<td class="${a===b?'diag':''}">${(sv.confusion&&sv.confusion[a][b])||''}</td>`).join('')}</tr>`).join('')}</tbody></table></div></div>
+        <table class="cm"><thead><tr><th>PSG ↓ · sound →</th>${['normal','mild','moderate','severe'].map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${['normal','mild','moderate','severe'].map(a=>`<tr><th>${a}</th>${['normal','mild','moderate','severe'].map(b=>{const v=(sv.confusion&&sv.confusion[a][b])||0;
+        const mx=Math.max(1,...['normal','mild','moderate','severe'].flatMap(x=>['normal','mild','moderate','severe'].map(y=>(sv.confusion&&sv.confusion[x][y])||0)));
+        const al=v?(0.12+0.78*v/mx).toFixed(2):0;
+        return `<td class="${a===b?'diag ':''}${v?'hm':'z'}" style="${v?`background:rgba(15,111,222,${al})`:''}" title="${v} patient${v===1?'':'s'}: PSG ${a} → sound ${b}">${v||'·'}</td>`}).join('')}</tr>`).join('')}</tbody></table>
+      <div class="cmkey"><span>fewer</span><i style="background:rgba(15,111,222,.12)"></i><i style="background:rgba(15,111,222,.35)"></i><i style="background:rgba(15,111,222,.6)"></i><i style="background:rgba(15,111,222,.9)"></i><span>more patients</span><span style="margin-left:8px">green outline = correct class</span></div>
+      <p class="hint" style="margin-top:6px">${(()=>{const C=sv.confusion;if(!C)return '';
+        let under=0,over=0,right=0;const o=['normal','mild','moderate','severe'];
+        o.forEach((a,i)=>o.forEach((b,j)=>{const v=C[a][b]||0;if(i===j)right+=v;else if(j<i)under+=v;else over+=v}));
+        const tot=under+over+right; if(!tot)return '';
+        return `Everything off the outline is a misread: <b>${under} of ${tot}</b> landed in a <b>milder</b> class than the sleep lab scored, ${over} in a more severe one. The error is one-directional — the scorer under-reads severity, it does not scatter.`})()}</p></div></div>
     <div class="notice" style="margin-top:10px"><b>What this shows.</b> ${ah.rho==null?'Too few patients for an AHI comparison yet.':good?`The tracheal acoustic AHI tracks the sleep-lab AHI across patients (ρ = ${ah.rho.toFixed(2)}, ${fmtP(ah.p)}), `:`Across patients the tracheal acoustic AHI ${ah.p<0.05?'only loosely tracks':'does not significantly track'} the sleep-lab AHI (ρ = ${ah.rho.toFixed(2)}, ${fmtP(ah.p)}, ${T.patients} patients)${M&&M.ahi&&M.ahi.p<0.05?`; the ambient microphone ranks patients better (ρ = ${M.ahi.rho.toFixed(2)}, ${fmtP(M.ahi.p)})`:''}. `}${ah.bias!=null?`It <b>${under?'under':'over'}-counts</b>: mean bias ${ah.bias>0?'+':''}${ah.bias} events/h (95 % limits ${ah.loa[0]} to ${ah.loa[1]})${(()=>{const P=T.perPatient,u=P.filter(q=>q.ahiAcousticPerSleepH<q.ahiPsg).length;return under?`, and ${u} of ${P.length} patients stay under even per hour of PSG sleep — so it is missed events, not the missing sleep time`:''})()}. `:''}${T.events.sens!=null?`At event level the tracheal channel finds ${T.events.sens} % of scored events${M?` (ambient ${M.events.sens} %)`:''}, and ${T.events.ppv} % of what it scores is a real event${M?` (ambient ${M.events.ppv} %)`:''}.`:''}
       ${T.headroom&&T.headroom.p<0.05?`<br><b>Why it misses.</b> Detection depends on how far quiet breathing sits above the microphone’s noise floor: in tracheal hours below the median headroom it finds ${T.headroom.sensLow} % of events, above it ${T.headroom.sensHigh} % (ρ = ${T.headroom.rho.toFixed(2)}, ${fmtP(T.headroom.p)}, ${T.headroom.hours} hours). When normal breathing is barely above the hiss, a 30 % drop cannot be seen — the flow proxy was built for stethoscope clips, where breath sound is loud. A noise-floor correction is the obvious next step, and must be fitted on other PSG-Audio patients than these.`:''}
       <br><b>Limits.</b> A pilot of ${T.patients} patients; PSG-Audio is ~89 % severe obstructive apnea, so specificity on healthy sleepers is barely tested. Adults only — the paediatric rule (≥ 2 breaths) is untested. Sound cannot separate obstructive from central events and has no SpO₂, so neither is attempted. Only the diagnostic part of each night is in the dataset (the rest was CPAP titration).</div>
@@ -1820,18 +1832,42 @@ function apneaChart(A){
 }
 // ---- 16 · age signal. Every sentence below is chosen by the numbers in discover.json['age'].
 const ageVerdict=c=>c.significant?'<span class="pill ok">signal on held-out data</span>':c.pPerm<0.05?'<span class="pill warn">weak — CI includes zero</span>':'<span class="pill">no signal</span>';
+let HEARCMP=[];   // also read by tests/e2e.js to assert the labels are distinct
+function hearDiffChart(){
+  const el=$('#c-heardiff'); if(!el||!window.Chart||HEARCMP.length<2)return;
+  const rows=HEARCMP.filter(r=>r.v&&r.v.ci&&r.v.delta!=null);
+  if(rows.length<2)return;
+  const zero={id:'zeroLine',afterDraw(c){const x=c.scales.x,a=c.chartArea,px=x.getPixelForValue(0);
+    if(px<a.left||px>a.right)return;const g=c.ctx;g.save();g.strokeStyle='#8b97a5';g.lineWidth=1;g.setLineDash([4,4]);
+    g.beginPath();g.moveTo(px,a.top);g.lineTo(px,a.bottom);g.stroke();g.setLineDash([]);
+    g.fillStyle='#8b97a5';g.font='10px ui-sans-serif,system-ui';g.textAlign='center';g.fillText('no difference',px,a.top-2);g.restore()}};
+  // colour by verdict, not by the sign of the point: a positive delta whose CI crosses zero is
+  // "no clear difference", and must not read as a win
+  const col=v=>v.verdict==='better'?'#1f9d55':v.verdict==='worse'?'#d64545':'#8b97a5';
+  valCharts.push(new Chart(el,{type:'bar',data:{labels:rows.map(r=>r.label),datasets:[
+    {label:'95 % CI',data:rows.map(r=>r.v.ci),backgroundColor:rows.map(r=>col(r.v)+'33'),borderColor:rows.map(r=>col(r.v)+'99'),borderWidth:1,borderSkipped:false,barThickness:10},
+    {label:'difference',type:'scatter',data:rows.map(r=>({x:r.v.delta,y:r.label})),backgroundColor:rows.map(r=>col(r.v)),pointRadius:5,pointStyle:'rectRot'}]},
+    plugins:[zero],
+    options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,layout:{padding:{top:12}},
+      scales:{x:{title:{display:true,text:'AUC difference (HeAR − platform)'},grid:{color:'#eef1f5'}},y:{grid:{display:false},ticks:{autoSkip:false}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const r=rows[c.dataIndex];
+        return `${r.label}: ${(r.v.delta>0?'+':'')+r.v.delta.toFixed(3)} (95 % CI ${r.v.ci[0]} to ${r.v.ci[1]}) — ${r.v.verdict}`}}}}}}));
+}
 // ---- 9 · Google HeAR embeddings vs this platform's models (research only; HeAR cannot run in the page). Words follow the numbers.
 function hearCard(H){if(!H||!(H.icbhi||H.circor))return '';const n=DISCOVER_MAP.findIndex(x=>x.id==='hear')+1;
   const ci=a=>a?`${a.value} (${a.lo}–${a.hi})`:'—',sgn=v=>(v>0?'+':'')+v.toFixed(3),cap=t=>String(t||'').replace(/^./,c=>c.toUpperCase());
   const word=v=>v.verdict==='better'?'<span class="pill ok">HeAR better</span>':v.verdict==='worse'?'<span class="pill bad">HeAR worse</span>':'<span class="pill warn">no clear difference</span>';
-  const rows=[];
-  if(H.icbhi)for(const q of ['crackles','wheezes']){const r=H.icbhi[q];if(!r)continue;for(const [k,v] of Object.entries(r.vs))rows.push(`<tr><td>ICBHI · ${q} per breath cycle</td><td class="mono">${r.n.toLocaleString()} cycles · ${r.patients} patients</td><td class="mono">${ci(r.auc)}</td><td>${esc(k)}</td><td class="mono">${ci(v.auc)}</td><td class="mono">${sgn(v.delta)} (${v.ci[0]} to ${v.ci[1]})</td><td>${word(v)}</td></tr>`)}
-  if(H.circor){const r=H.circor;for(const [k,v] of Object.entries(r.vs))rows.push(`<tr><td>CirCor · murmur per valve recording</td><td class="mono">${r.n.toLocaleString()} recordings · ${r.patients} patients</td><td class="mono">${ci(r.auc)}</td><td>${esc(k)}</td><td class="mono">${ci(v.auc)}</td><td class="mono">${sgn(v.delta)} (${v.ci[0]} to ${v.ci[1]})</td><td>${word(v)}</td></tr>`)}
+  const rows=[]; HEARCMP=[];
+  if(H.icbhi)for(const q of ['crackles','wheezes']){const r=H.icbhi[q];if(!r)continue;for(const [k,v] of Object.entries(r.vs)){HEARCMP.push({label:`ICBHI ${q} vs ${k}`,v});}for(const [k,v] of Object.entries(r.vs))rows.push(`<tr><td>ICBHI · ${q} per breath cycle</td><td class="mono">${r.n.toLocaleString()} cycles · ${r.patients} patients</td><td class="mono">${ci(r.auc)}</td><td>${esc(k)}</td><td class="mono">${ci(v.auc)}</td><td class="mono">${sgn(v.delta)} (${v.ci[0]} to ${v.ci[1]})</td><td>${word(v)}</td></tr>`)}
+  if(H.circor){const r=H.circor;for(const [k,v] of Object.entries(r.vs))HEARCMP.push({label:`CirCor murmur vs ${k}`,v});
+    for(const [k,v] of Object.entries(r.vs))rows.push(`<tr><td>CirCor · murmur per valve recording</td><td class="mono">${r.n.toLocaleString()} recordings · ${r.patients} patients</td><td class="mono">${ci(r.auc)}</td><td>${esc(k)}</td><td class="mono">${ci(v.auc)}</td><td class="mono">${sgn(v.delta)} (${v.ci[0]} to ${v.ci[1]})</td><td>${word(v)}</td></tr>`)}
   const all=[...(H.icbhi?['crackles','wheezes'].map(q=>H.icbhi[q]).filter(Boolean):[]),...(H.circor?[H.circor]:[])].flatMap(r=>Object.values(r.vs));
   const nb=all.filter(v=>v.verdict==='better').length,nw=all.filter(v=>v.verdict==='worse').length;
   const dv=H.icbhi&&H.icbhi.deviceFromEmbedding;
   return `<div class="card" id="d-hear"><h2>${n} · Google HeAR embeddings against this platform's models</h2>
     <p class="hint" style="margin-top:0">${esc(H.model)}. ${esc(cap(H.input.icbhi))} (ICBHI); ${esc(H.input.circor)} (CirCor). ${esc(cap(H.probe))}. Each comparison uses the same held-out patients as the model it is compared with; the difference in AUC has a patient-bootstrap 95 % CI, and “better” means the whole interval is above 0. Rules were fixed before the embeddings were scored.</p>
+    ${HEARCMP.length>=2?`<div style="position:relative;height:${34*HEARCMP.length+62}px;margin:6px 0 2px"><canvas id="c-heardiff"></canvas></div>
+    <p class="hint" style="margin-top:0">Difference in AUC, HeAR minus the platform's model, on the same held-out patients. An interval that crosses the dashed zero line means the two are not separated by this data.</p>`:''}
     <div style="overflow-x:auto"><table><thead><tr><th>Question</th><th>Held out</th><th>HeAR + linear probe, AUC</th><th>Compared with</th><th>Its AUC (same cases)</th><th>Difference, 95 % CI</th><th><span class="sr-only">Verdict</span></th></tr></thead><tbody>${rows.join('')}</tbody></table></div>
     <p>${nb===all.length?'HeAR with a linear probe beat every comparison model on the same held-out patients.':nb?`HeAR beat ${nb} of ${all.length} comparisons; ${nw?`it was worse in ${nw}, and `:''}the rest show no clear difference.`:nw?`HeAR was worse in ${nw} of ${all.length} comparisons and showed no clear advantage in the others.`:'No comparison shows a clear difference: the confidence intervals include 0.'}
       ${dv?` The embedding also carries the stethoscope: a linear probe names the ICBHI recording device correctly in ${Math.round(100*dv.accuracy)} % of held-out cycles (always guessing the commonest device: ${Math.round(100*dv.majority)} %). In ICBHI the device tracks diagnosis and age, so any sound model there can partly learn the device.`:''}${(()=>{const w=H.icbhi&&H.icbhi.wheezes&&H.icbhi.wheezes.byDevice;if(!w||!w.length)return '';const b=w.reduce((a,x)=>x.cycles>a.cycles?x:a);return b.auc?` Within the largest device group (${esc(b.device)}, ${b.cycles.toLocaleString()} held-out cycles) HeAR's wheeze AUC is ${b.auc.value} (${b.auc.lo}–${b.auc.hi}).`:''})()}</p>
@@ -2120,6 +2156,7 @@ async function renderDiscover(){
     const GR=['I/VI','II/VI','III/VI'], pr=g=>{const v=CV.byGrade[g];return v&&v[1]?100*v[0]/v[1]:0};
     dChart('c-heart',{type:'bar',data:{labels:GR.map(g=>`grade ${g}`),datasets:[{label:'murmurs found (%)',data:GR.map(pr),backgroundColor:['#f3a6c6','#ea74a6','#e84393']}]},
       options:{plugins:{legend:{display:false},tooltip:{callbacks:{afterLabel:c=>{const v=CV.byGrade[GR[c.dataIndex]];return v?`${v[0]} of ${v[1]} patients`:''}}}},scales:{y:{beginAtZero:true,max:100,title:{display:true,text:'% of annotated murmurs found'}}}}})})();
+  window.HEARCMP=HEARCMP; hearDiffChart();
   dChart('c-spatial',{type:'bar',data:{labels:sp.map(x=>`${x.dx} (${x.children})`),datasets:[['bilateral','#d64545'],['left only','#8e44ad'],['right only','#6c5ce7'],['none','#c9d1dc']].map(([k,c])=>({label:k,data:sp.map(x=>100*(x.sides[k]||0)/x.children),backgroundColor:c}))},
     options:{indexAxis:'y',scales:{x:{stacked:true,max:100,title:{display:true,text:'% of children'}},y:{stacked:true}},plugins:{tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.x.toFixed(0)} %`}}}}});
   const pal={'Asthma':'#8e44ad','Bronchiolitis':'#d64545','Bronchitis':'#d9822b','Pneumonia (non-severe)':'#0f6fde','Pneumonia (severe)':'#9f2b2b'};

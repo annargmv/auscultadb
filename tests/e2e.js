@@ -169,6 +169,18 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     });
     check(toc && toc.n >= 15 && toc.live >= 12 && toc.sticky === 'sticky' && toc.dead === 0,
       `contents rail: ${toc ? toc.n : 0} links, ${toc ? toc.live : 0} live, blocked ones disabled`);
+    const vis = await pg.evaluate(() => {
+      const cm = document.querySelector('#d-apnea table.cm');
+      const hd = document.querySelector('#c-heardiff');
+      const labels = hd ? (window.HEARCMP || []).map(r => r.label) : [];
+      return { shaded: cm ? cm.querySelectorAll('td.hm').length : 0,
+               diag: cm ? cm.querySelectorAll('td.diag').length : 0,
+               dir: /one-directional|milder class/.test(document.querySelector('#d-apnea') ? document.querySelector('#d-apnea').innerText : ''),
+               hd: hd ? hd.width > 50 && hd.height > 50 : false,
+               dupLabels: labels.length !== new Set(labels).size };
+    });
+    check(vis.shaded >= 3 && vis.diag === 4 && vis.dir, `apnea confusion heatmap: ${vis.shaded} shaded cells, direction of error stated`);
+    check(vis.hd && !vis.dupLabels, 'HeAR difference plot renders with distinct comparison labels');
     const cb = await pg.evaluate(() => { const c = document.querySelector('#d-cbemph'); return c && { rows: c.querySelectorAll('table tr').length, device: /no stethoscope confound/.test(c.innerText), caveat: /does not say which mode/.test(c.innerText) } });
     check(cb && cb.rows > 8 && cb.device && cb.caveat, `CB/emphysema section rendered (${cb ? cb.rows : 0} rows, device + filter-mode caveats present)`);
     // 12 · apnea / AHI on real nights (PSG-Audio): scored by the page's own code, audio never published
