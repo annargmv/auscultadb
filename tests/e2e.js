@@ -60,6 +60,9 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     });
     check(!resp.chart && !resp.stats, 'no apnea/AHI panel on a cardiac-only recording');
     check(resp.rr.every(t => /not applicable/.test(t)) && resp.explained, `respiratory rate withheld on heart sounds (${resp.rr[0] || '—'})`);
+    // written summary: fixed template over every valve's findings; heart recordings never report lung-detector output
+    const sm = await pg.evaluate(() => { const t = document.querySelector('#sumTxt'); return t && { txt: t.innerText, sites: (t.innerText.match(/valve/g) || []).length } });
+    check(sm && /not a diagnosis/.test(sm.txt) && sm.sites >= 4 && !/crackle|wheeze|rhonch/i.test(sm.txt), `written summary on the heart patient (${sm ? sm.txt.split('\n').length : 0} lines, no lung findings, not-a-diagnosis)`);
     check(await pg.evaluate(() => !document.body.innerText.includes('SPRSound physicians labelled')), 'no SPRSound event-label card on a dataset without event timings');
     await pg.waitForFunction(() => { const c = document.querySelector('#hrAgeCard'); return c && !/loading/.test(c.innerText) }, null, { timeout: 15000 });
     const ha = await pg.evaluate(() => { const c = document.querySelector('#hrAgeCard'); return { t: c.innerText.replace(/\s+/g, ' '), chart: !!c.querySelector('#c-hrAge') } });

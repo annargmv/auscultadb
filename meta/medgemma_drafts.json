@@ -722,5 +722,211 @@
   "by": "Claude (not a clinician)",
   "date": "2026-11-18",
   "text": "Every draft read against its input. The 3 drafts the attribution check flags are real errors (a rub moved to a site without one; \"rhonchi … with no findings\" for the same site; a murmur reported at the aortic valve, which had none). K057 passes the checks but lists two heart rates and two breathing rates without saying which filter mode each came from. The other 8 drafts match their input. A clinician has not reviewed them."
+ },
+ "template": {
+  "what": "the page's writtenSummary(): fixed template over the same structured findings, no language model",
+  "summary": {
+   "drafts": 12,
+   "passed": 12,
+   "withUnsupportedNumbers": 0,
+   "namingDiagnosis": 0,
+   "missingNotDiagnosis": 0,
+   "impliesClinician": 0,
+   "misattributed": 0
+  },
+  "items": [
+   {
+    "key": "41115356",
+    "src": "sprsound",
+    "text": "Automatic analysis of 2 chest recordings (SPRSound), 4 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected coarse crackles (18 events); estimated breathing rate 8.88/min.\nNo findings at: Left lateral chest (estimated breathing rate 15/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 5,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 57,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "41277654",
+    "src": "sprsound",
+    "text": "Automatic analysis of 4 chest recordings (SPRSound), 11.7 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected coarse crackles (41 events); pleural friction rub (12 events, inspiratory and expiratory); estimated breathing rate 31.41/min.\nNo findings at: Left lateral chest (estimated breathing rate 17.24/min); Right posterior chest (estimated breathing rate 21.35/min); Right lateral chest (estimated breathing rate 22.39/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 8,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 79,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "41246720",
+    "src": "sprsound",
+    "text": "Automatic analysis of 4 chest recordings (SPRSound), 4.2 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected coarse crackles (8 events, inspiratory); estimated breathing rate 19.05/min.\nRight posterior chest: the analysis detected rhonchi (2 events, inspiratory); estimated breathing rate 27.03/min.\nNo findings at: Left lateral chest (estimated breathing rate 8.42/min); Right lateral chest (estimated breathing rate 26.79/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 8,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 79,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "64824049",
+    "src": "sprsound",
+    "text": "Automatic analysis of 3 chest recordings (SPRSound), 1.5 y. Research output, not a diagnosis.\nLeft posterior chest: the analysis detected rhonchi (5 events, phase uncertain); estimated breathing rate 19.48/min.\nRight posterior chest: the analysis detected rhonchi (5 events, inspiratory); estimated breathing rate 21.43/min.\nNo findings at: Right lateral chest (estimated breathing rate 48.39/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 7,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 72,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K057",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 42 y. Research output, not a diagnosis.\nPosterior right lower chest · diaphragm mode: the analysis detected wheeze (6 events); estimated breathing rate 21.82/min.\nNo findings at: Posterior right lower chest · bell mode (estimated breathing rate 25/min); Posterior right lower chest · extended mode (estimated breathing rate 21.82/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 6,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 75,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K006",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 81 y. Research output, not a diagnosis.\nPosterior right lower chest · diaphragm mode: the analysis detected rhonchi (5 events, inspiratory); estimated breathing rate 11.15/min.\nPosterior right lower chest · extended mode: the analysis detected rhonchi (8 events, inspiratory); estimated breathing rate 11.15/min.\nNo findings at: Posterior right lower chest · bell mode (estimated breathing rate 9.58/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 7,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 83,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K043",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 15 y. Research output, not a diagnosis.\nPosterior left middle chest · diaphragm mode: the analysis detected wheeze (8 events, inspiratory); coarse crackles (7 events, expiratory); estimated breathing rate 7.5/min.\nNo findings at: Posterior left middle chest · bell mode (estimated breathing rate 7.86/min); Posterior left middle chest · extended mode (estimated breathing rate 25.1/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 7,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 81,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "K030",
+    "src": "kauh",
+    "text": "Automatic analysis of 3 chest recordings (KAUH), 18 y. Research output, not a diagnosis.\nPosterior right middle chest · diaphragm mode: the analysis detected rhonchi (5 events, inspiratory); estimated breathing rate 28.17/min.\nNo findings at: Posterior right middle chest · bell mode (estimated breathing rate 19.87/min); Posterior right middle chest · extended mode (estimated breathing rate 28.17/min).\nBreathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.",
+    "check": {
+     "numbers": 6,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 76,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C68204",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 14 y. Research output, not a diagnosis.\nNo findings at: Aortic valve · 2nd right intercostal space (heart rate 73.2 bpm); Mitral valve · 5th left intercostal space, apex (heart rate 77.9 bpm); Pulmonary valve · 2nd left intercostal space (heart rate 75 bpm); Tricuspid valve · 4th left intercostal space (heart rate 76.9 bpm).\nLung-sound detector output on heart-valve recordings is not reported (Aortic valve · 2nd right intercostal space).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 11,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 95,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C2530",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 6 y. Research output, not a diagnosis.\nNo findings at: Aortic valve · 2nd right intercostal space (heart rate 111.1 bpm); Mitral valve · 5th left intercostal space, apex (heart rate 115.4 bpm); Pulmonary valve · 2nd left intercostal space (heart rate 117.6 bpm); Tricuspid valve · 4th left intercostal space (heart rate 115.4 bpm).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 10,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 79,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C68306",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 6 y. Research output, not a diagnosis.\nMitral valve · 5th left intercostal space, apex: the analysis detected systolic murmur (measured over 35 beats); heart rate 93.8 bpm.\nPulmonary valve · 2nd left intercostal space: the analysis detected systolic murmur (measured over 36 beats); heart rate 89.6 bpm.\nTricuspid valve · 4th left intercostal space: the analysis detected systolic murmur (measured over 48 beats); heart rate 98.4 bpm.\nNo findings at: Aortic valve · 2nd right intercostal space (heart rate 101.7 bpm).\nLung-sound detector output on heart-valve recordings is not reported (Tricuspid valve · 4th left intercostal space).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 14,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 122,
+     "misattributed": [],
+     "pass": true
+    }
+   },
+   {
+    "key": "C85042",
+    "src": "circor",
+    "text": "Automatic analysis of 4 heart-valve recordings (CirCor), 6 mo. Research output, not a diagnosis.\nAortic valve · 2nd right intercostal space: the analysis detected diastolic murmur (measured over 14 beats); heart rate 136.4 bpm.\nNo findings at: Mitral valve · 5th left intercostal space, apex (heart rate 113.2 bpm); Pulmonary valve · 2nd left intercostal space (heart rate 113.2 bpm); Tricuspid valve · 4th left intercostal space (heart rate 115.4 bpm).\nLung-sound detector output on heart-valve recordings is not reported (Aortic valve · 2nd right intercostal space).\nCardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.",
+    "check": {
+     "numbers": 12,
+     "unsupported": [],
+     "saysNotDiagnosis": true,
+     "namesDiagnosis": [],
+     "banned": [],
+     "impliesClinician": [],
+     "words": 104,
+     "misattributed": [],
+     "pass": true
+    }
+   }
+  ]
  }
 }

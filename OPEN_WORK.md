@@ -21,7 +21,7 @@ and report on another, and nothing is shown on the pages unless it passes its ga
      features and with the spectrogram networks on the same held-out patients; report on Validation and Discoveries 9.
   5. HeAR cannot run in the browser (size); results are research only unless a small distilled model passes the gate.
 
-### 2. MedGemma to draft the written report (CLAUDE.md task 4) — **tested 2026-11-18; not fit to use unreviewed**
+### 2. MedGemma to draft the written report (CLAUDE.md task 4) — **tested; replaced by a fixed template (2026-11-19)**
 - **Done:** `pipeline/medgemma_draft.py` runs `google/medgemma-4b-it` offline (CPU, bf16, ~1 min per draft) on the page's own
   structured findings — never the audio, the expert label or the diagnosis. Checks per draft: every number appears in the
   input; it says "not a diagnosis"; no diagnosis named; no phrasing that implies a clinician listened; **every finding named
@@ -30,9 +30,11 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 - **Result (12 drafts, 4 each SPRSound / KAUH / CirCor):** all numbers traceable, but **3 of 12 put a finding at the wrong
   site or contradict themselves**, and 1 more lists rates without saying which filter mode they come from (found by
   reading, not by the check). The first run, before heart recordings were limited to cardiac findings, had 5 of 12 wrong.
-- **Missing:** an owner decision. The drafts read fluently but are wrong often enough that each would need a clinician to
-  check it line by line, so they are **not shown on the pages**. Options: drop the idea; try a larger model (27B — too big
-  for this machine); or generate the summary with a fixed template from the same structured findings (no model, no errors).
+- **Decision (owner, 2026-11-19): use a fixed template instead.** The patient page has a **Written summary** card
+  (`writtenSummary(p)`): every site's precomputed findings in fixed sentences, stored values copied unrounded, heart
+  recordings report cardiac findings only, ends with "not a diagnosis" and a pointer to the Validation page. Scored with
+  the same checks on the same 12 patients (`node pipeline/summary_export.js && python3 pipeline/medgemma_draft.py --template`):
+  **template 12 / 12 pass, MedGemma 9 / 12** (3 misattributions). MedGemma drafts stay off the pages.
 
 ### 3. Remove or approve network hosts added during research — **done 2026-11-18**
 - Removed `pubs.aip.org`, `bigr.nl`, `www.longevity-ai.com`, `longevity-ai.com`; added `cdn-lfs-us-1.hf.co` and

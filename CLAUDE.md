@@ -569,7 +569,10 @@ The notes below are the history behind tasks 1–8; tasks 1 (murmur) and 3 (HeAR
 summary from the page's structured findings only (no audio, no expert label, no diagnosis; heart recordings get cardiac
 findings only). Mechanical checks: numbers traceable, "not a diagnosis", no diagnosis named, no clinician-implying words,
 findings attributed to the right site. **12 drafts: numbers always traceable, but 3 of 12 misattribute a finding**
-(and one more is ambiguous on reading) → not fit to use unreviewed; owner decision pending. Do not put drafts on the pages.
+(and one more is ambiguous on reading) → not fit to use unreviewed. Do not put drafts on the pages.
+**Owner's decision 2026-11-19: fixed template instead** — `writtenSummary(p)` (patient page, "Written summary" card): every
+site's precomputed findings in fixed sentences, stored values unrounded, cardiac findings only on heart recordings, "not a
+diagnosis". Same checks, same 12 patients: template 12/12, MedGemma 9/12 (`pipeline/summary_export.js` → `--template`).
 
 ## Remote data store (2026-11-18) — `pipeline/remote.py`
 The machine's disk is small and replaced between sessions, so `raw/` and the expensive `build/` folders live in a

@@ -14,7 +14,7 @@ Owner's decision pending: AI-written text does not go on the pages until the own
 """
 import json, re, sys, time, datetime, os
 import numpy as np, torch
-from paths import META, WEB_DATA
+from paths import ROOT, META, WEB_DATA
 
 MODEL = 'google/medgemma-4b-it'; SEED = 20261118
 CARDIAC = {'murmur', 'dmurmur', 's3'}
@@ -77,7 +77,8 @@ def attribution(draft, src):
 
 
 def check(draft, src, dx_words):
-    txt = json.dumps(src, ensure_ascii=False); have = set(numbers(txt))
+    txt = json.dumps(src, ensure_ascii=False); have = set(numbers(txt)) | {str(len(src['sites']))}   # true derived facts: number of sites, age in months
+    if src.get('age_years') is not None and src['age_years'] < 2: have.add(str(round(src['age_years'] * 12)))
     have |= {str(int(float(x))) for x in have if float(x).is_integer()} | {x.rstrip('0').rstrip('.') for x in have if '.' in x}
     num = numbers(draft); bad = [x for x in num if x not in have and x.rstrip('0').rstrip('.') not in have]
     low = draft.lower(); dx = [w for w in dx_words if re.search(r'\b' + re.escape(w.lower()) + r'\b', low)]
@@ -102,6 +103,18 @@ def recheck():
     f = META / 'medgemma_drafts.json'; R = json.loads(f.read_text()); dx = dx_list(json.loads((WEB_DATA / 'index.json').read_text()))
     for o in R['drafts']: o['check'] = check(o['draft'], o['input'], dx)
     R['summary'] = summary(R['drafts']); f.write_text(json.dumps(R, indent=1, ensure_ascii=False)); print(R['summary'])
+
+
+def template():
+    """Score the page's fixed-template summaries (pipeline/summary_export.js -> build/summaries.json) with the same checks."""
+    f = META / 'medgemma_drafts.json'; R = json.loads(f.read_text()); dx = dx_list(json.loads((WEB_DATA / 'index.json').read_text()))
+    T = json.loads((ROOT / 'build' / 'summaries.json').read_text()); out = []
+    for o in R['drafts']:
+        if o['key'] in T: out.append({'key': o['key'], 'src': o['src'], 'text': T[o['key']], 'check': check(T[o['key']], o['input'], dx)})
+    R['template'] = {'what': "the page's writtenSummary(): fixed template over the same structured findings, no language model", 'summary': summary(out), 'items': out}
+    f.write_text(json.dumps(R, indent=1, ensure_ascii=False)); print('template', R['template']['summary'])
+    for o in out:
+        if not o['check']['pass']: print(' ', o['key'], {k: v for k, v in o['check'].items() if v and k in ('unsupported', 'misattributed', 'namesDiagnosis', 'impliesClinician', 'banned')})
 
 
 def main(n):
@@ -134,4 +147,5 @@ def main(n):
 
 
 if __name__ == '__main__':
-    recheck() if sys.argv[1:] == ['--recheck'] else main(int(sys.argv[1]) if len(sys.argv) > 1 else 4)
+    a = sys.argv[1:]
+    recheck() if a == ['--recheck'] else template() if a == ['--template'] else main(int(a[0]) if a else 4)

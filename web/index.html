@@ -1154,6 +1154,7 @@ function renderPatient(id){
             <div class="d"><b>Location:</b> ${esc(f.site)} · <b>Phase:</b> ${esc(f.phase)} — ${esc(f.pos)} · <b>Time:</b> <span class="mono">${fmtT(f.t0)} – ${fmtT(f.t1)}</span> · <b>Events:</b> ${f.count}</div><div class="d">${esc(f.detail)}</div></div>`).join(''):'<div class="empty">No anomalies detected relative to this patient\'s baseline.</div>'}</div>
           <table style="margin-top:12px"><thead><tr><th>#</th><th>Anomaly</th><th>Kind</th><th>Respiratory location</th><th>Anatomical site</th><th>Time window</th></tr></thead><tbody>${r.findings.map((f,i)=>`<tr><td class="mono">${i+1}</td><td><span class="swatch" style="background:${TYPES[f.type].color}"></span>${TYPES[f.type].label}</td><td>${TYPES[f.type].kind}</td><td>${esc(f.phase)}, ${esc(f.pos)}</td><td>${esc(f.site)}</td><td class="mono">${f.t0.toFixed(2)}–${f.t1.toFixed(2)} s</td></tr>`).join('')||'<tr><td colspan="6" class="empty">—</td></tr>'}</tbody></table>
         </div>
+        ${isPre(p)&&p.detail?`<div class="card" id="sumCard"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Written summary</h2><button class="btn small" id="btnSum">⎘ Copy</button></div><p class="hint" style="margin:4px 0 8px">All recording sites of this patient, written from the detected findings with a fixed template — no language model.</p><pre id="sumTxt" style="white-space:pre-wrap;font:inherit;font-size:13px;margin:0">${esc(writtenSummary(p))}</pre></div>`:''}
         ${cmp&&cmp.length?`<div class="card"><div class="row" style="justify-content:space-between"><h2 style="margin:0">Expert annotation vs. automatic analysis</h2><span class="hint">current recording · click a row to play the event</span></div>
           <p class="hint" style="margin:6px 0 10px">SPRSound physicians labelled each breath event. The detector labels the same time window CAS (continuous: wheeze / rhonchi / stridor), DAS (discontinuous: crackles) or Normal. Agreement: <b>${cmp.filter(e=>e.agree).length}/${cmp.length}</b> events exact · <b>${cmp.filter(e=>e.abnAgree).length}/${cmp.length}</b> normal-vs-abnormal.</p>
           <table id="cmpT"><thead><tr><th>#</th><th>Time</th><th>Expert label</th><th>Expert class</th><th>Automatic</th><th>Evidence</th><th><span class="sr-only">Agreement</span></th></tr></thead><tbody>${cmp.map((e,i)=>`<tr class="click" data-i="${i}"><td class="mono">${i+1}</td><td class="mono">${e.start.toFixed(2)}–${e.end.toFixed(2)} s</td><td><span class="swatch" style="background:${EXP_COL[e.type]||'#999'}"></span>${esc(e.type)}</td><td>${e.expert}</td><td>${e.ours}</td><td class="hint">tonal ${e.tonal.toFixed(2)} s · ${e.crackles} crackle-like transients</td><td>${e.agree?'<span class="ok-t">✓</span>':e.abnAgree?'<span class="hint">≈ type differs</span>':'<span class="bad-t">✗</span>'}</td></tr>`).join('')}</tbody></table></div>`:''}
@@ -1179,6 +1180,7 @@ function renderPatient(id){
   if($('#btnEdit'))$('#btnEdit').onclick=()=>openPatientForm(p);
   if($('#btnDelete'))$('#btnDelete').onclick=()=>confirmDialog(`Delete ${p.name} and both recordings?`,()=>{patients=patients.filter(x=>x.id!==p.id);invalidate(p);persist();location.hash='#patients';toast('Patient deleted')});
   if(p.source==='circor')fillHrAge(p,r);
+  if($('#btnSum'))$('#btnSum').onclick=()=>navigator.clipboard?.writeText(writtenSummary(p)).then(()=>toast('Summary copied')).catch(()=>toast('Clipboard not available here'));
   $('#btnReport').onclick=()=>{const txt=reportText(p,r);navigator.clipboard?.writeText(txt).then(()=>toast('Report copied to clipboard')).catch(()=>toast('Clipboard not available here'))};
   const cv=$('#graph'); if(cv)cv.onclick=e=>{const rect=cv.getBoundingClientRect();const x=(e.clientX-rect.left)/rect.width;const t=clamp((x-G.padL/rect.width)/(1-(G.padL+G.padR)/rect.width),0,1)*DUR;player.pos=t;if(live&&live.ok){live.seek(current.which,t);if(player.playing)live.play(current.which,t)}else if(player.playing)play(p,player.which,t);else drawGraph()};
   if(cv){cv.onmousemove=e=>{const rect=cv.getBoundingClientRect();current.hover=((e.clientX-rect.left)/rect.width);drawGraph()}; cv.onmouseleave=()=>{current.hover=null;drawGraph()}}
@@ -1315,6 +1317,25 @@ function kauhMapCard(p){
 }
 function chooseSite(p,loc,autoplay){stopPlayback();destroyLive();LIVE.autoplay=!!autoplay;const y=window.scrollY;const go=()=>{renderPatient(p.id);window.scrollTo(0,y)};
   if(isPre(p)){p.curLoc=loc;ensureSite(p,loc).then(go).catch(e=>toast('Could not load site: '+e.message))}else{selectSite(p,loc);go()}}
+/* Written summary of one patient, filled from the precomputed findings of every site with a fixed template (no language
+   model: MedGemma 4B misplaced findings in 3 of 12 drafts, OPEN_WORK item 2). Heart-valve recordings report cardiac findings
+   only — the lung detectors are not validated there. Returns plain text; never names a diagnosis. */
+const CARDIAC_T=new Set(['murmur','dmurmur','s3']);
+function writtenSummary(p){if(!p||!p.detail||!p.sites)return '';
+  const heart=isCardiacOnly(p),L=[],none=[],dropped=[];
+  const phase=f=>{const v=f.phase||'';if(/^cardiac|^unassigned/.test(v))return '';if(/phase uncertain/.test(v))return 'phase uncertain';return v.replace(' & ',' and ')};   // cardiac timing is already in the label
+  L.push(`Automatic analysis of ${p.sites.length} ${heart?'heart-valve':'chest'} recording${p.sites.length>1?'s':''} (${SRC_META[p.source].tag}), ${ageLabel(p)}. Research output, not a diagnosis.`);
+  for(const st of p.sites){const pr=p.detail.pairs[st.loc]||{},rec=p.detail.rec[st.loc]||{};
+    let F=pr.findings||[];if(heart){const k=F.filter(f=>!CARDIAC_T.has(f.type));if(k.length)dropped.push(st.site);F=F.filter(f=>CARDIAC_T.has(f.type))}
+    const by={};F.forEach(f=>{(by[f.type]=by[f.type]||[]).push(f)});
+    const parts=Object.entries(by).map(([t,fs])=>{const n=fs.reduce((a,f)=>a+(f.count||0),0),ph=[...new Set(fs.map(phase).filter(Boolean))];
+      return CARDIAC_T.has(t)?`${TYPES[t].label.toLowerCase()} (measured over ${n} beats)`:`${TYPES[t].label.toLowerCase()} (${n} events${ph.length?', '+ph.join(' and '):''})`});   // cardiac count = beats analysed
+    const rate=heart?(rec.heart&&rec.heart.hr!=null?`heart rate ${rec.heart.hr} bpm`:''):(rec.rr!=null?`estimated breathing rate ${rec.rr}/min`:'');   // stored values, not re-rounded
+    if(parts.length)L.push(`${st.site}: the analysis detected ${parts.join('; ')}${rate?'; '+rate:''}.`);else none.push(st.site+(rate?` (${rate})`:''))}
+  if(none.length)L.push(`No findings at: ${none.join('; ')}.`);
+  if(dropped.length)L.push(`Lung-sound detector output on heart-valve recordings is not reported (${dropped.join('; ')}).`);
+  L.push(heart?'Cardiac findings come from the shipped rules; their accuracy against CirCor experts is on the Validation page.':'Breathing rate from short clips is an estimate; its error against expert cycle counts is on the Validation page.');
+  return L.join('\n')}
 function reportText(p,r){
   const d=docOf(p.doctorId);
   return [`AuscultaDB analysis report`,`Patient: ${p.name} (${p.mrn}), ${ageLabel(p)}, ${p.sex}`,`Recorded at: ${d.name} (${d.dept})`,`Diagnosis: ${p.diagnosis}`,`Site: ${p.site}   Release: ${p.recorded}`,
@@ -3251,7 +3272,7 @@ async function renderDatasets(){
 }
 
 // expose for testing
-window.__app={patients,getAnalysis,getAudio,TYPES,REAL}; window.__live=()=>live;
+window.__app={patients,getAnalysis,getAudio,TYPES,REAL,getDetail,writtenSummary}; window.__live=()=>live;
 route();
 loadRealDataset();
 </script>
