@@ -120,6 +120,20 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
       `home trust table claims no grade performance the murmur model lacks (grade data: ${trust.hasGrade})`);
     // the validation summary must never print a metric under the wrong column heading
     await pg.goto(url('#validation')); await pg.waitForTimeout(1200);
+    await pg.waitForFunction(() => document.querySelectorAll('#view canvas').length > 3, null, { timeout: 20000 }).catch(() => {});
+    // every subgroup with intervals gets a point-and-interval plot, every LR report a
+    // post-test probability curve, and no canvas may render collapsed
+    const vch = await pg.evaluate(() => {
+      const cs = [...document.querySelectorAll('#view canvas')];
+      return { forest: cs.filter(c => /^forest/.test(c.id)).length,
+               ptp: cs.filter(c => /^ptp-/.test(c.id)).length,
+               collapsed: cs.filter(c => c.width <= 50 || c.height <= 50).map(c => c.id),
+               caption: /pre-test probability of 20 %/.test(document.body.innerText) };
+    });
+    check(vch.forest >= 5 && vch.ptp >= 3 && !vch.collapsed.length && vch.caption,
+      `validation charts: ${vch.forest} subgroup plots, ${vch.ptp} probability curves, none collapsed`);
+
+
     const vs = await pg.evaluate(() => {
       const rows = [...document.querySelectorAll('#view .vrep table tbody tr')].slice(0, 8);
       const specCol = rows.map(t => (t.children[3] || {}).textContent || '');

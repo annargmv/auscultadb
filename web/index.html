@@ -2150,9 +2150,62 @@ function valMetricRows(ms){return ms.map(m=>`<tr><td><b>${esc(m.label)}</b>${m.e
 function lrBlock(r){if(!r.lrPos)return '';const w=v=>v>=10?'large':v>=5?'moderate':v>=2?'small':'minimal',wn=v=>v<=0.1?'large':v<=0.2?'moderate':v<=0.5?'small':'minimal';
   return `<tr><td><b>Positive likelihood ratio (LR+)</b><div class="hint">how much a positive result raises the odds — ${w(r.lrPos.value)} effect</div></td><td class="mono">${r.lrPos.value}</td><td class="mono">${r.lrPos.lo} – ${r.lrPos.hi}</td><td></td></tr>
     <tr><td><b>Negative likelihood ratio (LR−)</b><div class="hint">how much a negative result lowers the odds — ${wn(r.lrNeg.value)} effect</div></td><td class="mono">${r.lrNeg.value}</td><td class="mono">${r.lrNeg.lo} – ${r.lrNeg.hi}</td><td></td></tr>`}
+let forestN=0;
 function subTable(g){const hasSpec=g.rows.some(r=>r.spec);
-  return `<h3 style="margin-top:12px">${esc(g.group)}</h3><table><thead><tr><th>Subgroup</th><th>Sensitivity (95 % CI)</th>${hasSpec?'<th>Specificity (95 % CI)</th>':''}</tr></thead><tbody>${g.rows.map(r=>`<tr><td>${esc(r.label)}</td><td class="mono">${ciTxt(r)} <span class="hint">${r.lo!=null?'('+ciRange(r)+') ':''}${r.k!=null?r.k+'/'+r.n:''}</span></td>${hasSpec?`<td class="mono">${r.spec?ciTxt(r.spec)+' <span class="hint">('+ciRange(r.spec)+') '+r.spec.k+'/'+r.spec.n+'</span>':'—'}</td>`:''}</tr>`).join('')}</tbody></table>
+  const plot=g.rows.filter(r=>r.value!=null&&r.lo!=null).length>=2?`forest${++forestN}`:null;
+  if(plot)FORESTS.push({id:plot,g});
+  return `<h3 style="margin-top:12px">${esc(g.group)}</h3>
+  ${plot?`<div style="position:relative;height:${Math.max(96,28*g.rows.length+46)}px;margin:4px 0 10px"><canvas id="${plot}"></canvas></div>`:''}<table><thead><tr><th>Subgroup</th><th>Sensitivity (95 % CI)</th>${hasSpec?'<th>Specificity (95 % CI)</th>':''}</tr></thead><tbody>${g.rows.map(r=>`<tr><td>${esc(r.label)}</td><td class="mono">${ciTxt(r)} <span class="hint">${r.lo!=null?'('+ciRange(r)+') ':''}${r.k!=null?r.k+'/'+r.n:''}</span></td>${hasSpec?`<td class="mono">${r.spec?ciTxt(r.spec)+' <span class="hint">('+ciRange(r.spec)+') '+r.spec.k+'/'+r.spec.n+'</span>':'—'}</td>`:''}</tr>`).join('')}</tbody></table>
     ${(()=>{const tot=g.rows.reduce((a,r)=>a+(r.n||0),0);return g.rows.every(r=>r.n!=null)&&tot?`<p class="hint">Counts cover patients with this field recorded (${tot}).</p>`:''})()}`}
+let FORESTS=[];
+/* Post-test probability curve. A likelihood ratio is a number clinicians are told to trust but
+   that means nothing on its own: LR+ 27.5 moves a 2 % suspicion to 36 %, and a 50 % suspicion to
+   96 %. Two lines (after a positive, after a negative) against the no-information diagonal say
+   that directly. Both lines are named on the plot as well as in the legend, because the orange
+   sits below 3:1 against this surface. */
+function ptpChart(r){
+  const el=$('#ptp-'+r.id); if(!el||!window.Chart)return;
+  const post=(p,lr)=>{const o=p/(1-p)*lr;return 100*o/(1+o)};
+  const xs=[]; for(let p=1;p<=99;p++)xs.push(p);
+  // Label each line where the two are FURTHEST apart, not at the end: both curves converge on
+  // 100 % at the right edge, so end-labels landed on top of each other and were unreadable.
+  const yPos=xs.map(p=>post(p/100,r.lrPos.value)), yNeg=xs.map(p=>post(p/100,r.lrNeg.value));
+  let gapAt=0,gap=-1; yPos.forEach((v,i)=>{const d=Math.abs(v-yNeg[i]);if(d>gap){gap=d;gapAt=i}});
+  const endLabel={id:'endLabel'+r.id,afterDatasetsDraw(c){const ctx=c.ctx;ctx.save();
+    ctx.font='600 11px ui-sans-serif,system-ui';ctx.textBaseline='middle';ctx.textAlign='left';
+    c.data.datasets.forEach((ds,i)=>{if(ds.borderDash)return;const m=c.getDatasetMeta(i);const pt=m.data[gapAt];
+      if(!pt)return;const up=i===0;                       // positive curve labels above, negative below
+      ctx.fillStyle='#fff';ctx.lineWidth=3;ctx.strokeStyle='#fff';ctx.strokeText(ds.label,pt.x+6,pt.y+(up?-11:13));
+      ctx.fillStyle=ds.borderColor;ctx.fillText(ds.label,pt.x+6,pt.y+(up?-11:13))});ctx.restore()}};
+  valCharts.push(new Chart(el,{type:'line',
+    data:{labels:xs,datasets:[
+      {label:'after a positive',data:xs.map(p=>post(p/100,r.lrPos.value)),borderColor:'#0f6fde',backgroundColor:'#0f6fde',borderWidth:2,pointRadius:0,tension:.25},
+      {label:'after a negative',data:xs.map(p=>post(p/100,r.lrNeg.value)),borderColor:'#d9822b',backgroundColor:'#d9822b',borderWidth:2,pointRadius:0,tension:.25},
+      {label:'no change',data:xs.slice(),borderColor:'#c9d1dc',borderWidth:1,borderDash:[4,4],pointRadius:0}]},
+    plugins:[endLabel],
+    options:{animation:false,responsive:true,maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      scales:{x:{title:{display:true,text:'probability before the test (%)'},ticks:{maxTicksLimit:10,callback:(v,i)=>xs[i]%20===0?xs[i]:''},grid:{color:'#eef1f5'}},
+              y:{min:0,max:100,title:{display:true,text:'probability after (%)'},grid:{color:'#eef1f5'}}},
+      plugins:{legend:{display:true,position:'bottom',labels:{boxWidth:10,usePointStyle:true}},
+        tooltip:{callbacks:{title:c=>`If you suspected ${c[0].label} % before`,
+          label:c=>`${c.dataset.label}: ${Math.round(c.parsed.y)} %`}}}}}));
+}
+function forestChart({id,g}){
+  const rows=g.rows.filter(r=>r.value!=null&&r.lo!=null);
+  const labels=rows.map(r=>r.label);
+  const kind=(rows[0]||{}).kind||'value';
+  // single series: no legend box needed, the title names it. CI as a thin floating bar,
+  // estimate as a point on top, 2px surface ring so overlapping marks stay separable.
+  const el=$('#'+id); if(!el||!window.Chart)return;
+  valCharts.push(new Chart(el,{type:'bar',data:{labels,datasets:[
+    {label:'95 % CI',data:rows.map(r=>[r.lo,r.hi]),backgroundColor:'rgba(15,111,222,.18)',borderColor:'rgba(15,111,222,.55)',borderWidth:1,borderSkipped:false,barThickness:10},
+    {label:'estimate',type:'scatter',data:rows.map(r=>({x:r.value,y:r.label})),backgroundColor:'#0e1726',pointRadius:5,pointStyle:'rectRot'}]},
+    options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,
+      scales:{x:{min:0,max:100,title:{display:true,text:kind+' (%)'},grid:{color:'#eef1f5'}},y:{grid:{display:false},ticks:{autoSkip:false}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const r=rows[c.dataIndex];
+        return `${r.label}: ${r.value} % (95 % CI ${r.lo}–${r.hi})${r.k!=null&&r.n!=null?` · ${r.k} of ${r.n}`:''}`}}}}}}));
+}
 function reportCard(r,i){const E=EVID[r.evidence]||EVID.research;
   return `<div class="card vrep" id="v-${r.id}"><div class="row" style="justify-content:space-between;align-items:flex-start"><h2 style="margin:0">${i+1} · ${esc(r.title)}</h2><span class="${E[0]}" title="${esc(E[2])}">${E[1]}</span></div>
     <dl class="kv" style="margin-top:12px;grid-template-columns:190px 1fr">
@@ -2165,6 +2218,11 @@ function reportCard(r,i){const E=EVID[r.evidence]||EVID.research;
     </dl>
     ${r.metrics.length||r.lrPos||(r.extra||[]).length?`<h3 style="margin-top:14px">Results</h3><div class="grid g2"><div style="overflow-x:auto"><table><thead><tr><th>Measure</th><th>Value</th><th>95 % CI</th><th>Count</th></tr></thead><tbody>${valMetricRows(r.metrics)}${lrBlock(r)}${valMetricRows(r.extra||[])}</tbody></table></div>
       <div>${r.metrics.some(m=>m.lo!=null)?`<div style="position:relative;height:${Math.max(150,r.metrics.filter(m=>m.lo!=null).length*34+50)}px"><canvas id="vc-${r.id}"></canvas></div><p class="hint">Bars = 95 % confidence interval, dot = estimate. A wide bar means the data cannot pin the number down.</p>`:''}</div></div>`:''}
+    ${r.lrPos&&r.lrNeg?`<h3 style="margin-top:14px">What a result does to the probability</h3>
+      <p class="hint" style="margin-top:0">A likelihood ratio is only meaningful against what you already suspected. Read up from how likely you thought it was before the test, across to what the result leaves you with.</p>
+      <div style="position:relative;height:240px"><canvas id="ptp-${r.id}"></canvas></div>
+      <p class="hint">${(()=>{const f=(p,lr)=>{const o=p/(1-p)*lr;return Math.round(100*o/(1+o))};
+        return `At a pre-test probability of 20 %, a <b>positive</b> result here leaves <b>${f(0.2,r.lrPos.value)} %</b> and a <b>negative</b> result leaves <b>${f(0.2,r.lrNeg.value)} %</b>. The grey diagonal is a test that tells you nothing — the further a curve sits from it, the more the result moved you.`})()}</p>`:''}
     ${(r.subgroups||[]).map(subTable).join('')}
     <h3 style="margin-top:14px">What this means at the bedside</h3><ul class="bedside">${r.bedside.map(b=>`<li>${b}</li>`).join('')}</ul>
     <h3>Limits</h3><ul class="hint">${r.limits.map(l=>`<li>${esc(l)}</li>`).join('')}</ul>
@@ -2186,6 +2244,7 @@ function mlCard(m){const s=m.metrics,c=m.comparator,e=m.external;
     <p class="hint">${esc(m.note)}</p></div>`}
 let VAL=null;
 async function renderValidation(){
+  FORESTS=[]; forestN=0;
   $('#view').innerHTML='<h1>Validation</h1><div class="empty">Loading validation reports…</div>';
   try{VAL=await cachedFetch('data/validation.json','json')}catch(e){$('#view').innerHTML=`<h1>Validation</h1><div class="notice">Validation reports not available: ${esc(e.message)}</div>`;return}
   if(location.hash!=='#validation')return;
@@ -2210,6 +2269,8 @@ async function renderValidation(){
   $('#view').querySelectorAll('tr[data-v]').forEach(tr=>tr.onclick=()=>{const t=document.getElementById(tr.dataset.v);if(t)t.scrollIntoView({behavior:'smooth'})});
   $('#view').querySelectorAll('.toDisc').forEach(a=>a.onclick=e=>{e.preventDefault();location.hash='#discover';const go=()=>{const t=document.getElementById(a.dataset.d);if(t)t.scrollIntoView();else setTimeout(go,150)};setTimeout(go,300)});
   valCharts.forEach(c=>{try{c.destroy()}catch(e){}}); valCharts=[];
+  for(const fp of FORESTS)forestChart(fp);            // subgroup point-and-interval plots
+  for(const r of R)if(r.lrPos&&r.lrNeg)ptpChart(r);   // what a result does to the probability
   if(window.Chart)for(const r of R){const ms=r.metrics.filter(m=>m.lo!=null), el=$('#vc-'+r.id); if(!el||!ms.length)continue;
     valCharts.push(new Chart(el,{type:'bar',data:{labels:ms.map(m=>m.label),datasets:[
       {label:'95 % CI',data:ms.map(m=>[m.lo,m.hi]),backgroundColor:'rgba(15,111,222,.18)',borderColor:'rgba(15,111,222,.55)',borderWidth:1,borderSkipped:false,barThickness:14},
