@@ -423,24 +423,22 @@ synthetic `npm run test:ahi` (11/11 + 0 on clean breathing) still passes. Two li
 - there is no SpO₂ channel, so hypopneas are scored on the airflow drop only, without the
   desaturation criterion the AASM rules also allow.
 
-**Google models (HeAR, MedGemma).** Both need a Hugging Face token issued after accepting Google's
-Health AI Developer Foundations terms, and `huggingface.co` reachable from the workspace. MedGemma
-additionally needs more memory than this machine has (4B ≈ 8 GB). HeAR would embed breath sounds;
-MedGemma would draft the written report from the structured findings — it takes text and images
-only, so it never listens to the audio.
+**Google models (HeAR, MedGemma) — access granted and both tested 2026-11-18/19.** HeAR: see Discoveries 9 /
+`pipeline/hear_probe.py` (research only, too large for the page). MedGemma 4B: replaced by the fixed-template written
+summary (see "MedGemma report drafts").
 
 **Which Discoveries entries this holds up** (numbers are the position in `DISCOVER_MAP`):
 
 | # | Entry | Status | Blocker |
 |---|---|---|---|
-| 9 | HeAR embeddings vs hand-made features | blocked | HF token + network; compare against the existing probe (AUC 0.61 pooled, 0.52–0.56 within a release) |
+| 9 | HeAR embeddings vs this platform's models | **done 2026-11-19** (ICBHI + CirCor) | wheezes better (0.737 vs 0.68, CI above 0); crackles no difference; murmur worse than the network. Research only — not in the page |
 | 12 | Overnight apnea / AHI vs PSG | **pilot result** (PSG-Audio, 10 patients) | more patients, healthy sleepers, children |
 | 10 | Breath sounds across the lifespan | *has a result*, device-confounded | needs ICBHI (children→elderly on one device) for a true curve |
 | 11 | Adult diseases | *has a result* from KAUH | more adult data would strengthen it; not blocked |
 | 14 | Generalisation across stethoscopes | *has a result* (SPRSound vs KAUH) | per-device recalibration is open work, not missing access |
 | 13 | Murmur / S3 on real heart sounds | **done** — CirCor 1.0.3 ingested and validated | — |
 
-Only 9 is genuinely waiting on access; 12 has a pilot result. 10, 11 and 14 are published with their limits stated;
+9 now has a result (HeAR on ICBHI and CirCor); 12 has a pilot result. 10, 11 and 14 are published with their limits stated;
 13 was completed and its result is live.
 
 ## Source notes (checked 2026-11-08)

@@ -1,0 +1,296 @@
+{
+ "generated": "2026-11-19T00:02:01.050883+00:00",
+ "seed": 20261118,
+ "model": "google/hear-pytorch (HeAR, ViT-L MAE, 512-dim; Health AI Developer Foundations terms)",
+ "ref": "Baur et al., HeAR \u2014 Health Acoustic Representations, arXiv 2403.02522 (2024)",
+ "input": {
+  "icbhi": "one 2-s window centred on each expert breath cycle, 8 kHz \u2192 16 kHz",
+  "circor": "mean of up to four consecutive 2-s windows from the start of each valve recording, 4 kHz \u2192 16 kHz"
+ },
+ "probe": "logistic regression on standardised embeddings, C by patient-grouped 5-fold CV on training patients",
+ "browser": false,
+ "icbhi": {
+  "crackles": {
+   "auc": {
+    "value": 0.618,
+    "lo": 0.596,
+    "hi": 0.64
+   },
+   "n": 2715,
+   "positives": 983,
+   "patients": 50,
+   "vs": {
+    "current cycle model": {
+     "auc": {
+      "value": 0.611,
+      "lo": 0.589,
+      "hi": 0.634
+     },
+     "delta": 0.006,
+     "ci": [
+      -0.034,
+      0.053
+     ],
+     "verdict": "no clear difference"
+    }
+   },
+   "allHeldOut": {
+    "value": 0.618,
+    "lo": 0.596,
+    "hi": 0.64
+   },
+   "cv": [
+    {
+     "C": 0.01,
+     "cvAuc": 0.6897
+    },
+    {
+     "C": 0.1,
+     "cvAuc": 0.679
+    },
+    {
+     "C": 1.0,
+     "cvAuc": 0.6706
+    }
+   ],
+   "C": 0.01,
+   "byDevice": [
+    {
+     "device": "AKGC417L",
+     "cycles": 1825,
+     "auc": {
+      "value": 0.546,
+      "lo": 0.519,
+      "hi": 0.572
+     }
+    },
+    {
+     "device": "Litt3200",
+     "cycles": 144,
+     "auc": {
+      "value": 0.488,
+      "lo": 0.349,
+      "hi": 0.626
+     }
+    },
+    {
+     "device": "LittC2SE",
+     "cycles": 197,
+     "auc": {
+      "value": 0.732,
+      "lo": 0.648,
+      "hi": 0.817
+     }
+    },
+    {
+     "device": "Meditron",
+     "cycles": 549,
+     "auc": {
+      "value": 0.534,
+      "lo": 0.473,
+      "hi": 0.595
+     }
+    }
+   ]
+  },
+  "wheezes": {
+   "auc": {
+    "value": 0.737,
+    "lo": 0.712,
+    "hi": 0.762
+   },
+   "n": 2715,
+   "positives": 571,
+   "patients": 50,
+   "vs": {
+    "current cycle model": {
+     "auc": {
+      "value": 0.68,
+      "lo": 0.654,
+      "hi": 0.706
+     },
+     "delta": 0.057,
+     "ci": [
+      0.006,
+      0.117
+     ],
+     "verdict": "better"
+    }
+   },
+   "allHeldOut": {
+    "value": 0.737,
+    "lo": 0.712,
+    "hi": 0.762
+   },
+   "cv": [
+    {
+     "C": 0.01,
+     "cvAuc": 0.7843
+    },
+    {
+     "C": 0.1,
+     "cvAuc": 0.7765
+    },
+    {
+     "C": 1.0,
+     "cvAuc": 0.7619
+    }
+   ],
+   "C": 0.01,
+   "byDevice": [
+    {
+     "device": "AKGC417L",
+     "cycles": 1825,
+     "auc": {
+      "value": 0.738,
+      "lo": 0.709,
+      "hi": 0.768
+     }
+    },
+    {
+     "device": "Litt3200",
+     "cycles": 144,
+     "auc": {
+      "value": 0.598,
+      "lo": 0.501,
+      "hi": 0.694
+     }
+    },
+    {
+     "device": "LittC2SE",
+     "cycles": 197,
+     "auc": {
+      "value": 0.826,
+      "lo": 0.747,
+      "hi": 0.904
+     }
+    },
+    {
+     "device": "Meditron",
+     "cycles": 549,
+     "auc": {
+      "value": 0.654,
+      "lo": 0.569,
+      "hi": 0.739
+     }
+    }
+   ]
+  },
+  "deviceFromEmbedding": {
+   "accuracy": 0.889,
+   "majority": 0.672,
+   "devices": [
+    "AKGC417L",
+    "Litt3200",
+    "LittC2SE",
+    "Meditron"
+   ]
+  },
+  "trainPatients": 76,
+  "testPatients": 50
+ },
+ "circor": {
+  "auc": {
+   "value": 0.814,
+   "lo": 0.776,
+   "hi": 0.852
+  },
+  "n": 1185,
+  "positives": 194,
+  "patients": 349,
+  "vs": {
+   "murmur network (shipped)": {
+    "auc": {
+     "value": 0.91,
+     "lo": 0.882,
+     "hi": 0.939
+    },
+    "delta": -0.096,
+    "ci": [
+     -0.138,
+     -0.059
+    ],
+    "verdict": "worse"
+   },
+   "feature model": {
+    "auc": {
+     "value": 0.825,
+     "lo": 0.788,
+     "hi": 0.862
+    },
+    "delta": -0.011,
+    "ci": [
+     -0.061,
+     0.037
+    ],
+    "verdict": "no clear difference"
+   }
+  },
+  "allHeldOut": {
+   "value": 0.814,
+   "lo": 0.776,
+   "hi": 0.852
+  },
+  "cv": [
+   {
+    "C": 0.01,
+    "cvAuc": 0.7873
+   },
+   {
+    "C": 0.1,
+    "cvAuc": 0.7827
+   },
+   {
+    "C": 1.0,
+    "cvAuc": 0.7697
+   }
+  ],
+  "C": 0.01,
+  "trainPatients": 524,
+  "testPatients": 349,
+  "byBand": [
+   {
+    "band": "Infant",
+    "recordings": 76,
+    "hear": {
+     "value": 0.721,
+     "lo": 0.568,
+     "hi": 0.874
+    },
+    "network": {
+     "value": 0.84,
+     "lo": 0.712,
+     "hi": 0.967
+    }
+   },
+   {
+    "band": "Child",
+    "recordings": 908,
+    "hear": {
+     "value": 0.823,
+     "lo": 0.782,
+     "hi": 0.865
+    },
+    "network": {
+     "value": 0.92,
+     "lo": 0.89,
+     "hi": 0.95
+    }
+   },
+   {
+    "band": "Adolescent",
+    "recordings": 100,
+    "hear": {
+     "value": 0.784,
+     "lo": 0.645,
+     "hi": 0.924
+    },
+    "network": {
+     "value": 0.919,
+     "lo": 0.824,
+     "hi": 1.0
+    }
+   }
+  ]
+ }
+}

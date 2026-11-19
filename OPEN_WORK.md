@@ -8,18 +8,19 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 
 ## A. Ready to start as soon as one thing is provided
 
-### 1. Google HeAR embeddings for breath sounds (CLAUDE.md task 3, Discoveries 9)
-- **Status:** blocked on model access. A Hugging Face token is saved in the `auscultadb` environment (network secret for
-  `huggingface.co`, works — `whoami` returns 200), but the model answers *"you are not in the authorized list"*.
-- **Missing:** approval for `google/hear-pytorch` on the owner's Hugging Face account.
-- **To apply:**
-  1. Owner: open https://huggingface.co/google/hear-pytorch logged in, accept the Health AI Developer Foundations terms.
-  2. `pip install transformers` (HeAR loads with `trust_remote_code`), download `pytorch_model.bin` (~ size on the card).
-  3. New `pipeline/hear_embed.py`: resample each recording to 16 kHz, cut 2-s windows, embed, mean-pool per recording
-     (CirCor from `raw/circor`, ICBHI from `build/icbhi_wav`; SPRSound audio is not on disk, see item 6).
-  4. Linear probe with the same patient splits (`models.json` / `icbhi_models.json` testPids), compared with the current
-     features and with the spectrogram networks on the same held-out patients; report on Validation and Discoveries 9.
-  5. HeAR cannot run in the browser (size); results are research only unless a small distilled model passes the gate.
+### 1. Google HeAR embeddings for breath sounds (CLAUDE.md task 3, Discoveries 9) — **done 2026-11-19**
+- `pipeline/hear_embed.py` (ICBHI: one 2-s window per expert cycle; CirCor: up to four 2-s windows per valve recording,
+  16 kHz; ~50 min each on CPU) → `build/hear/*.npz` (also on the remote store) → `pipeline/hear_probe.py` (linear probe,
+  rules fixed beforehand) → `meta/hear_probe.json`, `discover.json['hear']`.
+- **Result (2026-11-19, same frozen held-out patients):** ICBHI crackles AUC 0.618 vs current cycle model
+  0.611 (Δ +0.006, CI -0.034 to 0.053: no clear difference); **wheezes 0.737 vs 0.68
+  (Δ +0.057, CI 0.006 to 0.117: better)**; CirCor murmur 0.814 vs the murmur network 0.91 (Δ -0.096:
+  worse) and vs the feature model 0.825 (no clear difference). The embedding names the ICBHI device in
+  89 % of held-out cycles (commonest 67 %), but within one device the wheeze AUC holds. Discoveries 9 and
+  report `hear` on Validation. Every probe chose C = 0.01 (edge of the fixed grid; not widened afterwards).
+- **Still open:** HeAR cannot run in the page (303 M parameters). To use the wheeze gain: distil it into a small network
+  that runs in the browser and validate that network on the same held-out patients (replacement rule as for the CNNs);
+  SPRSound / KAUH comparison needs their audio back (`raw/sprsound` re-clone; KAUH from Mendeley) — push them to the remote.
 
 ### 2. MedGemma to draft the written report (CLAUDE.md task 4) — **tested; replaced by a fixed template (2026-11-19)**
 - **Done:** `pipeline/medgemma_draft.py` runs `google/medgemma-4b-it` offline (CPU, bf16, ~1 min per draft) on the page's own
