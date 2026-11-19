@@ -121,6 +121,26 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     // the validation summary must never print a metric under the wrong column heading
     await pg.goto(url('#validation')); await pg.waitForTimeout(1200);
     await pg.waitForFunction(() => document.querySelectorAll('#view canvas').length > 3, null, { timeout: 20000 }).catch(() => {});
+    // Analyze: a model that failed the gate must never show a green "beats the baseline" tile,
+    // and every multi-class model gets a per-class AUC plot against the chance line.
+    await pg.goto(url('#analyze')); await pg.waitForTimeout(2500);
+    const gapT = await pg.evaluate(async () => {
+      const M = await (await fetch('data/models.json')).json();
+      const list = Array.isArray(M.models || M) ? (M.models || M) : Object.values(M.models || M);
+      const failed = list.filter(m => m && m.gate && !m.gate.deploy).length;
+      const tiles = [...document.querySelectorAll('#view div')]
+        .filter(d => /\bpts\b/.test(d.textContent) && d.children.length === 2 && d.textContent.length < 400)
+        .map(d => ({ green: getComputedStyle(d).backgroundColor === 'rgb(228, 246, 236)',
+                     caveat: /still failed validation/.test(d.textContent) }));
+      return { failed, tiles: tiles.length, green: tiles.filter(t => t.green).length,
+               caveated: tiles.filter(t => t.caveat).length,
+               auc: document.querySelectorAll('canvas[id^="mauc-"]').length,
+               collapsed: [...document.querySelectorAll('#view canvas')].filter(c => c.width <= 50).length };
+    });
+    check(gapT.tiles >= 3 && gapT.green + gapT.failed <= gapT.tiles && !gapT.collapsed,
+      `analyze: ${gapT.tiles} baseline-gap tiles, ${gapT.green} green, ${gapT.failed} failed models (${gapT.caveated} caveated), ${gapT.auc} AUC plots`);
+    await pg.goto(url('#validation')); await pg.waitForTimeout(1200);
+
     // every subgroup with intervals gets a point-and-interval plot, every LR report a
     // post-test probability curve, and no canvas may render collapsed
     const vch = await pg.evaluate(() => {

@@ -2781,6 +2781,17 @@ function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">swi
       ${m.gate.deploy?'':`<dt>${isExp(m)?'Why it failed':'Why it is off'}</dt><dd class="bad-t" style="font-weight:500">${m.gate.reasons.map(esc).join('; ')}</dd>`}
       ${m.ageGate?`<dt>Runs only for</dt><dd>${m.ageRange[0]===0?'patients under '+m.ageRange[1]:'patients aged '+m.ageRange[0]+'–'+m.ageRange[1]} — the ages it was trained on</dd>`:''}
       ${isExp(m)?`<dt>Status</dt><dd>Switched on by the owner on ${esc(m.override.date)} despite failing validation. Its output is research-only and is shown with these failures beside it.</dd>`:''}</dl>
+    ${(()=>{const a=m.test.accuracy,b=m.majority; if(!a||b==null)return '';
+      // "90.6 %" and "83.6 %" as rows 1 and 2 of a table make the reader do the subtraction, and
+      // for the failed models the gap is NEGATIVE - the thing that matters most was the easiest to miss.
+      const g=+(a.value-(b.value!=null?b.value:b)).toFixed(1), beats=g>0, passed=!!m.gate.deploy;
+      // Beating the commonest class is ONE gate criterion. lung_pattern_adult clears it by 17 pts
+      // and still fails on macro AUC and on being chance-level for heart failure, so the tile is
+      // only green when the model passed the gate as a whole - never on the gap alone.
+      const tone=passed&&beats?['#e4f6ec','#1f9d55']:beats?['#fff6e5','#8a5a00']:['#fff7f7','#d64545'];
+      return `<div class="row" style="gap:10px;align-items:baseline;margin-top:10px;padding:8px 12px;border-radius:6px;background:${tone[0]}">
+        <b style="font-size:20px;color:${tone[1]}">${g>0?'+':''}${g} pts</b>
+        <span class="hint">${beats?'better than always answering the commonest class':'<b>no better than always answering the commonest class</b>'} — ${a.value} % vs ${b.value!=null?b.value:b} %${beats&&!passed?'. <b>It still failed validation</b> on other grounds: '+esc(m.gate.reasons.join('; ')):''}</span></div>`})()}
     <div class="grid g2" style="margin-top:8px"><div style="overflow-x:auto"><table><thead><tr><th>Held-out</th><th>Value (95 % CI)</th></tr></thead><tbody>
       <tr><td>Top answer correct</td><td class="mono">${pc(t.accuracy)}</td></tr><tr><td>Baseline: always answering the commonest class</td><td class="mono">${pc(m.majority)}</td></tr>
       ${m.confound?`<tr><td>${esc(m.confound.what)}</td><td class="mono">${pc(m.confound)}</td></tr>`:''}
@@ -2790,10 +2801,30 @@ function modelCard(m){const t=m.test,st=m.gate.deploy?'<span class="pill ok">swi
       ${m.external?`<tr><td>External: ${esc(m.external.data)} — macro AUC</td><td class="mono">${m.external.macroAuc}</td></tr>`:''}
       ${(()=>{const rb=MODELS.robustness&&MODELS.robustness.models[m.id];if(!rb)return '';const w=rb.perClass.reduce((a,c)=>c.p95AbsShift>a.p95AbsShift?c:a),fl=rb.perClass.reduce((a,c)=>a+c.flagChanged,0);
         return `<tr><td>Compressed audio (${rb.recordings} recordings as 32 kbps MP3 vs original WAV)</td><td class="mono">median shift ≤ ${Math.max(...rb.perClass.map(c=>c.medianAbsShift))} pts · 95th pct ${w.p95AbsShift} pts · a flag changed in ${fl} of ${rb.recordings*rb.perClass.length} class decisions</td></tr>`})()}</tbody></table>
+      ${t.perClass.filter(c=>c.auc&&c.auc.lo!=null).length>=2?`<div style="position:relative;height:${Math.max(110,30*t.perClass.length+46)}px;margin-top:10px"><canvas id="mauc-${m.id}"></canvas></div>
+      <p class="hint">AUC per class with its 95 % interval. The dashed line is 0.5 — chance. A class whose interval touches it carries no usable signal.</p>`:''}
       <table style="margin-top:10px"><thead><tr><th>Class</th><th>AUC (95 % CI)</th><th>When flagged: sensitivity</th><th>specificity</th></tr></thead><tbody>${t.perClass.map((c,k)=>{const f=t.flags&&t.flags[k];return `<tr><td>${esc(c.class)} <span class="hint">n=${c.n}</span></td><td class="mono">${c.auc?`${c.auc.value} <span class="hint">(${c.auc.lo}–${c.auc.hi})</span>`:'—'}</td><td class="mono">${f?pc(f.sens):'—'}</td><td class="mono">${f?pc(f.spec):'—'}</td></tr>`}).join('')}</tbody></table>
       <p class="hint">“Flagged” = score at or above a level fixed on the training patients so that 90 % of those without the class stay unflagged.</p></div>
       <div><div style="position:relative;height:200px"><canvas id="mc-${m.id}"></canvas></div><p class="hint">Calibration on held-out recordings: when the model’s top answer has a given confidence (x), how often it is right (bars). Bars at the diagonal mean its probabilities can be taken at face value. Brier score ${t.brier}.</p></div></div></div>`}
-function drawModelCharts(m){const el=$('#mc-'+m.id); if(!el||!window.Chart)return; const b=m.test.calibration;
+function drawAucChart(m){
+  const el=$('#mauc-'+m.id); if(!el||!window.Chart)return;
+  const cs=(m.test.perClass||[]).filter(c=>c.auc&&c.auc.lo!=null); if(cs.length<2)return;
+  // a class whose interval crosses 0.5 is indistinguishable from chance — draw that line so the
+  // reader does not have to compare six numbers against a remembered threshold
+  const chance={id:'chance'+m.id,afterDraw(c){const x=c.scales.x,a=c.chartArea,px=x.getPixelForValue(0.5);
+    if(px<a.left||px>a.right)return;const g=c.ctx;g.save();g.strokeStyle='#8b97a5';g.lineWidth=1;g.setLineDash([4,4]);
+    g.beginPath();g.moveTo(px,a.top);g.lineTo(px,a.bottom);g.stroke();
+    g.setLineDash([]);g.fillStyle='#8b97a5';g.font='10px ui-sans-serif,system-ui';g.textAlign='center';g.fillText('chance',px,a.top-2);g.restore()}};
+  valCharts.push(new Chart(el,{type:'bar',data:{labels:cs.map(c=>c.class),datasets:[
+    {label:'95 % CI',data:cs.map(c=>[c.auc.lo,c.auc.hi]),backgroundColor:'rgba(15,111,222,.18)',borderColor:'rgba(15,111,222,.55)',borderWidth:1,borderSkipped:false,barThickness:10},
+    {label:'AUC',type:'scatter',data:cs.map(c=>({x:c.auc.value,y:c.class})),backgroundColor:'#0e1726',pointRadius:5,pointStyle:'rectRot'}]},
+    plugins:[chance],
+    options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,layout:{padding:{top:12}},
+      scales:{x:{min:.3,max:1,title:{display:true,text:'ROC AUC'},grid:{color:'#eef1f5'}},y:{grid:{display:false},ticks:{autoSkip:false}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const k=cs[c.dataIndex];
+        return `${k.class}: AUC ${k.auc.value} (95 % CI ${k.auc.lo}–${k.auc.hi})${k.auc.lo<=0.5?' — touches chance':''}`}}}}}}));
+}
+function drawModelCharts(m){drawAucChart(m); const el=$('#mc-'+m.id); if(!el||!window.Chart)return; const b=m.test.calibration;
   anCharts.push(new Chart(el,{type:'bar',data:{labels:b.map(x=>`${Math.round(100*x.range[0])}–${Math.round(100*x.range[1])} %`),datasets:[
     {label:'how often right',data:b.map(x=>Math.round(1000*x.accuracy)/10),backgroundColor:'rgba(15,111,222,.55)'},
     {label:'mean confidence',type:'line',data:b.map(x=>Math.round(1000*x.meanConf)/10),borderColor:'#0e1726',borderDash:[4,3],pointRadius:3}]},
