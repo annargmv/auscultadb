@@ -63,6 +63,8 @@ What it does:
 
 *Decision support for research and teaching — not a diagnosis.*
 
+New to the code? Start with [`ONBOARDING.md`](ONBOARDING.md).
+
 ## Quick start
 ```bash
 npm install
