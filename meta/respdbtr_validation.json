@@ -1,0 +1,455 @@
+{
+ "generated": "2026-11-21T23:04:30.878674+00:00",
+ "patients": 42,
+ "channels": 504,
+ "byGold": {
+  "0": 6,
+  "1": 5,
+  "2": 7,
+  "3": 7,
+  "4": 17
+ },
+ "source": "RespiratoryDatabase@TR (Altan, Kutlu et al.; Mendeley Data 10.17632/p9z4h98s6j.2), CC BY 4.0",
+ "zipSha256": "a3d5dc16bbad9a020538ed85551bf773c206222aec2132aed75d02a4ee75ae55",
+ "pAbn": {
+  "what": "abnormal-breath-sound probability (primary)",
+  "rho": 0.105,
+  "p": 0.5064447088399255,
+  "ci": [
+   -0.194,
+   0.395
+  ],
+  "n": 42,
+  "medianByGold": {
+   "0": 0.147,
+   "1": 0.181,
+   "2": 0.257,
+   "3": 0.184,
+   "4": 0.173
+  }
+ },
+ "pCont": {
+  "what": "wheeze / rhonchi probability",
+  "rho": 0.151,
+  "p": 0.33973400428764156,
+  "ci": [
+   -0.157,
+   0.426
+  ],
+  "n": 42,
+  "medianByGold": {
+   "0": 0.096,
+   "1": 0.128,
+   "2": 0.229,
+   "3": 0.156,
+   "4": 0.139
+  }
+ },
+ "wheezeShare": {
+  "what": "share of cycles with wheeze (ICBHI cycle model)",
+  "rho": -0.015,
+  "p": 0.9268176203350639,
+  "ci": [
+   -0.299,
+   0.271
+  ],
+  "n": 42,
+  "medianByGold": {
+   "0": 0.701,
+   "1": 0.8,
+   "2": 0.63,
+   "3": 0.588,
+   "4": 0.727
+  }
+ },
+ "gold01_vs_34": {
+  "auc": {
+   "value": 0.606,
+   "lo": 0.408,
+   "hi": 0.804
+  },
+  "n01": 11,
+  "n34": 24
+ },
+ "tracksSeverity": false,
+ "perPatient": [
+  {
+   "pid": "H002",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.385,
+   "pCont": 0.354,
+   "wheezeShare": 0.727,
+   "flaggedAbn": 7
+  },
+  {
+   "pid": "H003",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.193,
+   "pCont": 0.148,
+   "wheezeShare": 0.752,
+   "flaggedAbn": 5
+  },
+  {
+   "pid": "H004",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.173,
+   "pCont": 0.128,
+   "wheezeShare": 0.38,
+   "flaggedAbn": 6
+  },
+  {
+   "pid": "H005",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.269,
+   "pCont": 0.229,
+   "wheezeShare": 0.724,
+   "flaggedAbn": 7
+  },
+  {
+   "pid": "H006",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.362,
+   "pCont": 0.286,
+   "wheezeShare": 0.726,
+   "flaggedAbn": 8
+  },
+  {
+   "pid": "H007",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.184,
+   "pCont": 0.156,
+   "wheezeShare": 0.588,
+   "flaggedAbn": 5
+  },
+  {
+   "pid": "H008",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.132,
+   "pCont": 0.098,
+   "wheezeShare": 0.528,
+   "flaggedAbn": 3
+  },
+  {
+   "pid": "H009",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.119,
+   "pCont": 0.068,
+   "wheezeShare": 0.74,
+   "flaggedAbn": 1
+  },
+  {
+   "pid": "H010",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.267,
+   "pCont": 0.2,
+   "wheezeShare": 0.917,
+   "flaggedAbn": 10
+  },
+  {
+   "pid": "H011",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.124,
+   "pCont": 0.092,
+   "wheezeShare": 0.706,
+   "flaggedAbn": 4
+  },
+  {
+   "pid": "H012",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.188,
+   "pCont": 0.149,
+   "wheezeShare": 0.695,
+   "flaggedAbn": 5
+  },
+  {
+   "pid": "H013",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.678,
+   "pCont": 0.601,
+   "wheezeShare": 0.81,
+   "flaggedAbn": 11
+  },
+  {
+   "pid": "H014",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.14,
+   "pCont": 0.112,
+   "wheezeShare": 0.608,
+   "flaggedAbn": 4
+  },
+  {
+   "pid": "H015",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.166,
+   "pCont": 0.139,
+   "wheezeShare": 0.435,
+   "flaggedAbn": 6
+  },
+  {
+   "pid": "H016",
+   "gold": 0,
+   "channels": 12,
+   "pAbn": 0.154,
+   "pCont": 0.099,
+   "wheezeShare": 0.625,
+   "flaggedAbn": 4
+  },
+  {
+   "pid": "H017",
+   "gold": 1,
+   "channels": 12,
+   "pAbn": 0.181,
+   "pCont": 0.128,
+   "wheezeShare": 0.84,
+   "flaggedAbn": 5
+  },
+  {
+   "pid": "H018",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.506,
+   "pCont": 0.426,
+   "wheezeShare": 0.851,
+   "flaggedAbn": 10
+  },
+  {
+   "pid": "H021",
+   "gold": 0,
+   "channels": 12,
+   "pAbn": 0.308,
+   "pCont": 0.242,
+   "wheezeShare": 0.783,
+   "flaggedAbn": 9
+  },
+  {
+   "pid": "H022",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.141,
+   "pCont": 0.099,
+   "wheezeShare": 0.781,
+   "flaggedAbn": 3
+  },
+  {
+   "pid": "H023",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.166,
+   "pCont": 0.126,
+   "wheezeShare": 0.831,
+   "flaggedAbn": 5
+  },
+  {
+   "pid": "H024",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.387,
+   "pCont": 0.342,
+   "wheezeShare": 0.836,
+   "flaggedAbn": 11
+  },
+  {
+   "pid": "H025",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.124,
+   "pCont": 0.076,
+   "wheezeShare": 0.75,
+   "flaggedAbn": 2
+  },
+  {
+   "pid": "H026",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.303,
+   "pCont": 0.245,
+   "wheezeShare": 0.495,
+   "flaggedAbn": 11
+  },
+  {
+   "pid": "H028",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.151,
+   "pCont": 0.108,
+   "wheezeShare": 0.63,
+   "flaggedAbn": 3
+  },
+  {
+   "pid": "H029",
+   "gold": 1,
+   "channels": 12,
+   "pAbn": 0.224,
+   "pCont": 0.177,
+   "wheezeShare": 0.846,
+   "flaggedAbn": 7
+  },
+  {
+   "pid": "H030",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.257,
+   "pCont": 0.229,
+   "wheezeShare": 0.693,
+   "flaggedAbn": 8
+  },
+  {
+   "pid": "H031",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.35,
+   "pCont": 0.305,
+   "wheezeShare": 0.773,
+   "flaggedAbn": 9
+  },
+  {
+   "pid": "H032",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.129,
+   "pCont": 0.081,
+   "wheezeShare": 0.643,
+   "flaggedAbn": 2
+  },
+  {
+   "pid": "H033",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.415,
+   "pCont": 0.357,
+   "wheezeShare": 0.655,
+   "flaggedAbn": 9
+  },
+  {
+   "pid": "H034",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.105,
+   "pCont": 0.061,
+   "wheezeShare": 0.352,
+   "flaggedAbn": 0
+  },
+  {
+   "pid": "H035",
+   "gold": 4,
+   "channels": 12,
+   "pAbn": 0.23,
+   "pCont": 0.172,
+   "wheezeShare": 0.75,
+   "flaggedAbn": 7
+  },
+  {
+   "pid": "H036",
+   "gold": 3,
+   "channels": 12,
+   "pAbn": 0.163,
+   "pCont": 0.12,
+   "wheezeShare": 0.833,
+   "flaggedAbn": 5
+  },
+  {
+   "pid": "H037",
+   "gold": 0,
+   "channels": 12,
+   "pAbn": 0.234,
+   "pCont": 0.191,
+   "wheezeShare": 0.732,
+   "flaggedAbn": 8
+  },
+  {
+   "pid": "H038",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.103,
+   "pCont": 0.065,
+   "wheezeShare": 0.617,
+   "flaggedAbn": 1
+  },
+  {
+   "pid": "H039",
+   "gold": 1,
+   "channels": 12,
+   "pAbn": 0.12,
+   "pCont": 0.076,
+   "wheezeShare": 0.622,
+   "flaggedAbn": 2
+  },
+  {
+   "pid": "H040",
+   "gold": 0,
+   "channels": 12,
+   "pAbn": 0.098,
+   "pCont": 0.055,
+   "wheezeShare": 0.656,
+   "flaggedAbn": 0
+  },
+  {
+   "pid": "H041",
+   "gold": 0,
+   "channels": 12,
+   "pAbn": 0.141,
+   "pCont": 0.092,
+   "wheezeShare": 0.796,
+   "flaggedAbn": 4
+  },
+  {
+   "pid": "H042",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.479,
+   "pCont": 0.411,
+   "wheezeShare": 0.609,
+   "flaggedAbn": 11
+  },
+  {
+   "pid": "H043",
+   "gold": 1,
+   "channels": 12,
+   "pAbn": 0.138,
+   "pCont": 0.091,
+   "wheezeShare": 0.8,
+   "flaggedAbn": 2
+  },
+  {
+   "pid": "H044",
+   "gold": 2,
+   "channels": 12,
+   "pAbn": 0.141,
+   "pCont": 0.098,
+   "wheezeShare": 0.611,
+   "flaggedAbn": 3
+  },
+  {
+   "pid": "H045",
+   "gold": 1,
+   "channels": 12,
+   "pAbn": 0.206,
+   "pCont": 0.148,
+   "wheezeShare": 0.563,
+   "flaggedAbn": 9
+  },
+  {
+   "pid": "H050",
+   "gold": 0,
+   "channels": 12,
+   "pAbn": 0.124,
+   "pCont": 0.079,
+   "wheezeShare": 0.669,
+   "flaggedAbn": 2
+  }
+ ]
+}

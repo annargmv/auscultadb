@@ -3,14 +3,14 @@
 const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path'); const http = require('http');
 const ROOT = path.resolve(__dirname, '..'); const WEB = path.join(ROOT, 'web'); const NM = path.join(ROOT, 'node_modules');
 const MIME = { '.html': 'text/html', '.js': 'application/javascript', '.json': 'application/json', '.png': 'image/png', '.wav': 'audio/wav' };
-function serve(port) {
-  return new Promise(res => { const s = http.createServer((q, r) => { const f = path.join(WEB, decodeURIComponent(q.url.split('?')[0].split('#')[0]) || '/index.html');
+function serve(port, WEB_ = WEB) {
+  return new Promise(res => { const s = http.createServer((q, r) => { const f = path.join(WEB_, decodeURIComponent(q.url.split('?')[0].split('#')[0]) || '/index.html');
     const file = fs.existsSync(f) && fs.statSync(f).isDirectory() ? path.join(f, 'index.html') : f;
-    if (!file.startsWith(WEB) || !fs.existsSync(file)) { r.writeHead(404); r.end(); return }
+    if (!file.startsWith(WEB_) || !fs.existsSync(file)) { r.writeHead(404); r.end(); return }
     r.writeHead(200, { 'Content-Type': MIME[path.extname(file)] || 'application/octet-stream' }); fs.createReadStream(file).pipe(r) }).listen(port, () => res(s)) });
 }
-async function open({ port = 8770, offline = true, viewport = { width: 1360, height: 1000 } } = {}) {
-  const server = await serve(port);
+async function open({ port = 8770, offline = true, viewport = { width: 1360, height: 1000 }, root = WEB } = {}) {
+  const server = await serve(port, root);
   const browser = await chromium.launch({ args: ['--autoplay-policy=no-user-gesture-required'] }); const ctx = await browser.newContext({ viewport });
   if (offline) {
     await ctx.route('https://unpkg.com/**', r => { const m = r.request().url().match(/wavesurfer\.js@[^/]+\/(.+)$/); r.fulfill({ status: 200, contentType: 'application/javascript', body: fs.readFileSync(path.join(NM, 'wavesurfer.js', m[1])) }) });

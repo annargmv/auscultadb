@@ -1,0 +1,171 @@
+<title>AuscultaDB Clinical Brief</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&family=Space+Grotesk:wght@500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one 60rem column — a skills table, then one card per recording (sound left, outputs with their own validation right),
+   then conclusions with the two charts that carry the adult claims. */
+:root{
+  --bg:#f4f6f7; --panel:#ffffff; --ink:#13202a; --muted:#516170; --line:#dbe2e7; --soft:#eef2f5;
+  --accent:#0d6e7a; --accent-soft:#e1f0f2; --ok:#1c7a48; --ok-soft:#e1f2e8; --warn:#8a5b0c; --warn-soft:#f6edda; --bad:#a63030; --bad-soft:#f7e4e4;
+  --wave:#8fb4c9; --prog:#0d6e7a;
+  --f-head:'Space Grotesk',ui-sans-serif,system-ui,sans-serif; --f-body:'Public Sans',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1418; --panel:#151d23; --ink:#e3eaee; --muted:#a2b1bb; --line:#2a3741; --soft:#1b252c;
+  --accent:#5cc0cc; --accent-soft:#16343a; --ok:#6fd09a; --ok-soft:#173025; --warn:#e3b66b; --warn-soft:#33291a; --bad:#f19090; --bad-soft:#3a1e1e; --wave:#3f6274; --prog:#5cc0cc; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1418; --panel:#151d23; --ink:#e3eaee; --muted:#a2b1bb; --line:#2a3741; --soft:#1b252c;
+  --accent:#5cc0cc; --accent-soft:#16343a; --ok:#6fd09a; --ok-soft:#173025; --warn:#e3b66b; --warn-soft:#33291a; --bad:#f19090; --bad-soft:#3a1e1e; --wave:#3f6274; --prog:#5cc0cc; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15.5px/1.55 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+main{max-width:60rem;margin:0 auto;padding-block:36px 64px;display:flex;flex-direction:column;gap:34px}
+h1,h2,h3{font-family:var(--f-head);margin:0;line-height:1.2;text-wrap:balance}
+h1{font-size:2rem;font-weight:600} h2{font-size:1.3rem;font-weight:600} h3{font-size:1.02rem;font-weight:600}
+p{margin:0;max-width:70ch}
+.eyebrow{font:500 .72rem/1 var(--f-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+header{display:flex;flex-direction:column;gap:10px}
+.lede{color:var(--muted);font-size:1.02rem}
+.notdx{align-self:flex-start;font:500 .78rem/1 var(--f-mono);padding:6px 9px;border-radius:6px;background:var(--bad-soft);color:var(--bad)}
+section{display:flex;flex-direction:column;gap:12px;min-width:0}
+.hint{color:var(--muted);font-size:.88rem}
+.tbl{overflow-x:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;min-width:34rem;font-size:.92rem}
+th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:500 .7rem/1.3 var(--f-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--soft)}
+td.num{font-family:var(--f-mono);font-size:.86rem;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;font:500 .7rem/1 var(--f-mono);padding:4px 7px;border-radius:999px;white-space:nowrap}
+.pill.works{background:var(--ok-soft);color:var(--ok)} .pill.partly{background:var(--warn-soft);color:var(--warn)} .pill.fails{background:var(--bad-soft);color:var(--bad)}
+.pill.flag{background:var(--bad-soft);color:var(--bad)} .pill.noflag{background:var(--soft);color:var(--muted)}
+.cases{display:flex;flex-direction:column;gap:14px}
+.case{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:16px}
+@media (max-width:760px){.case{grid-template-columns:1fr}}
+.case .meta{display:flex;flex-direction:column;gap:6px;min-width:0}
+.case .n{font:500 .72rem/1 var(--f-mono);color:var(--accent)}
+.who{font-size:.86rem;color:var(--muted)}
+.ref{font-size:.86rem;background:var(--soft);border-radius:6px;padding:6px 8px}
+.ref b{font-weight:600}
+.wave{min-height:150px;border-radius:6px;overflow:hidden;background:var(--soft)}
+.play{align-self:flex-start;font:500 .8rem/1 var(--f-body);padding:7px 11px;border-radius:7px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.play:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.outs{display:flex;flex-direction:column;gap:10px;min-width:0}
+.out{display:flex;flex-direction:column;gap:3px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.out:last-child{border-bottom:0;padding-bottom:0}
+.out .row{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.out .skill{font-weight:600}
+.out .val{font:500 1.05rem/1 var(--f-mono);font-variant-numeric:tabular-nums}
+.out .vs{font:400 .82rem/1 var(--f-mono);color:var(--muted)}
+.out .val-text{font-size:.84rem;color:var(--muted)}
+.concl{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.concl ol{margin:0;padding-left:1.3rem;display:flex;flex-direction:column;gap:8px}
+.concl li{max-width:72ch}
+.charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.charts{grid-template-columns:1fr}}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.chart .box{position:relative;height:250px}
+ul.nr{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px}
+footer{border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font-size:.84rem;display:flex;flex-direction:column;gap:4px}
+.err{color:var(--bad)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<main>
+  <header>
+    <div class="eyebrow">Clinical brief · research and teaching</div>
+    <h1>What a stethoscope recording can tell us today</h1>
+    <p class="lede">Heart and lung sounds from open, real recordings, analysed by the AuscultaDB code. Only the skills that held up on patients the models never saw are shown, and each result sits next to its own validation.</p>
+    <span class="notdx">Not a diagnostic device. No output here is a diagnosis.</span>
+  </header>
+
+  <section>
+    <h2>What it measures, and how well</h2>
+    <div class="tbl"><table id="skills"><thead><tr><th>Skill</th><th>Tested on</th><th>Result</th><th><span class="sr" style="position:absolute;left:-9999px">Status</span></th></tr></thead><tbody></tbody></table></div>
+    <p class="hint">AUC: 0.5 is chance, 0.7–0.8 moderate, 0.8–0.9 good, above 0.9 excellent. ICC: agreement between two measurements of the same thing, 1 = identical.</p>
+  </section>
+
+  <section>
+    <h2>A batch of 10 recordings</h2>
+    <p class="hint" id="pickRule">One recording was drawn at random within each group before any output was looked at; every output is shown as it came out.</p>
+    <div class="cases" id="cases"></div>
+  </section>
+
+  <section>
+    <h2>What the batch and the tests show</h2>
+    <div class="concl"><ol id="concl"></ol></div>
+    <div class="charts">
+      <div class="chart"><h3>Heart rate: stethoscope vs ECG, adults</h3><div class="box"><canvas id="cHr" aria-label="Scatter of heart rate from heart sounds against heart rate from ECG"></canvas></div><p class="hint" id="cHrNote"></p></div>
+      <div class="chart"><h3>Murmur network on adult databases</h3><div class="box"><canvas id="cAuc" aria-label="AUC with 95 % interval per adult database"></canvas></div><p class="hint">Bars: 95 % interval of the AUC; dot: estimate. The dashed line is the 0.70 level the adult claim needed.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Not ready, and not shown</h2>
+    <ul class="nr" id="notReady"></ul>
+  </section>
+
+  <footer id="sources"></footer>
+</main>
+
+<script src="https://unpkg.com/wavesurfer.js@7.12.12/dist/wavesurfer.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7.12.12/dist/plugins/spectrogram.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+<script>
+(async function(){
+  const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  let B; try{B=await (await fetch('data/brief.json')).json()}catch(e){$('#cases').innerHTML=`<p class="err">Could not load the results (${esc(e.message)}).</p>`;return}
+  window.__brief=B;
+  const label={works:'works',partly:'moderate',fails:'fails'};
+  $('#skills tbody').innerHTML=B.skills.map(s=>`<tr><td>${esc(s.skill)}</td><td>${esc(s.evidence)}</td><td class="num">${esc(s.result)}</td><td><span class="pill ${s.status}">${label[s.status]}</span></td></tr>`).join('');
+  $('#cases').innerHTML=B.cases.map((c,i)=>`<article class="case" id="case-${i}">
+    <div class="meta"><div class="n">${i+1} of ${B.cases.length} · ${c.adult?'adult':'child'} · ${c.group}</div><h3>${esc(c.title)}</h3><div class="who">${esc(c.who)}</div>
+      <div class="wave" id="w-${i}" role="img" aria-label="Waveform and spectrogram of recording ${i+1}"></div>
+      <button class="play" type="button" id="p-${i}" disabled>▶ Play</button>
+      <div class="ref"><b>Reference:</b> ${esc(c.reference)}</div>
+      <div class="hint">${esc(c.source)} · ${esc(c.licence)}</div></div>
+    <div class="outs">${c.outputs.map(o=>`<div class="out"><div class="row"><span class="skill">${esc(o.skill)}</span><span class="val">${esc(o.value)}</span>${o.flagText?`<span class="pill ${o.flag?'flag':'noflag'}">${esc(o.flagText)}</span>`:''}${o.ref?`<span class="vs">${esc(o.ref)}</span>`:''}</div><div class="val-text">${esc(o.validation)}</div></div>`).join('')}</div>
+  </article>`).join('');
+  // conclusions — every sentence built from the numbers in brief.json
+  const mur=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Murmur network').map(o=>({c,o})));
+  const murPos=mur.filter(x=>/murmur|valve|stenosis|abnormal/i.test(x.c.title+x.c.reference)&&!/no murmur|Normal/.test(x.c.reference)), murNeg=mur.filter(x=>!murPos.includes(x));
+  const hrRows=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Heart rate'&&o.ref)), ws=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill.startsWith('Wheeze')).map(o=>({c,o})));
+  const sk=n=>B.skills.find(s=>s.skill.startsWith(n));
+  const C=[];
+  C.push(`In this batch the murmur network flagged ${murPos.filter(x=>x.o.flag).length} of ${murPos.length} recordings with a murmur or valve disease and ${murNeg.filter(x=>x.o.flag).length} of ${murNeg.length} without. Ten recordings illustrate the outputs; the accuracy figures come from the validations beside each result, not from this batch.`);
+  const hm=sk('Murmur in adults');if(hm)C.push(`The murmur network was trained on children only. On adult recordings it has ${hm.result}; ${hm.status==='works'?'it meets the 0.70 level set before the test in both valve-disease databases.':'it does not meet the 0.70 level set before the test in both valve-disease databases, so adult murmur results are shown as moderate.'}`);
+  const ha=sk('Heart rate from heart sounds (adults)');if(ha)C.push(`Heart rate from a heart-sound recording agrees with the ECG in adults (${ha.result}${hrRows.length?`; in the batch ${hrRows.map(o=>o.value+' vs '+o.ref).join(', ')}`:''}). In a meta-analysis of 46 cohorts (1.2 million people), each 10 beats/min of resting heart rate carried a relative risk of 1.09 (1.07–1.12) for all-cause death (Zhang et al., CMAJ 2016, doi 10.1503/cmaj.150535), so this is the most usable signal for a longevity programme today.`);
+  const hv=sk('Heart-rate variability, RMSSD (adults)');C.push(hv?`Heart-rate variability (RMSSD) from heart sounds also agrees with the ECG in adults (${hv.result}).`:`Heart-rate variability (RMSSD) from heart sounds is validated in children and adolescents only; in adults it did not pass against the ECG and is not shown.`);
+  if(ws.length)C.push(`Wheeze and rhonchi are detected with moderate accuracy in adults (${sk('Wheeze')?sk('Wheeze').result:''}). In the batch ${ws.filter(x=>x.o.flag).length} of ${ws.length} lung recordings were flagged. COPD severity cannot be read from these breath sounds (ρ ${B.copd.rho}, p ${B.copd.p.toFixed(2)}, ${B.copd.n} patients).`);
+  C.push('Next step for a longevity cohort: recordings linked to an ECG and to follow-up (events, deaths), so that heart rate and HRV measured by stethoscope can be tested as risk markers rather than only as measurements.');
+  $('#concl').innerHTML=C.map(t=>`<li>${esc(t)}</li>`).join('');
+  $('#notReady').innerHTML=B.notReady.map(t=>`<li>${esc(t)}</li>`).join('');
+  $('#sources').innerHTML='<b>Data and licences</b>'+B.sources.map(s=>`<div>${esc(s)}</div>`).join('')+`<div>Built ${esc(B.generated.slice(0,10))} from the AuscultaDB pipeline; every number above is read from its result files.</div>`;
+  // charts (Chart.js, values computed by the pipeline)
+  if(window.Chart){
+    const ink=css('--ink'),mut=css('--muted'),line=css('--line'),acc=css('--accent'),warn=css('--warn');
+    Chart.defaults.color=mut;Chart.defaults.borderColor=line;Chart.defaults.font.family="'Public Sans',system-ui,sans-serif";
+    const pts=B.ecgPoints.map(([e,p])=>({x:e,y:p})),lo=Math.min(...pts.map(p=>Math.min(p.x,p.y)))-5,hi=Math.max(...pts.map(p=>Math.max(p.x,p.y)))+5;
+    new Chart($('#cHr'),{type:'scatter',data:{datasets:[{label:'recording',data:pts,pointRadius:2.5,backgroundColor:acc},{label:'identity',type:'line',data:[{x:lo,y:lo},{x:hi,y:hi}],borderColor:mut,borderDash:[4,4],pointRadius:0}]},
+      options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:lo,max:hi,title:{display:true,text:'ECG heart rate (bpm)'}},y:{min:lo,max:hi,title:{display:true,text:'heart-sound heart rate (bpm)'}}}}});
+    const hrS=sk('Heart rate from heart sounds (adults)');$('#cHrNote').textContent=`${pts.length} adult recordings (MIT database, simultaneous ECG)${hrS?' · '+hrS.result:''}.`;
+    const A=B.adultMurmur;
+    new Chart($('#cAuc'),{type:'bar',data:{labels:A.map(a=>`set ${a.db} (n ${a.n})`),datasets:[{label:'95 % interval',data:A.map(a=>[a.auc.lo,a.auc.hi]),backgroundColor:A.map(a=>'ac'.includes(a.db)?acc+'55':mut+'44'),borderColor:A.map(a=>'ac'.includes(a.db)?acc:mut),borderWidth:1,barPercentage:.5},
+      {label:'AUC',type:'scatter',data:A.map((a,i)=>({x:a.auc.value,y:i})),backgroundColor:ink,pointRadius:4}]},
+      options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=A[c.dataIndex];return `${a.what}: AUC ${a.auc.value} (${a.auc.lo}–${a.auc.hi})`}}}},
+        scales:{x:{min:0.4,max:1,title:{display:true,text:'AUC, abnormal vs normal'}},y:{type:'category',labels:A.map(a=>`set ${a.db} (n ${a.n})`)}}},
+      plugins:[{id:'ref',afterDraw(ch){const x=ch.scales.x.getPixelForValue(0.7),{top,bottom}=ch.chartArea,g=ch.ctx;g.save();g.strokeStyle=warn;g.setLineDash([4,4]);g.beginPath();g.moveTo(x,top);g.lineTo(x,bottom);g.stroke();g.restore()}}]});
+  }
+  // players: waveform + spectrogram drawn by wavesurfer from each recording's own audio
+  const ws_=[];
+  for(let i=0;i<B.cases.length;i++){const c=B.cases[i];
+    try{const j=await (await fetch(`audio/${c.id}.json`)).json(),b64=j[c.file],bin=atob(b64),u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);
+      const url=URL.createObjectURL(new Blob([u],{type:'audio/mpeg'}));
+      if(!window.WaveSurfer){$('#w-'+i).innerHTML='<p class="hint" style="padding:8px">Waveform library unavailable.</p>';continue}
+      const w=WaveSurfer.create({container:'#w-'+i,url,height:46,waveColor:css('--wave'),progressColor:css('--prog'),cursorColor:css('--ink'),normalize:true,sampleRate:8000,
+        plugins:WaveSurfer.Spectrogram?[WaveSurfer.Spectrogram.create({height:96,labels:false,frequencyMin:0,frequencyMax:1000,fftSamples:256,noverlap:192,scale:'linear',colorMap:'roseus',sampleRate:8000})]:[]});
+      const btn=$('#p-'+i);w.on('ready',()=>{btn.disabled=false;window.__ready=(window.__ready||0)+1});btn.onclick=()=>{ws_.forEach(o=>o!==w&&o.pause());w.playPause()};
+      w.on('play',()=>btn.textContent='❚❚ Pause');w.on('pause',()=>btn.textContent='▶ Play');w.on('finish',()=>btn.textContent='▶ Play');ws_.push(w)}
+    catch(e){$('#w-'+i).innerHTML=`<p class="err" style="padding:8px">Audio not loaded: ${esc(e.message)}</p>`}}
+})();
+</script>

@@ -26,7 +26,7 @@ from paths import ROOT
 os.environ.setdefault('HF_TOKEN', 'proxy-injected')
 from huggingface_hub import HfApi, snapshot_download   # noqa: E402
 
-LICENCE = {'raw/circor': 'ODC-By 1.0', 'raw/icbhi': 'research use only (ICBHI 2017) — never public', 'raw/psg_audio': 'CC BY 4.0',
+LICENCE = {'raw/circor': 'ODC-By 1.0', 'raw/icbhi': 'research use only (ICBHI 2017) — never public', 'raw/psg_audio': 'CC BY 4.0', 'raw/cinc2016': 'ODC-By 1.0 (PhysioNet/CinC Challenge 2016)', 'raw/respdbtr': 'CC BY 4.0 (RespiratoryDatabase@TR, Mendeley)',
            'build/icbhi_wav': 'derived from ICBHI — research use only', 'build/icbhi_cnn': 'derived from ICBHI — research use only',
            'build/cnn': 'derived from CirCor — ODC-By 1.0', 'build/hear': 'HeAR embeddings (HAI-DEF terms) of ICBHI (research use only) and CirCor (ODC-By 1.0)', 'build/seg': 'derived from CirCor — ODC-By 1.0'}
 SKIP = {'.git', '__pycache__', '.DS_Store'}
