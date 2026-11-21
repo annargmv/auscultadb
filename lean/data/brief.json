@@ -1,0 +1,1868 @@
+{
+ "generated": "2026-11-21T23:36:38.146852+00:00",
+ "seed": 20261121,
+ "threshold": 0.5927,
+ "skills": [
+  {
+   "skill": "Murmur at a heart valve (children)",
+   "evidence": "349 held-out children",
+   "result": "AUC 0.91",
+   "status": "works"
+  },
+  {
+   "skill": "Murmur in adults with valve disease",
+   "evidence": "409 + 31 adult recordings (external)",
+   "result": "set a AUC 0.687 · set c AUC 1.0",
+   "status": "partly"
+  },
+  {
+   "skill": "Heart rate from heart sounds (children)",
+   "evidence": "1,166 held-out recordings vs experts",
+   "result": "ICC 0.95",
+   "status": "works"
+  },
+  {
+   "skill": "Heart rate from heart sounds (adults)",
+   "evidence": "12 men at rest vs research-grade ECG (367 30-s windows)",
+   "result": "bias -0.5 bpm, ±10.3 bpm per window; session ICC 0.999",
+   "status": "partly"
+  },
+  {
+   "skill": "Heart-rate variability, RMSSD (children, adolescents)",
+   "evidence": "800 held-out recordings vs experts",
+   "result": "ICC 0.853 / 0.844",
+   "status": "works"
+  },
+  {
+   "skill": "Wheeze / rhonchi (adults)",
+   "evidence": "111 KAUH adults (external)",
+   "result": "AUC 0.761",
+   "status": "partly"
+  }
+ ],
+ "notReady": [
+  "Adult RMSSD against a research-grade ECG: ICC 0.734, bias 8.8 ms — just misses the rule set beforehand (ICC ≥ 0.75), so it is not shown for adults.",
+  "A murmur flag for adults: the flag level was set on children's recordings; on adult sets it flagged 20 % of abnormal recordings in one database (set a) and 100 % of normal ones in another (set f). Each stethoscope needs its own calibration before a flag is used in adults.",
+  "Crackles: the rule finds few crackles in adults, and the breath-sound model's crackle AUC on KAUH adults is 0.555.",
+  "COPD severity from breath sounds: no relation to GOLD stage in 42 patients (ρ 0.105, p 0.51).",
+  "Naming a disease from breath sounds: the adults' model reached AUC 0.679 on held-out patients and failed its gate.",
+  "Sleep apnea severity (AHI) from breath sounds: in a 10-patient pilot it found under half of the scored events."
+ ],
+ "cases": [
+  {
+   "id": "cinc-a0153",
+   "group": "heart",
+   "adult": true,
+   "positive": false,
+   "title": "Adult heart — normal",
+   "who": "Adult (MIT heart sounds database) · recorded with simultaneous ECG",
+   "reference": "Normal (Challenge label)",
+   "source": "PhysioNet/CinC 2016, set a",
+   "licence": "ODC-By 1.0",
+   "file": "a0153.mp3",
+   "dur": 30.65,
+   "outputs": [
+    {
+     "skill": "Murmur network",
+     "value": "34 %",
+     "flag": false,
+     "flagText": "not flagged",
+     "validation": "Adults in this database (409 recordings, never trained on): AUC 0.687 (weak); at the children's flag it finds 20 % of abnormal and leaves 99 % of normal unflagged."
+    },
+    {
+     "skill": "Heart rate",
+     "value": "63 bpm",
+     "ref": "ECG 63 bpm",
+     "validation": "Against a research-grade ECG (12 men at rest): bias -0.5 bpm, ±10.3 bpm per 30-s clip, within 1.2 bpm per session."
+    }
+   ]
+  },
+  {
+   "id": "cinc-a0251",
+   "group": "heart",
+   "adult": true,
+   "positive": true,
+   "title": "Adult heart — valve disease or murmur",
+   "who": "Adult (MIT heart sounds database) · recorded with simultaneous ECG",
+   "reference": "Confirmed cardiac diagnosis (Challenge label: abnormal)",
+   "source": "PhysioNet/CinC 2016, set a",
+   "licence": "ODC-By 1.0",
+   "file": "a0251.mp3",
+   "dur": 20.62,
+   "outputs": [
+    {
+     "skill": "Murmur network",
+     "value": "75 %",
+     "flag": true,
+     "flagText": "flagged",
+     "validation": "Adults in this database (409 recordings, never trained on): AUC 0.687 (weak); at the children's flag it finds 20 % of abnormal and leaves 99 % of normal unflagged."
+    },
+    {
+     "skill": "Heart rate",
+     "value": "79 bpm",
+     "ref": "ECG 77 bpm",
+     "validation": "Against a research-grade ECG (12 men at rest): bias -0.5 bpm, ±10.3 bpm per 30-s clip, within 1.2 bpm per session."
+    }
+   ]
+  },
+  {
+   "id": "cinc-c0026",
+   "group": "heart",
+   "adult": true,
+   "positive": true,
+   "title": "Adult heart — aortic stenosis or mitral regurgitation",
+   "who": "Older adult, ~75 y (Thessaloniki; diagnosis by echocardiography)",
+   "reference": "Confirmed cardiac diagnosis (Challenge label: abnormal)",
+   "source": "PhysioNet/CinC 2016, set c",
+   "licence": "ODC-By 1.0",
+   "file": "c0026.mp3",
+   "dur": 42.19,
+   "outputs": [
+    {
+     "skill": "Murmur network",
+     "value": "85 %",
+     "flag": true,
+     "flagText": "flagged",
+     "validation": "Adults in this database (31 recordings, never trained on): AUC 1.0 (excellent); at the children's flag it finds 79 % of abnormal and leaves 100 % of normal unflagged."
+    }
+   ]
+  },
+  {
+   "id": "circor-85119_AV",
+   "group": "heart",
+   "adult": false,
+   "positive": true,
+   "title": "Child heart — murmur",
+   "who": "Child, 6 y band, male · Aortic valve · 2nd right intercostal space",
+   "reference": "Murmur at this valve (expert):",
+   "source": "CirCor DigiScope (PhysioNet)",
+   "licence": "ODC-By 1.0",
+   "file": "85119_AV.mp3",
+   "dur": null,
+   "outputs": [
+    {
+     "skill": "Murmur network",
+     "value": "61 %",
+     "flag": true,
+     "flagText": "flagged",
+     "validation": "349 children never seen in training: AUC 0.91 (excellent); at this flag it finds 70 % of murmurs and leaves 94 % of normal valves unflagged."
+    },
+    {
+     "skill": "Heart rate",
+     "value": "93 bpm",
+     "validation": "Against experts' beat marks (1,166 recordings): ICC 0.95, 97 % within 5 bpm."
+    },
+    {
+     "skill": "HRV (RMSSD)",
+     "value": "42.6 ms",
+     "validation": "Against experts' beats: ICC 0.853 in children, bias -1.8 ms; not valid in infants."
+    }
+   ]
+  },
+  {
+   "id": "circor-50029_AV",
+   "group": "heart",
+   "adult": false,
+   "positive": false,
+   "title": "Child heart — no murmur",
+   "who": "Child, 6 y band, male · Aortic valve · 2nd right intercostal space",
+   "reference": "No murmur (expert)",
+   "source": "CirCor DigiScope (PhysioNet)",
+   "licence": "ODC-By 1.0",
+   "file": "50029_AV.mp3",
+   "dur": null,
+   "outputs": [
+    {
+     "skill": "Murmur network",
+     "value": "46 %",
+     "flag": false,
+     "flagText": "not flagged",
+     "validation": "349 children never seen in training: AUC 0.91 (excellent); at this flag it finds 70 % of murmurs and leaves 94 % of normal valves unflagged."
+    },
+    {
+     "skill": "Heart rate",
+     "value": "102 bpm",
+     "validation": "Against experts' beat marks (1,166 recordings): ICC 0.95, 97 % within 5 bpm."
+    },
+    {
+     "skill": "HRV (RMSSD)",
+     "value": "42.6 ms",
+     "validation": "Against experts' beats: ICC 0.853 in children, bias -1.8 ms; not valid in infants."
+    }
+   ]
+  },
+  {
+   "id": "kauh-KAUH_D096",
+   "group": "lung",
+   "adult": true,
+   "positive": false,
+   "title": "Adult lungs — healthy",
+   "who": "Adult, 66 y, female · Posterior right lower chest",
+   "reference": "Expert label: normal · diagnosis healthy adult (control)",
+   "source": "KAUH (Fraiwan et al., Mendeley)",
+   "licence": "CC BY 4.0",
+   "file": "KAUH_D096.mp3",
+   "dur": 15.47,
+   "outputs": [
+    {
+     "skill": "Wheeze / rhonchi",
+     "value": "6 %",
+     "flag": false,
+     "flagText": "not flagged",
+     "validation": "111 KAUH adults, model frozen beforehand: AUC 0.761 (moderate); finds 78 % of wheeze or rhonchi, leaves 56 % of others unflagged."
+    }
+   ]
+  },
+  {
+   "id": "kauh-KAUH_D101",
+   "group": "lung",
+   "adult": true,
+   "positive": true,
+   "title": "Adult lungs — asthma",
+   "who": "Adult, 12 y, female · Posterior left middle chest",
+   "reference": "Expert label: continuous sound (wheeze / rhonchi) · diagnosis asthma",
+   "source": "KAUH (Fraiwan et al., Mendeley)",
+   "licence": "CC BY 4.0",
+   "file": "KAUH_D101.mp3",
+   "dur": 13.55,
+   "outputs": [
+    {
+     "skill": "Wheeze / rhonchi",
+     "value": "18 %",
+     "flag": true,
+     "flagText": "flagged",
+     "validation": "111 KAUH adults, model frozen beforehand: AUC 0.761 (moderate); finds 78 % of wheeze or rhonchi, leaves 56 % of others unflagged."
+    }
+   ]
+  },
+  {
+   "id": "kauh-KAUH_D111",
+   "group": "lung",
+   "adult": true,
+   "positive": true,
+   "title": "Adult lungs — COPD",
+   "who": "Adult, 51 y, male · Posterior right lower chest",
+   "reference": "Expert label: continuous sound (wheeze / rhonchi) · diagnosis copd",
+   "source": "KAUH (Fraiwan et al., Mendeley)",
+   "licence": "CC BY 4.0",
+   "file": "KAUH_D111.mp3",
+   "dur": 17.07,
+   "outputs": [
+    {
+     "skill": "Wheeze / rhonchi",
+     "value": "15 %",
+     "flag": false,
+     "flagText": "not flagged",
+     "validation": "111 KAUH adults, model frozen beforehand: AUC 0.761 (moderate); finds 78 % of wheeze or rhonchi, leaves 56 % of others unflagged."
+    }
+   ]
+  },
+  {
+   "id": "kauh-KAUH_D054",
+   "group": "lung",
+   "adult": true,
+   "positive": false,
+   "title": "Adult lungs — heart failure",
+   "who": "Adult, 73 y, female · Posterior right lower chest",
+   "reference": "Expert label: crackles · diagnosis heart failure",
+   "source": "KAUH (Fraiwan et al., Mendeley)",
+   "licence": "CC BY 4.0",
+   "file": "KAUH_D054.mp3",
+   "dur": 14.06,
+   "outputs": [
+    {
+     "skill": "Wheeze / rhonchi",
+     "value": "5 %",
+     "flag": false,
+     "flagText": "not flagged",
+     "validation": "111 KAUH adults, model frozen beforehand: AUC 0.761 (moderate); finds 78 % of wheeze or rhonchi, leaves 56 % of others unflagged."
+    }
+   ]
+  },
+  {
+   "id": "tr-H014_L1",
+   "group": "lung",
+   "adult": true,
+   "positive": null,
+   "title": "Adult lungs — COPD, GOLD 4",
+   "who": "Adult with COPD · channel L1 of 12",
+   "reference": "GOLD stage 4 (pulmonologists: spirometry, chest X-ray, auscultation)",
+   "source": "RespiratoryDatabase@TR (Altan et al., Mendeley)",
+   "licence": "CC BY 4.0",
+   "file": "H014_L1.mp3",
+   "dur": 28.08,
+   "outputs": [
+    {
+     "skill": "Wheeze / rhonchi",
+     "value": "14 %",
+     "flag": false,
+     "flagText": "not flagged",
+     "validation": "111 KAUH adults, model frozen beforehand: AUC 0.761 (moderate); finds 78 % of wheeze or rhonchi, leaves 56 % of others unflagged."
+    },
+    {
+     "skill": "COPD severity",
+     "value": "not measured",
+     "validation": "No relation to GOLD stage in 42 COPD patients (ρ 0.105, p 0.51), so severity is not reported."
+    }
+   ]
+  }
+ ],
+ "ecgPoints": [
+  [
+   91.2,
+   90.9
+  ],
+  [
+   74.0,
+   74.1
+  ],
+  [
+   81.6,
+   81.9
+  ],
+  [
+   69.9,
+   68.6
+  ],
+  [
+   74.2,
+   73.7
+  ],
+  [
+   73.0,
+   71.9
+  ],
+  [
+   63.0,
+   63.2
+  ],
+  [
+   62.4,
+   62.4
+  ],
+  [
+   62.0,
+   61.4
+  ],
+  [
+   58.6,
+   58.7
+  ],
+  [
+   63.6,
+   63.7
+  ],
+  [
+   60.9,
+   61.2
+  ],
+  [
+   62.1,
+   62.2
+  ],
+  [
+   66.7,
+   67.7
+  ],
+  [
+   65.0,
+   65.1
+  ],
+  [
+   65.4,
+   65.4
+  ],
+  [
+   65.4,
+   65.4
+  ],
+  [
+   68.4,
+   67.9
+  ],
+  [
+   61.9,
+   62.2
+  ],
+  [
+   58.9,
+   58.9
+  ],
+  [
+   66.4,
+   66.5
+  ],
+  [
+   63.5,
+   63.6
+  ],
+  [
+   61.4,
+   61.5
+  ],
+  [
+   63.9,
+   64.0
+  ],
+  [
+   67.2,
+   67.3
+  ],
+  [
+   62.0,
+   62.6
+  ],
+  [
+   58.0,
+   58.0
+  ],
+  [
+   64.4,
+   64.5
+  ],
+  [
+   62.2,
+   62.3
+  ],
+  [
+   63.5,
+   63.5
+  ],
+  [
+   59.1,
+   59.1
+  ],
+  [
+   62.9,
+   63.0
+  ],
+  [
+   59.9,
+   60.5
+  ],
+  [
+   55.8,
+   55.9
+  ],
+  [
+   58.5,
+   58.5
+  ],
+  [
+   67.3,
+   66.4
+  ],
+  [
+   59.2,
+   59.6
+  ],
+  [
+   60.0,
+   60.1
+  ],
+  [
+   62.9,
+   63.0
+  ],
+  [
+   62.6,
+   62.8
+  ],
+  [
+   65.2,
+   65.1
+  ],
+  [
+   65.8,
+   65.8
+  ],
+  [
+   64.2,
+   64.2
+  ],
+  [
+   67.7,
+   67.7
+  ],
+  [
+   61.0,
+   61.4
+  ],
+  [
+   61.6,
+   61.7
+  ],
+  [
+   63.5,
+   63.4
+  ],
+  [
+   62.2,
+   62.3
+  ],
+  [
+   65.2,
+   65.3
+  ],
+  [
+   62.6,
+   62.8
+  ],
+  [
+   62.2,
+   62.3
+  ],
+  [
+   71.7,
+   71.7
+  ],
+  [
+   62.5,
+   62.6
+  ],
+  [
+   63.2,
+   63.3
+  ],
+  [
+   65.7,
+   65.8
+  ],
+  [
+   63.6,
+   63.0
+  ],
+  [
+   60.3,
+   60.5
+  ],
+  [
+   64.6,
+   65.1
+  ],
+  [
+   58.8,
+   58.8
+  ],
+  [
+   61.8,
+   61.9
+  ],
+  [
+   67.9,
+   68.0
+  ],
+  [
+   58.2,
+   58.3
+  ],
+  [
+   58.8,
+   59.2
+  ],
+  [
+   66.0,
+   66.0
+  ],
+  [
+   61.9,
+   62.0
+  ],
+  [
+   63.7,
+   63.8
+  ],
+  [
+   64.7,
+   64.0
+  ],
+  [
+   66.5,
+   66.6
+  ],
+  [
+   69.3,
+   69.9
+  ],
+  [
+   71.9,
+   72.0
+  ],
+  [
+   73.8,
+   73.9
+  ],
+  [
+   72.9,
+   71.9
+  ],
+  [
+   73.9,
+   74.1
+  ],
+  [
+   71.1,
+   72.1
+  ],
+  [
+   72.0,
+   72.1
+  ],
+  [
+   73.1,
+   73.2
+  ],
+  [
+   76.6,
+   76.4
+  ],
+  [
+   67.9,
+   68.9
+  ],
+  [
+   73.5,
+   73.7
+  ],
+  [
+   72.5,
+   72.6
+  ],
+  [
+   85.6,
+   85.6
+  ],
+  [
+   71.8,
+   71.9
+  ],
+  [
+   74.3,
+   73.8
+  ],
+  [
+   70.3,
+   70.4
+  ],
+  [
+   74.3,
+   74.4
+  ],
+  [
+   76.6,
+   76.7
+  ],
+  [
+   73.4,
+   73.9
+  ],
+  [
+   71.3,
+   71.4
+  ],
+  [
+   75.6,
+   75.6
+  ],
+  [
+   72.4,
+   73.0
+  ],
+  [
+   74.2,
+   73.6
+  ],
+  [
+   74.8,
+   75.4
+  ],
+  [
+   71.7,
+   71.4
+  ],
+  [
+   73.8,
+   73.4
+  ],
+  [
+   66.9,
+   66.9
+  ],
+  [
+   67.2,
+   67.3
+  ],
+  [
+   70.7,
+   70.8
+  ],
+  [
+   75.5,
+   76.1
+  ],
+  [
+   68.0,
+   68.1
+  ],
+  [
+   66.7,
+   66.7
+  ],
+  [
+   71.8,
+   71.8
+  ],
+  [
+   69.8,
+   68.9
+  ],
+  [
+   69.0,
+   69.1
+  ],
+  [
+   73.3,
+   73.1
+  ],
+  [
+   69.1,
+   69.5
+  ],
+  [
+   71.2,
+   70.9
+  ],
+  [
+   73.5,
+   73.7
+  ],
+  [
+   71.3,
+   71.4
+  ],
+  [
+   69.5,
+   69.8
+  ],
+  [
+   68.7,
+   68.2
+  ],
+  [
+   67.3,
+   67.2
+  ],
+  [
+   67.7,
+   67.4
+  ],
+  [
+   69.7,
+   69.8
+  ],
+  [
+   72.0,
+   71.3
+  ],
+  [
+   68.2,
+   67.6
+  ],
+  [
+   69.5,
+   69.1
+  ],
+  [
+   72.8,
+   73.3
+  ],
+  [
+   74.8,
+   75.0
+  ],
+  [
+   71.0,
+   71.1
+  ],
+  [
+   70.3,
+   70.4
+  ],
+  [
+   67.7,
+   67.7
+  ],
+  [
+   69.3,
+   69.0
+  ],
+  [
+   71.8,
+   72.0
+  ],
+  [
+   66.5,
+   66.6
+  ],
+  [
+   71.2,
+   71.0
+  ],
+  [
+   69.5,
+   69.3
+  ],
+  [
+   65.7,
+   65.5
+  ],
+  [
+   66.2,
+   66.3
+  ],
+  [
+   69.9,
+   64.6
+  ],
+  [
+   67.2,
+   67.3
+  ],
+  [
+   68.2,
+   68.3
+  ],
+  [
+   69.3,
+   69.3
+  ],
+  [
+   63.7,
+   63.6
+  ],
+  [
+   68.1,
+   68.8
+  ],
+  [
+   68.7,
+   69.2
+  ],
+  [
+   65.2,
+   65.3
+  ],
+  [
+   62.4,
+   62.3
+  ],
+  [
+   66.0,
+   66.4
+  ],
+  [
+   68.1,
+   67.7
+  ],
+  [
+   65.1,
+   65.2
+  ],
+  [
+   59.7,
+   59.8
+  ],
+  [
+   60.4,
+   60.6
+  ],
+  [
+   61.6,
+   61.0
+  ],
+  [
+   56.9,
+   56.7
+  ],
+  [
+   60.9,
+   60.5
+  ],
+  [
+   75.3,
+   74.9
+  ],
+  [
+   64.9,
+   65.3
+  ],
+  [
+   58.0,
+   59.0
+  ],
+  [
+   57.6,
+   57.9
+  ],
+  [
+   56.7,
+   56.1
+  ],
+  [
+   61.6,
+   62.4
+  ],
+  [
+   58.0,
+   58.1
+  ],
+  [
+   58.4,
+   58.5
+  ],
+  [
+   57.8,
+   57.9
+  ],
+  [
+   58.0,
+   58.1
+  ],
+  [
+   57.4,
+   57.4
+  ],
+  [
+   61.2,
+   61.7
+  ],
+  [
+   58.3,
+   58.5
+  ],
+  [
+   59.6,
+   59.6
+  ],
+  [
+   59.0,
+   59.9
+  ],
+  [
+   75.0,
+   76.2
+  ],
+  [
+   64.2,
+   64.4
+  ],
+  [
+   60.2,
+   59.9
+  ],
+  [
+   56.8,
+   56.3
+  ],
+  [
+   58.3,
+   59.3
+  ],
+  [
+   52.1,
+   52.5
+  ],
+  [
+   58.9,
+   58.7
+  ],
+  [
+   58.1,
+   58.9
+  ],
+  [
+   59.6,
+   60.2
+  ],
+  [
+   54.2,
+   54.1
+  ],
+  [
+   56.4,
+   56.9
+  ],
+  [
+   53.8,
+   53.9
+  ],
+  [
+   56.0,
+   55.9
+  ],
+  [
+   57.0,
+   57.1
+  ],
+  [
+   59.0,
+   59.6
+  ],
+  [
+   56.4,
+   56.5
+  ],
+  [
+   57.3,
+   57.5
+  ],
+  [
+   58.1,
+   58.7
+  ],
+  [
+   52.3,
+   53.2
+  ],
+  [
+   59.8,
+   60.4
+  ],
+  [
+   55.5,
+   56.3
+  ],
+  [
+   55.4,
+   55.6
+  ],
+  [
+   56.1,
+   56.2
+  ],
+  [
+   57.4,
+   57.8
+  ],
+  [
+   56.1,
+   56.1
+  ],
+  [
+   55.8,
+   55.9
+  ],
+  [
+   54.1,
+   54.2
+  ],
+  [
+   67.3,
+   66.7
+  ],
+  [
+   63.4,
+   63.4
+  ],
+  [
+   64.5,
+   64.9
+  ],
+  [
+   66.1,
+   66.2
+  ],
+  [
+   64.9,
+   65.0
+  ],
+  [
+   67.2,
+   67.3
+  ],
+  [
+   68.7,
+   68.8
+  ],
+  [
+   69.3,
+   69.4
+  ],
+  [
+   67.0,
+   66.7
+  ],
+  [
+   62.0,
+   62.1
+  ],
+  [
+   59.7,
+   60.5
+  ],
+  [
+   64.7,
+   65.7
+  ],
+  [
+   60.7,
+   60.8
+  ],
+  [
+   63.0,
+   63.0
+  ],
+  [
+   71.9,
+   72.0
+  ],
+  [
+   70.0,
+   70.1
+  ],
+  [
+   69.6,
+   70.2
+  ],
+  [
+   72.4,
+   73.1
+  ],
+  [
+   116.2,
+   69.8
+  ],
+  [
+   68.6,
+   66.6
+  ],
+  [
+   66.0,
+   66.5
+  ],
+  [
+   66.0,
+   66.1
+  ],
+  [
+   69.0,
+   69.5
+  ],
+  [
+   69.2,
+   69.3
+  ],
+  [
+   69.7,
+   69.6
+  ],
+  [
+   66.4,
+   66.3
+  ],
+  [
+   77.3,
+   75.8
+  ],
+  [
+   118.1,
+   76.3
+  ],
+  [
+   99.4,
+   66.5
+  ],
+  [
+   68.4,
+   68.4
+  ],
+  [
+   70.2,
+   70.5
+  ],
+  [
+   68.2,
+   68.3
+  ],
+  [
+   67.0,
+   66.4
+  ],
+  [
+   121.0,
+   76.5
+  ],
+  [
+   85.1,
+   63.2
+  ],
+  [
+   62.1,
+   62.4
+  ],
+  [
+   62.5,
+   62.7
+  ],
+  [
+   67.6,
+   67.8
+  ],
+  [
+   69.9,
+   68.7
+  ],
+  [
+   63.8,
+   63.9
+  ],
+  [
+   66.0,
+   66.6
+  ],
+  [
+   67.7,
+   67.8
+  ],
+  [
+   66.8,
+   65.4
+  ],
+  [
+   67.6,
+   67.6
+  ],
+  [
+   69.8,
+   70.1
+  ],
+  [
+   69.7,
+   69.9
+  ],
+  [
+   70.7,
+   71.9
+  ],
+  [
+   66.4,
+   65.6
+  ],
+  [
+   67.5,
+   68.1
+  ],
+  [
+   68.1,
+   68.3
+  ],
+  [
+   68.9,
+   68.5
+  ],
+  [
+   70.5,
+   70.4
+  ],
+  [
+   68.5,
+   68.6
+  ],
+  [
+   72.6,
+   73.1
+  ],
+  [
+   64.1,
+   64.2
+  ],
+  [
+   73.8,
+   73.8
+  ],
+  [
+   111.9,
+   71.6
+  ],
+  [
+   64.6,
+   64.4
+  ],
+  [
+   66.5,
+   65.8
+  ],
+  [
+   76.9,
+   76.5
+  ],
+  [
+   77.7,
+   77.8
+  ],
+  [
+   78.1,
+   77.9
+  ],
+  [
+   78.2,
+   78.4
+  ],
+  [
+   82.5,
+   83.2
+  ],
+  [
+   80.7,
+   80.6
+  ],
+  [
+   80.0,
+   80.1
+  ],
+  [
+   79.4,
+   80.1
+  ],
+  [
+   78.7,
+   79.1
+  ],
+  [
+   77.0,
+   77.1
+  ],
+  [
+   77.9,
+   78.1
+  ],
+  [
+   78.6,
+   78.7
+  ],
+  [
+   79.4,
+   79.5
+  ],
+  [
+   79.2,
+   79.3
+  ],
+  [
+   78.6,
+   78.6
+  ],
+  [
+   75.9,
+   76.5
+  ],
+  [
+   75.3,
+   75.6
+  ],
+  [
+   76.7,
+   76.8
+  ],
+  [
+   78.7,
+   78.8
+  ],
+  [
+   77.2,
+   77.3
+  ],
+  [
+   79.0,
+   78.9
+  ],
+  [
+   80.5,
+   80.3
+  ],
+  [
+   80.8,
+   80.9
+  ],
+  [
+   82.4,
+   82.5
+  ],
+  [
+   79.2,
+   79.4
+  ],
+  [
+   77.5,
+   77.4
+  ],
+  [
+   78.5,
+   78.4
+  ],
+  [
+   82.2,
+   82.3
+  ],
+  [
+   76.8,
+   77.2
+  ],
+  [
+   75.6,
+   75.6
+  ],
+  [
+   78.1,
+   78.1
+  ],
+  [
+   75.0,
+   75.1
+  ],
+  [
+   76.9,
+   77.0
+  ],
+  [
+   78.4,
+   78.4
+  ],
+  [
+   77.9,
+   78.0
+  ],
+  [
+   74.3,
+   74.4
+  ],
+  [
+   78.8,
+   78.7
+  ],
+  [
+   79.5,
+   79.7
+  ],
+  [
+   75.9,
+   76.1
+  ],
+  [
+   77.4,
+   77.5
+  ],
+  [
+   78.1,
+   78.3
+  ],
+  [
+   77.8,
+   77.5
+  ],
+  [
+   78.5,
+   78.6
+  ],
+  [
+   79.1,
+   79.2
+  ],
+  [
+   78.9,
+   79.4
+  ],
+  [
+   78.6,
+   78.6
+  ],
+  [
+   80.2,
+   80.2
+  ],
+  [
+   79.2,
+   78.7
+  ],
+  [
+   79.2,
+   79.4
+  ],
+  [
+   78.0,
+   78.2
+  ],
+  [
+   80.4,
+   80.6
+  ],
+  [
+   74.7,
+   74.8
+  ],
+  [
+   77.3,
+   77.5
+  ],
+  [
+   82.7,
+   83.1
+  ],
+  [
+   79.7,
+   79.9
+  ],
+  [
+   75.9,
+   77.4
+  ],
+  [
+   75.5,
+   75.1
+  ],
+  [
+   76.2,
+   76.5
+  ],
+  [
+   77.5,
+   77.6
+  ],
+  [
+   78.9,
+   78.3
+  ],
+  [
+   68.9,
+   68.4
+  ],
+  [
+   70.9,
+   70.9
+  ],
+  [
+   68.2,
+   68.5
+  ],
+  [
+   69.8,
+   70.6
+  ],
+  [
+   70.0,
+   70.4
+  ],
+  [
+   71.2,
+   70.7
+  ],
+  [
+   69.6,
+   69.6
+  ],
+  [
+   69.7,
+   69.8
+  ],
+  [
+   72.7,
+   72.5
+  ],
+  [
+   70.1,
+   70.2
+  ],
+  [
+   70.7,
+   70.0
+  ],
+  [
+   73.6,
+   74.3
+  ],
+  [
+   71.4,
+   70.9
+  ],
+  [
+   73.1,
+   73.2
+  ],
+  [
+   69.8,
+   69.9
+  ],
+  [
+   71.1,
+   72.4
+  ],
+  [
+   68.8,
+   72.1
+  ],
+  [
+   71.6,
+   73.8
+  ],
+  [
+   71.3,
+   70.1
+  ],
+  [
+   73.8,
+   74.5
+  ],
+  [
+   70.5,
+   70.1
+  ],
+  [
+   69.2,
+   74.8
+  ],
+  [
+   71.6,
+   72.2
+  ],
+  [
+   67.5,
+   67.9
+  ],
+  [
+   70.0,
+   72.7
+  ],
+  [
+   71.4,
+   71.6
+  ],
+  [
+   69.4,
+   70.5
+  ],
+  [
+   70.7,
+   73.4
+  ],
+  [
+   70.8,
+   71.6
+  ],
+  [
+   70.6,
+   70.1
+  ],
+  [
+   73.0,
+   72.8
+  ],
+  [
+   71.7,
+   71.3
+  ],
+  [
+   71.1,
+   71.3
+  ],
+  [
+   68.8,
+   68.8
+  ],
+  [
+   71.6,
+   71.9
+  ],
+  [
+   69.2,
+   69.3
+  ],
+  [
+   72.3,
+   71.8
+  ],
+  [
+   71.3,
+   71.3
+  ],
+  [
+   69.8,
+   70.0
+  ],
+  [
+   68.0,
+   68.6
+  ],
+  [
+   67.6,
+   69.1
+  ],
+  [
+   67.0,
+   67.2
+  ],
+  [
+   68.8,
+   68.7
+  ],
+  [
+   69.0,
+   68.9
+  ],
+  [
+   67.3,
+   67.7
+  ],
+  [
+   69.3,
+   69.4
+  ],
+  [
+   69.5,
+   69.8
+  ],
+  [
+   66.9,
+   66.8
+  ],
+  [
+   66.3,
+   66.5
+  ],
+  [
+   71.5,
+   71.5
+  ],
+  [
+   71.2,
+   71.2
+  ],
+  [
+   69.8,
+   69.9
+  ],
+  [
+   72.3,
+   72.4
+  ],
+  [
+   70.1,
+   69.7
+  ],
+  [
+   70.0,
+   69.9
+  ],
+  [
+   65.6,
+   65.5
+  ],
+  [
+   73.7,
+   75.2
+  ],
+  [
+   69.0,
+   69.3
+  ],
+  [
+   70.0,
+   69.3
+  ],
+  [
+   67.3,
+   69.2
+  ],
+  [
+   93.4,
+   93.5
+  ]
+ ],
+ "ecgSource": "EPHNOGRAM, 12 healthy men at rest, 367 30-s windows",
+ "adultMurmur": [
+  {
+   "db": "a",
+   "what": "MITHSDB — valve prolapse, benign murmurs, aortic disease",
+   "n": 409,
+   "abnormal": 292,
+   "auc": {
+    "value": 0.687,
+    "lo": 0.634,
+    "hi": 0.741
+   }
+  },
+  {
+   "db": "b",
+   "what": "AADHSDB — coronary artery disease",
+   "n": 490,
+   "abnormal": 104,
+   "auc": {
+    "value": 0.75,
+    "lo": 0.692,
+    "hi": 0.807
+   }
+  },
+  {
+   "db": "c",
+   "what": "AUTHHSDB — aortic stenosis, mitral regurgitation (echo-confirmed, ~75 y)",
+   "n": 31,
+   "abnormal": 24,
+   "auc": {
+    "value": 1.0,
+    "lo": 1.0,
+    "hi": 1.0
+   }
+  },
+  {
+   "db": "d",
+   "what": "UHAHSDB — mixed pathology, 44–90 y",
+   "n": 55,
+   "abnormal": 28,
+   "auc": {
+    "value": 0.553,
+    "lo": 0.4,
+    "hi": 0.706
+   }
+  },
+  {
+   "db": "e",
+   "what": "DLUTHSDB — coronary artery disease, ~60 y",
+   "n": 2141,
+   "abnormal": 183,
+   "auc": {
+    "value": 0.743,
+    "lo": 0.7,
+    "hi": 0.785
+   }
+  },
+  {
+   "db": "f",
+   "what": "SUAHSDB — mixed pathology, 16–88 y",
+   "n": 114,
+   "abnormal": 34,
+   "auc": {
+    "value": 0.531,
+    "lo": 0.414,
+    "hi": 0.648
+   }
+  }
+ ],
+ "copd": {
+  "byGold": {
+   "0": 0.147,
+   "1": 0.181,
+   "2": 0.257,
+   "3": 0.184,
+   "4": 0.173
+  },
+  "rho": 0.105,
+  "p": 0.5064447088399255,
+  "n": 42
+ },
+ "sources": [
+  "CirCor DigiScope 1.0.3 — Oliveira et al., IEEE JBHI 2022; PhysioNet; ODC-By 1.0",
+  "PhysioNet/CinC Challenge 2016 — Liu et al., Physiol Meas 2016;37:2181, doi 10.1088/0967-3334/37/12/2181; ODC-By 1.0",
+  "KAUH lung sounds — Fraiwan et al., Mendeley Data jwyy9np4gv v3; CC BY 4.0",
+  "RespiratoryDatabase@TR — Altan, Kutlu et al., Mendeley Data 10.17632/p9z4h98s6j.2; CC BY 4.0",
+  "EPHNOGRAM 1.0.0 — Kazemnejad et al., PhysioNet, doi 10.13026/tjtq-5911; ODC-By 1.0 (analysis only; no EPHNOGRAM audio in this brief)"
+ ]
+}

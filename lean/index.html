@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>AuscultaDB Clinical Brief</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -127,17 +128,15 @@ footer{border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font
     <div class="outs">${c.outputs.map(o=>`<div class="out"><div class="row"><span class="skill">${esc(o.skill)}</span><span class="val">${esc(o.value)}</span>${o.flagText?`<span class="pill ${o.flag?'flag':'noflag'}">${esc(o.flagText)}</span>`:''}${o.ref?`<span class="vs">${esc(o.ref)}</span>`:''}</div><div class="val-text">${esc(o.validation)}</div></div>`).join('')}</div>
   </article>`).join('');
   // conclusions — every sentence built from the numbers in brief.json
-  const mur=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Murmur network').map(o=>({c,o})));
-  const murPos=mur.filter(x=>/murmur|valve|stenosis|abnormal/i.test(x.c.title+x.c.reference)&&!/no murmur|Normal/.test(x.c.reference)), murNeg=mur.filter(x=>!murPos.includes(x));
-  const hrRows=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Heart rate'&&o.ref)), ws=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill.startsWith('Wheeze')).map(o=>({c,o})));
-  const sk=n=>B.skills.find(s=>s.skill.startsWith(n));
-  const C=[];
-  C.push(`In this batch the murmur network flagged ${murPos.filter(x=>x.o.flag).length} of ${murPos.length} recordings with a murmur or valve disease and ${murNeg.filter(x=>x.o.flag).length} of ${murNeg.length} without. Ten recordings illustrate the outputs; the accuracy figures come from the validations beside each result, not from this batch.`);
-  const hm=sk('Murmur in adults');if(hm)C.push(`The murmur network was trained on children only. On adult recordings it has ${hm.result}; ${hm.status==='works'?'it meets the 0.70 level set before the test in both valve-disease databases.':'it does not meet the 0.70 level set before the test in both valve-disease databases, so adult murmur results are shown as moderate.'}`);
-  const ha=sk('Heart rate from heart sounds (adults)');if(ha)C.push(`Heart rate from a heart-sound recording agrees with the ECG in adults (${ha.result}${hrRows.length?`; in the batch ${hrRows.map(o=>o.value+' vs '+o.ref).join(', ')}`:''}). In a meta-analysis of 46 cohorts (1.2 million people), each 10 beats/min of resting heart rate carried a relative risk of 1.09 (1.07–1.12) for all-cause death (Zhang et al., CMAJ 2016, doi 10.1503/cmaj.150535), so this is the most usable signal for a longevity programme today.`);
-  const hv=sk('Heart-rate variability, RMSSD (adults)');C.push(hv?`Heart-rate variability (RMSSD) from heart sounds also agrees with the ECG in adults (${hv.result}).`:`Heart-rate variability (RMSSD) from heart sounds is validated in children and adolescents only; in adults it did not pass against the ECG and is not shown.`);
-  if(ws.length)C.push(`Wheeze and rhonchi are detected with moderate accuracy in adults (${sk('Wheeze')?sk('Wheeze').result:''}). In the batch ${ws.filter(x=>x.o.flag).length} of ${ws.length} lung recordings were flagged. COPD severity cannot be read from these breath sounds (ρ ${B.copd.rho}, p ${B.copd.p.toFixed(2)}, ${B.copd.n} patients).`);
-  C.push('Next step for a longevity cohort: recordings linked to an ECG and to follow-up (events, deaths), so that heart rate and HRV measured by stethoscope can be tested as risk markers rather than only as measurements.');
+  const mur=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Murmur network').map(o=>({c,o}))), murPos=mur.filter(x=>x.c.positive), murNeg=mur.filter(x=>x.c.positive===false);
+  const hrRows=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Heart rate'&&o.ref)), wz=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill.startsWith('Wheeze')).map(o=>({c,o}))), sk=n=>B.skills.find(s=>s.skill.startsWith(n));
+  const hm=sk('Murmur in adults'),ha=sk('Heart rate from heart sounds (adults)'),hv=sk('Heart-rate variability, RMSSD (adults)'),C=[];
+  C.push(`Batch: the murmur network flagged ${murPos.filter(x=>x.o.flag).length} of ${murPos.length} recordings with a murmur or valve disease and ${murNeg.filter(x=>x.o.flag).length} of ${murNeg.length} without; ${wz.filter(x=>x.o.flag&&x.c.positive).length} of ${wz.filter(x=>x.c.positive).length} lung recordings with expert-labelled wheeze were flagged, and ${wz.filter(x=>x.o.flag&&x.c.positive===false).length} of ${wz.filter(x=>x.c.positive===false).length} without. Ten recordings illustrate the outputs; accuracy comes from the validations beside each result.`);
+  C.push(`Murmurs: excellent in children (${(sk('Murmur at a heart valve')||{}).result||''}). In adults the network separates loud valve disease well but soft murmurs poorly (${hm?hm.result:''}), and its flag level has to be recalibrated for each stethoscope.`);
+  if(ha)C.push(`Heart rate: over a recording session the stethoscope matches the ECG within about a beat per minute${hrRows.length?` (batch: ${hrRows.map(o=>o.value+' vs '+o.ref).join(', ')})`:''}. Each 10 beats/min of resting heart rate carries a relative risk of 1.09 (1.07–1.12) for all-cause death (Zhang et al., CMAJ 2016, meta-analysis of 46 cohorts), so this is the signal a longevity programme can use today.`);
+  C.push(hv?`HRV (RMSSD) also agrees with the ECG in adults (${hv.result}).`:`HRV (RMSSD) is validated in children and adolescents only; in adults it just missed its pre-set rule against the ECG.`);
+  C.push(`Lungs: wheeze is detected with moderate accuracy (${(sk('Wheeze')||{}).result||''}); COPD severity cannot be read from breath sounds (ρ ${B.copd.rho}, ${B.copd.n} patients).`);
+  C.push('Next step: a cohort with stethoscope recordings, ECG and follow-up (events, deaths), so that sound-derived heart rate and HRV can be tested as risk markers, not only as measurements.');
   $('#concl').innerHTML=C.map(t=>`<li>${esc(t)}</li>`).join('');
   $('#notReady').innerHTML=B.notReady.map(t=>`<li>${esc(t)}</li>`).join('');
   $('#sources').innerHTML='<b>Data and licences</b>'+B.sources.map(s=>`<div>${esc(s)}</div>`).join('')+`<div>Built ${esc(B.generated.slice(0,10))} from the AuscultaDB pipeline; every number above is read from its result files.</div>`;
@@ -145,15 +144,15 @@ footer{border-top:1px solid var(--line);padding-top:14px;color:var(--muted);font
   if(window.Chart){
     const ink=css('--ink'),mut=css('--muted'),line=css('--line'),acc=css('--accent'),warn=css('--warn');
     Chart.defaults.color=mut;Chart.defaults.borderColor=line;Chart.defaults.font.family="'Public Sans',system-ui,sans-serif";
-    const pts=B.ecgPoints.map(([e,p])=>({x:e,y:p})),lo=Math.min(...pts.map(p=>Math.min(p.x,p.y)))-5,hi=Math.max(...pts.map(p=>Math.max(p.x,p.y)))+5;
+    const pts=B.ecgPoints.map(([e,p])=>({x:e,y:p})),lo=Math.floor((Math.min(...pts.map(p=>Math.min(p.x,p.y)))-5)/10)*10,hi=Math.ceil((Math.max(...pts.map(p=>Math.max(p.x,p.y)))+5)/10)*10;
     new Chart($('#cHr'),{type:'scatter',data:{datasets:[{label:'recording',data:pts,pointRadius:2.5,backgroundColor:acc},{label:'identity',type:'line',data:[{x:lo,y:lo},{x:hi,y:hi}],borderColor:mut,borderDash:[4,4],pointRadius:0}]},
       options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:lo,max:hi,title:{display:true,text:'ECG heart rate (bpm)'}},y:{min:lo,max:hi,title:{display:true,text:'heart-sound heart rate (bpm)'}}}}});
-    const hrS=sk('Heart rate from heart sounds (adults)');$('#cHrNote').textContent=`${pts.length} adult recordings (MIT database, simultaneous ECG)${hrS?' · '+hrS.result:''}.`;
+    const hrS=sk('Heart rate from heart sounds (adults)');$('#cHrNote').textContent=`${B.ecgSource||pts.length+' windows'}${hrS?' · '+hrS.result:''}.`;
     const A=B.adultMurmur;
     new Chart($('#cAuc'),{type:'bar',data:{labels:A.map(a=>`set ${a.db} (n ${a.n})`),datasets:[{label:'95 % interval',data:A.map(a=>[a.auc.lo,a.auc.hi]),backgroundColor:A.map(a=>'ac'.includes(a.db)?acc+'55':mut+'44'),borderColor:A.map(a=>'ac'.includes(a.db)?acc:mut),borderWidth:1,barPercentage:.5},
-      {label:'AUC',type:'scatter',data:A.map((a,i)=>({x:a.auc.value,y:i})),backgroundColor:ink,pointRadius:4}]},
+      {label:'AUC',type:'scatter',data:A.map((a,i)=>({x:a.auc.value,y:i})),backgroundColor:ink,pointRadius:4,clip:false}]},
       options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=A[c.dataIndex];return `${a.what}: AUC ${a.auc.value} (${a.auc.lo}–${a.auc.hi})`}}}},
-        scales:{x:{min:0.4,max:1,title:{display:true,text:'AUC, abnormal vs normal'}},y:{type:'category',labels:A.map(a=>`set ${a.db} (n ${a.n})`)}}},
+        scales:{x:{min:0.4,max:1.02,ticks:{callback:v=>v<=1?v.toFixed(1):''},title:{display:true,text:'AUC, abnormal vs normal'}},y:{type:'category',labels:A.map(a=>`set ${a.db} (n ${a.n})`)}}},
       plugins:[{id:'ref',afterDraw(ch){const x=ch.scales.x.getPixelForValue(0.7),{top,bottom}=ch.chartArea,g=ch.ctx;g.save();g.strokeStyle=warn;g.setLineDash([4,4]);g.beginPath();g.moveTo(x,top);g.lineTo(x,bottom);g.stroke();g.restore()}}]});
   }
   // players: waveform + spectrogram drawn by wavesurfer from each recording's own audio

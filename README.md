@@ -65,6 +65,11 @@ What it does:
 
 New to the code? Start with [`ONBOARDING.md`](ONBOARDING.md).
 
+**Lean clinical brief** (`lean/`, built by `python3 pipeline/lean_build.py`): a one-page version for clinicians with only the
+skills that held up, 10 example recordings each shown with its own validation, and adult external tests on PhysioNet/CinC
+2016 (ODC-By 1.0, Liu et al. 2016), EPHNOGRAM (ODC-By 1.0, Kazemnejad et al., PhysioNet) and RespiratoryDatabase@TR
+(CC BY 4.0, Altan et al., Mendeley 10.17632/p9z4h98s6j.2).
+
 ## Quick start
 ```bash
 npm install

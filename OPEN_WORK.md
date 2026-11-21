@@ -102,12 +102,13 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 - **To apply:** add such a dataset (licence first), retrain with the same gate (beat age-only and stethoscope-only).
   Do not lower the gate.
 
-### 10. Heart sounds in adults; S3
-- **Status:** the murmur network is trained and tested on Brazilian children only; S3 cannot be validated (CirCor has no S3
-  labels).
-- **Missing:** an adult heart-sound set (e.g. the PhysioNet/CinC 2016 challenge database — check its licence) and a set with
-  S3 labels.
-- **To apply:** run `cnn_eval.py`-style scoring of the frozen network on the new set as an external test; report per age.
+### 10. Heart sounds in adults; S3 — **tested 2026-11-21 (CinC 2016, EPHNOGRAM)**
+- Murmur network on adults: AUC 0.687–1.0 by database; the pre-set transfer rule failed (set a). The flag level does not carry
+  over between stethoscopes. **To apply:** calibrate the flag per stethoscope on one split of each adult database and report on
+  another (rule 4); or fine-tune the network on adult training patients with the same frozen-split rules as `train_cnn.py`.
+- Adult heart rate: close per session, ±10 bpm per 30-s clip; HRV fails against ECG (ICC 0.734). **To apply:** a learned beat
+  finder trained on adult beats (EPHNOGRAM exercise records give ECG-derived S1 timing for training; test on held-out men).
+- S3: still no labelled set.
 
 ### 11. Longevity as an outcome
 - **Status:** the platform reports markers and references only; no risk score or biological age (no follow-up in any
@@ -119,6 +120,11 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 - **Status:** replaced by the ICBHI age-clock replication (no adult age signal). A true curve needs healthy people of all
   ages on one stethoscope — ICBHI's healthy patients are all children.
 - **Missing:** healthy adults recorded on the same device as healthy children.
+
+---
+
+### Lean clinical brief — **done 2026-11-21**
+- `lean/` + `pipeline/lean_build.py` + `npm run test:lean`; see CLAUDE.md. Rebuild after any validation result changes.
 
 ---
 

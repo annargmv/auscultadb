@@ -400,6 +400,9 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
 | PSG-Audio (Korompili et al., Sci Data 2021; Science Data Bank 10.11922/sciencedb.00345) | in use: Discoveries 12 only, **pilot of 10 patients / 44 h** | CC BY 4.0 (HF mirror card + scidb page) | 212 adults, Athens sleep lab, PSG scored by technician + physician; tracheal contact mic + ambient mic at 48 kHz in hourly EDF (V3), `.rml` events + **UserStaging** (ignore MachineStaging). Read from the partial HF mirror `dust-systems/psg-audio` (the scidb FTP logins are time-limited). File names literally contain `%5B001%5D` — escape `%` in URLs. **Audio never goes to `web/`** (overnight audio can hold speech) |
 | PhysioNet overnight / sleep sets | wanted | varies | Still useful for healthy sleepers and children — PSG-Audio is ~89 % severe OSA, adults only |
 | ICBHI 2017 | **in use: analysed only** (Analyze models + `resp_icbhi` / `icbhi_models` reports); via a GitHub copy, see the ICBHI section | research only | 126 patients, 4 devices, per-cycle crackle/wheeze labels. Never republish its audio. Lifespan curve (Discoveries 10) not yet redone with it |
+| PhysioNet/CinC 2016 | in use: adult external test (murmur network, HR vs ECG); 3 recordings in the lean brief | ODC-By 1.0 | 3,240 recordings, 6 databases, 2 kHz, abnormal/normal labels; set a has ECG. Zip sha256 in meta/cinc2016_validation.json |
+| EPHNOGRAM 1.0.0 | in use: adult HR/HRV vs research-grade ECG, 14 resting records | ODC-By 1.0 | 8 kHz PCG + ECG, healthy men 23–29; checksums verified (SHA256SUMS.txt); analysis only |
+| RespiratoryDatabase@TR | in use: COPD severity test; 1 recording in the lean brief | CC BY 4.0 | 42 COPD adults GOLD 0–4, 12 channels, 4 kHz, Littmann 3200 |
 | HF_Lung | optional | V1_IP CC BY-NC | |
 
 ## Known limitations and what is blocked
@@ -571,6 +574,31 @@ findings attributed to the right site. **12 drafts: numbers always traceable, bu
 **Owner's decision 2026-11-19: fixed template instead** — `writtenSummary(p)` (patient page, "Written summary" card): every
 site's precomputed findings in fixed sentences, stored values unrounded, cardiac findings only on heart recordings, "not a
 diagnosis". Same checks, same 12 patients: template 12/12, MedGemma 9/12 (`pipeline/summary_export.js` → `--template`).
+
+## Adult external tests and the lean clinical brief (2026-11-21)
+Three new open adult sets, licences checked, raw data on the private remote (`raw/cinc2016`, `raw/respdbtr`, `raw/ephnogram`).
+All tests run the page's FROZEN code; rules are in each script's header and were fixed before the run (`npm run validate:adults`).
+- **PhysioNet/CinC 2016** (ODC-By; Liu et al., Physiol Meas 2016, doi 10.1088/0967-3334/37/12/2181; 3,240 recordings, 6 adult
+  databases, label = abnormal vs normal) — `cinc_run.js` → `cinc_validate.py` → `meta/cinc2016_validation.json`.
+  Murmur network within database: a (valve prolapse, benign murmurs) AUC 0.687 (0.634–0.741);
+  c (echo AS/MR, ~75 y, n 31) 1.0; b 0.75; e 0.743; d 0.553; f 0.531.
+  **Pre-set rule (CI lower bound > 0.70 in both a and c) not met.** The children's flag level does not transfer: set a sens
+  20.5 %, set f spec 0.0 % — per-stethoscope calibration needed. Heart rate vs set a's ECG: ICC 0.328 (fails), mostly
+  where gqrs gives implausible resting ECG rates (104–157 bpm with heart sounds at 52–80) — not proven, so it stays a fail.
+- **EPHNOGRAM** (ODC-By; PhysioNet doi 10.13026/tjtq-5911; research-grade ECG + PCG, healthy men 23–29) — 14 resting records
+  (ECG "Good", PCG not saturated), 30-s windows — `eph_validate.py prep` → `eph_run.js` → `eph_validate.py` → `meta/eph_validation.json`.
+  Heart rate: bias -0.5 bpm, LoA -10.3 to 9.3, **ICC 0.798 → misses the pre-set 0.90**; per session (median of
+  windows, 14 records) ICC 0.999, LoA -1.2 to 0.9 bpm (reported beside, not the pre-set unit). RMSSD ICC 0.734,
+  bias 8.8 ms → **fails** (rule 0.75). Adult HRV is not shown anywhere.
+- **RespiratoryDatabase@TR** (CC BY 4.0; Mendeley 10.17632/p9z4h98s6j.2; 42 COPD adults GOLD 0–4, 12 channels, Littmann 3200)
+  — `respdbtr_run.js` → `respdbtr_validate.py` → `meta/respdbtr_validation.json`. Breath-sound model's abnormal probability
+  vs GOLD: ρ 0.105 (CI -0.194 to 0.395, p 0.51) → **does not track severity**. The ICBHI cycle model
+  flags wheeze in 60–80 % of cycles at every stage (not calibrated for this stethoscope).
+- **Lean clinical brief `lean/`** (owner, 2026-11-21: a short version for a clinician audience, the full site kept):
+  `python3 pipeline/lean_build.py` → `lean/data/brief.json` + 10 audio bundles; `npm run test:lean`. Only skills that at least
+  mostly work, each output with its own validation line; batch of 10 drawn at random per group (seed 20261121) before
+  looking at outputs; conclusions and the two charts (adult HR vs ECG, adult murmur AUC per database) computed from the
+  result files. EPHNOGRAM audio is not in the brief (analysis only). Published as its own artifact, separate from web/.
 
 ## Remote data store (2026-11-18) — `pipeline/remote.py`
 The machine's disk is small and replaced between sessions, so `raw/` and the expensive `build/` folders live in a
