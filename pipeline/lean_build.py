@@ -54,8 +54,8 @@ def pick(seq): seq = sorted(seq, key=str); return seq[int(rng.integers(0, len(se
 
 
 def main():
-    shutil.rmtree(OUT / 'data', ignore_errors=True); shutil.rmtree(OUT / 'audio', ignore_errors=True)
-    (OUT / 'data').mkdir(parents=True); (OUT / 'audio').mkdir(parents=True)
+    (OUT / 'data' / 'brief.json').unlink(missing_ok=True); shutil.rmtree(OUT / 'audio', ignore_errors=True)   # keep other pages' data (onepager.json)
+    (OUT / 'data').mkdir(parents=True, exist_ok=True); (OUT / 'audio').mkdir(parents=True)
     I = json.loads((WEB_DATA / 'index.json').read_text()); P = {p['key']: p for p in I['patients']}
     MJ = json.loads((WEB_DATA / 'models.json').read_text()); HM = next(m for m in MJ['models'] if m['id'] == 'heart_murmur'); LS = next(m for m in MJ['models'] if m['id'] == 'lung_sound')
     CN = json.loads((WEB_DATA / 'cnn_murmur.json').read_text()); thr = CN['threshold']; T = CN['test']
