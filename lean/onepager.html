@@ -1,0 +1,145 @@
+<meta charset="utf-8">
+<title>AuscultaDB Longevity Brief</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one sheet in a 72rem column — masthead with the application's scale, four findings in a 2×2 grid,
+   the marker table, and the pilot beside the one chart that carries the central claim. */
+:root{
+  --bg:#f6f7f9; --sheet:#ffffff; --ink:#111a24; --muted:#56616d; --line:#dfe4ea; --soft:#f0f3f6;
+  --accent:#0e7480; --accent-soft:#e2f1f2; --ready:#1d7a4a; --ready-soft:#e2f2e9; --mid:#8a5b10; --mid-soft:#f6ecd9; --no:#a93a2e; --no-soft:#f7e4e1;
+  --f-disp:'Sora',ui-sans-serif,system-ui,sans-serif; --f-body:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif; --f-mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1217; --sheet:#121a21; --ink:#e5ecf1; --muted:#a2afba; --line:#26333d; --soft:#18222a;
+  --accent:#55c3cd; --accent-soft:#14323a; --ready:#71d29d; --ready-soft:#16301f; --mid:#e3b66b; --mid-soft:#332818; --no:#f08f80; --no-soft:#3a1f1b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1217; --sheet:#121a21; --ink:#e5ecf1; --muted:#a2afba; --line:#26333d; --soft:#18222a;
+  --accent:#55c3cd; --accent-soft:#14323a; --ready:#71d29d; --ready-soft:#16301f; --mid:#e3b66b; --mid-soft:#332818; --no:#f08f80; --no-soft:#3a1f1b; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.sheet{max-width:72rem;margin:24px auto 40px;background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,3.2vw,40px);display:flex;flex-direction:column;gap:30px}
+h1,h2,h3{font-family:var(--f-disp);margin:0;line-height:1.15;text-wrap:balance}
+h1{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:700;letter-spacing:-.015em}
+h2{font-size:1.2rem;font-weight:600}
+h3{font-size:1rem;font-weight:600}
+p{margin:0}
+.kicker{font:500 .7rem/1.2 var(--f-mono);letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+.mast{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:24px}
+@media (max-width:860px){.mast{grid-template-columns:1fr}}
+.mast .deck{font-size:1.02rem;color:var(--muted);margin-top:12px;max-width:40rem}
+.mast .ctx{margin-top:14px;font:500 .78rem/1.4 var(--f-mono);color:var(--muted)}
+.scale{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 18px}
+.scale div{border-top:2px solid var(--accent);padding-top:8px;min-width:0}
+.scale b{display:block;font:700 1.55rem/1.1 var(--f-disp);font-variant-numeric:tabular-nums}
+.scale span{font-size:.8rem;color:var(--muted)}
+.find{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+@media (max-width:760px){.find{grid-template-columns:1fr}}
+.card{border:1px solid var(--line);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.card .nums{display:flex;flex-wrap:wrap;gap:16px}
+.card .num b{display:block;font:700 1.45rem/1.1 var(--f-disp);font-variant-numeric:tabular-nums}
+.card .num span{font-size:.78rem;color:var(--muted)}
+.card .num.dim b{color:var(--muted)}
+.card .so{font-size:.88rem;background:var(--accent-soft);border-radius:8px;padding:8px 10px}
+.card .so b{color:var(--accent)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:46rem;font-size:.88rem}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+th{font:500 .68rem/1.3 var(--f-mono);letter-spacing:.07em;text-transform:uppercase;color:var(--muted);background:var(--soft)}
+td:first-child{font-weight:600;white-space:nowrap}
+td .ref{display:block;font:400 .74rem/1.4 var(--f-mono);color:var(--muted);margin-top:3px}
+.pill{display:inline-block;font:500 .7rem/1 var(--f-mono);padding:5px 8px;border-radius:999px;white-space:nowrap}
+.pill.ready{background:var(--ready-soft);color:var(--ready)} .pill.children,.pill.moderate{background:var(--mid-soft);color:var(--mid)} .pill.not{background:var(--no-soft);color:var(--no)}
+.pilot{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:22px;align-items:start}
+@media (max-width:860px){.pilot{grid-template-columns:1fr}}
+ol.steps{list-style:none;margin:12px 0 0;padding:0;counter-reset:s;display:flex;flex-direction:column;gap:12px}
+ol.steps li{counter-increment:s;display:grid;grid-template-columns:2rem minmax(0,1fr);gap:8px;font-size:.92rem}
+ol.steps li::before{content:counter(s);font:700 1.35rem/1.1 var(--f-disp);color:var(--accent)}
+.fig{border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0;display:flex;flex-direction:column;gap:8px}
+.fig .box{position:relative;height:250px}
+.fig p{font-size:.8rem;color:var(--muted)}
+footer{border-top:1px solid var(--line);padding-top:14px;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+footer a{color:var(--accent)}
+.err{color:var(--no)}
+</style>
+
+<article class="sheet">
+  <header class="mast">
+    <div>
+      <div class="kicker">AuscultaDB · one-page summary</div>
+      <h1>The stethoscope as a longevity instrument</h1>
+      <p class="deck">A research platform that turns heart and lung recordings into measurements, and tests each one on patients its models never saw, against expert labels and the ECG. Built entirely on open, real recordings.</p>
+      <p class="ctx">For a discussion with the Sheba Longevity Center team · research platform, not a diagnostic device</p>
+    </div>
+    <div class="scale" id="scale"></div>
+  </header>
+
+  <section>
+    <div class="kicker">Four results from the data</div>
+    <h2 style="margin:6px 0 14px">What the platform's own analyses showed</h2>
+    <div class="find" id="find"></div>
+  </section>
+
+  <section>
+    <div class="kicker">One recording, several mortality-linked markers</div>
+    <h2 style="margin:6px 0 14px">What a stethoscope recording can supply a longevity clinic, and how well it does today</h2>
+    <div class="tbl"><table><thead><tr><th>Marker</th><th>Published link to survival</th><th>Measured here</th><th>Status</th></tr></thead><tbody id="mk"></tbody></table></div>
+  </section>
+
+  <section class="pilot">
+    <div>
+      <div class="kicker">Proposal</div>
+      <h2 style="margin-top:6px">A pilot that fits a longevity clinic</h2>
+      <ol class="steps">
+        <li><span><b>Record.</b> Add a 60-second recording at four chest sites, with one digital stethoscope model, to visits where an ECG is already taken. Each visit yields resting heart rate, a murmur screen and a wheeze check, plus paired stethoscope–ECG data that settles adult heart-rate variability on that device.</span></li>
+        <li><span><b>Repeat.</b> Record again at each follow-up and average several clips per visit, so that a change can be read against the measured noise rather than a single clip.</span></li>
+        <li><span><b>Link.</b> Relate the acoustic measures to the clinic's biological-age measures and to later outcomes. No open auscultation dataset links recordings to outcomes today; this is the step that would turn measurements into risk markers.</span></li>
+      </ol>
+    </div>
+    <div class="fig"><h3>Heart rate from the sound against the ECG</h3><div class="box"><canvas id="cHr" aria-label="Scatter of heart rate from heart sounds against ECG heart rate"></canvas></div><p id="cHrNote"></p></div>
+  </section>
+
+  <footer id="foot"></footer>
+</article>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+<script>
+(async function(){
+  const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  let O; try{O=await (await fetch('data/onepager.json')).json()}catch(e){$('#find').innerHTML=`<p class="err">Results could not be loaded (${esc(e.message)}).</p>`;return}
+  window.__one=O; const a=O.app,F=O.findings;
+  $('#scale').innerHTML=[[a.patients,`browsable patients (${a.bySource.sprsound} children, ${a.bySource.kauh} adults, ${a.bySource.circor} heart-sound children)`],[a.datasets,'open datasets analysed, licences checked'],[a.reports,'clinical validation reports'],
+    [a.analyses,'cohort analyses'],[`${a.cnnKB} KB`,'murmur network that runs in the browser'],['0','recordings uploaded: analysis stays on the device']].map(([b,t])=>`<div><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join('');
+  const s=F.smallBeatsBig,d=F.device,g=F.ageClock,c=F.oneClip;
+  const cards=[
+    {k:'Model size',h:`A ${s.cnnKB} KB network beat a ${s.hearParams.replace(' ','-')}-parameter foundation model`,
+     n:[[s.cnn.value,'AUC, our murmur network'],[s.hear.value,'AUC, Google HeAR + probe',1]],
+     t:`Same ${s.patients} children, never used in training: difference ${s.delta.toFixed(3)} (95 % CI ${s.ci[0].toFixed(3)} to ${s.ci[1].toFixed(3)}).`,
+     so:'A screening model can run on the clinic\'s own laptop or phone, with no recording sent to a server.'},
+    {k:'Hidden confound',h:'The model can learn the stethoscope instead of the patient',
+     n:[[d.deviceOnlyAuc,'AUC, device alone (COPD vs other)'],[d.soundAuc,'AUC, breath-sound model',1]],
+     t:`In ICBHI adults the recording device separates COPD from other diagnoses almost perfectly. A health-audio foundation model names the device in ${d.embedDevice} % of held-out clips (always guessing the commonest device: ${d.embedMajority} %).`,
+     so:'An acoustic biomarker study needs one stethoscope model, or a device-only baseline to beat.'},
+    {k:'Biological age',h:'Adult lungs do not sound older',
+     n:[[`${g.kauh.mae} y`,'age-clock error, KAUH adults'],[`${g.kauh.maeNull} y`,'error of guessing the mean',1]],
+     t:`Confirmed in a second dataset (ICBHI: ${g.icbhi.mae} vs ${g.icbhi.maeNull} y; held-out patients in both). In children, heart-rate variability measured by stethoscope does rise with age (ρ ${g.hrvAge.rho}, ${g.hrvAge.patients} patients).`,
+     so:'An acoustic contribution to biological age, if any, lies in cardiac rhythm, not in breath sound.'},
+    {k:'Repeatability',h:'One clip of heart-rate variability is mostly noise',
+     n:[[`${c.rmssdMdc} ms`,'smallest real change in RMSSD'],[`${c.rmssdMedian} ms`,'median RMSSD itself',1]],
+     t:`Two heart valves of the same child at one sitting (${c.patients} children): RMSSD repeats with ICC ${c.rmssdIcc.toFixed(2)}; heart rate repeats with ICC ${c.hrIcc.toFixed(2)} (smallest real change ${c.hrMdc} bpm).`,
+     so:'Tracking an intervention needs several clips per visit before a change in HRV can be read.'}];
+  $('#find').innerHTML=cards.map(x=>`<div class="card"><div class="kicker">${esc(x.k)}</div><h3>${esc(x.h)}</h3><div class="nums">${x.n.map(([b,t,dim])=>`<div class="num${dim?' dim':''}"><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join('')}</div><p class="muted" style="font-size:.88rem">${esc(x.t)}</p><p class="so"><b>For a longevity clinic:</b> ${esc(x.so)}</p></div>`).join('');
+  const lab={'ready':['ready','ready'],'children':['children','children only'],'moderate':['moderate','moderate'],'not ready':['not','not ready']};
+  $('#mk').innerHTML=O.markers.map(m=>`<tr><td>${esc(m.marker)}</td><td>${esc(m.link)}${m.ref?`<span class="ref">${esc(m.ref)}</span>`:''}</td><td>${esc(m.here)}</td><td><span class="pill ${lab[m.status][0]}">${esc(lab[m.status][1])}</span></td></tr>`).join('');
+  if(window.Chart){const mut=css('--muted'),line=css('--line'),acc=css('--accent');Chart.defaults.color=mut;Chart.defaults.borderColor=line;Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+    const pts=O.ecgPoints.map(([e,p])=>({x:e,y:p})),lo=Math.floor((Math.min(...pts.map(p=>Math.min(p.x,p.y)))-5)/10)*10,hi=Math.ceil((Math.max(...pts.map(p=>Math.max(p.x,p.y)))+5)/10)*10;
+    new Chart($('#cHr'),{type:'scatter',data:{datasets:[{data:pts,pointRadius:2.4,backgroundColor:acc},{type:'line',data:[{x:lo,y:lo},{x:hi,y:hi}],borderColor:mut,borderDash:[4,4],pointRadius:0}]},
+      options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:lo,max:hi,title:{display:true,text:'ECG (bpm)'}},y:{min:lo,max:hi,title:{display:true,text:'heart sounds (bpm)'}}}}});
+    const sl=Math.max(Math.abs(O.session.loa[0]),Math.abs(O.session.loa[1]));
+    $('#cHrNote').textContent=`${O.ecgSource}. Dashed line: perfect agreement. Bias ${O.clip.bias} bpm; averaged over a session the two agree within ${sl} bpm (${O.session.n} sessions, ICC ${O.session.icc}).`}
+  $('#foot').innerHTML=`<div><b>Data:</b> ${O.sources.map(esc).join(' · ')}.</div><div>References were checked on PubMed. Every figure on this page is read from the platform's validation results (built ${esc(O.generated.slice(0,10))}). Full application: <a href="https://claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW" target="_blank" rel="noopener">AuscultaDB</a>. Research and teaching only; no output is a diagnosis.</div>`;
+})();
+</script>
