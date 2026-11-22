@@ -30,7 +30,9 @@
     "build:cnn": "node pipeline/circor_spec.js && python3 pipeline/train_cnn.py && python3 pipeline/cnn_eval.py && python3 pipeline/clinical_validation.py && python3 pipeline/merge.py --bump",
     "test:lean": "node tests/lean.js",
     "build:lean": "python3 pipeline/lean_build.py && node tests/lean.js",
-    "validate:adults": "node pipeline/cinc_run.js && python3 pipeline/cinc_validate.py && node pipeline/respdbtr_run.js && python3 pipeline/respdbtr_validate.py"
+    "validate:adults": "node pipeline/cinc_run.js && python3 pipeline/cinc_validate.py && node pipeline/respdbtr_run.js && python3 pipeline/respdbtr_validate.py",
+    "test:lite": "node tests/lite.js",
+    "build:lite": "python3 pipeline/lean_build.py && node pipeline/lite_engine.js && python3 pipeline/lite_build.py && node tests/lite.js"
   },
   "devDependencies": {
     "chart.js": "4.6.1",

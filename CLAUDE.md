@@ -600,6 +600,15 @@ All tests run the page's FROZEN code; rules are in each script's header and were
   looking at outputs; conclusions and the two charts (adult HR vs ECG, adult murmur AUC per database) computed from the
   result files. EPHNOGRAM audio is not in the brief (analysis only). Published as its own artifact, separate from web/.
 
+## AuscultaDB Lite `lite/` (owner, 2026-11-22) — the app, lighter, for a clinician audience
+Same shell as the full app, five pages only: Home (validated measurements), Batch of 10 (the brief's pre-registered batch),
+patient pages (player with beat ticks or detected wheeze segments; each finding with its validation line), Analyze (only
+validated models: murmur network, heart rate, HRV for children/adolescents, wheeze), Conclusions (data-driven, 2 charts),
+Data and methods. `lite/engine.js` is the full app's analysis code copied function by function by `pipeline/lite_engine.js`
+(headless Chromium, Function.prototype.toString, transitive closure) — rerun it after any analysis change; `npm run test:lite`
+checks engine = full app on an original WAV (murmur probability identical) and Analyze vs stored results on the MP3 copies.
+Build: `npm run build:lite` (lean_build → lite_engine → lite_build → test). Published as its own artifact; web/ unchanged.
+
 ## Remote data store (2026-11-18) — `pipeline/remote.py`
 The machine's disk is small and replaced between sessions, so `raw/` and the expensive `build/` folders live in a
 **private** Hugging Face dataset repository (`$AUSCULTADB_REMOTE`, default `<HF user>/auscultadb-data`). Same paths as on

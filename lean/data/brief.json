@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-22T01:07:34.098457+00:00",
+ "generated": "2026-11-22T20:53:35.679282+00:00",
  "seed": 20261121,
  "threshold": 0.5927,
  "skills": [
@@ -12,7 +12,7 @@
   {
    "skill": "Murmur in adults with valve disease",
    "evidence": "409 + 31 adult recordings (external)",
-   "result": "set a AUC 0.687 · set c AUC 1.0",
+   "result": "AUC 0.69 (prolapse, benign murmurs) to 1.00 (aortic stenosis / mitral regurgitation)",
    "status": "partly"
   },
   {
@@ -1865,6 +1865,16 @@
   "RespiratoryDatabase@TR — Altan, Kutlu et al., Mendeley Data 10.17632/p9z4h98s6j.2; CC BY 4.0",
   "EPHNOGRAM 1.0.0 — Kazemnejad et al., PhysioNet, doi 10.13026/tjtq-5911; ODC-By 1.0 (analysis only; no EPHNOGRAM audio in this brief)"
  ],
+ "validation": {
+  "murmur_child": "349 children never seen in training: AUC 0.91 (excellent); at this flag it finds 70 % of murmurs and leaves 94 % of normal valves unflagged.",
+  "hr_child": "Against experts' beat marks (1,166 recordings): ICC 0.95, 97 % within 5 bpm.",
+  "hrv_child": "Against experts' beats: ICC 0.853 in children, bias -1.8 ms; not valid in infants.",
+  "hr_adult": "Against a research-grade ECG (12 men at rest): bias -0.5 bpm, ±10.3 bpm per 30-s clip, within 1.2 bpm per session.",
+  "hrv_adult": "Adult RMSSD against a research-grade ECG: ICC 0.734, bias 8.8 ms — just misses the rule set beforehand (ICC ≥ 0.75), so it is not shown for adults.",
+  "wheeze_adult": "111 KAUH adults, model frozen beforehand: AUC 0.761 (moderate); finds 78 % of wheeze or rhonchi, leaves 56 % of others unflagged.",
+  "murmur_adult_a": "Adults in this database (409 recordings, never trained on): AUC 0.687 (weak); at the children's flag it finds 20 % of abnormal and leaves 99 % of normal unflagged.",
+  "murmur_adult_c": "Adults in this database (31 recordings, never trained on): AUC 1.0 (excellent); at the children's flag it finds 79 % of abnormal and leaves 100 % of normal unflagged."
+ },
  "evidence": {
   "murmurChild": {
    "patients": 349,

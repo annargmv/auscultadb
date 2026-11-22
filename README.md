@@ -65,6 +65,9 @@ What it does:
 
 New to the code? Start with [`ONBOARDING.md`](ONBOARDING.md).
 
+**AuscultaDB Lite** (`lite/`, `npm run build:lite`): the app with only the validated measurements, a batch of 10 recordings
+with each finding beside its validation, Analyze with the validated models, and conclusions.
+
 **Lean clinical brief** (`lean/`, built by `python3 pipeline/lean_build.py`): a one-page version for clinicians with only the
 skills that held up, 10 example recordings each shown with its own validation, and adult external tests on PhysioNet/CinC
 2016 (ODC-By 1.0, Liu et al. 2016), EPHNOGRAM (ODC-By 1.0, Kazemnejad et al., PhysioNet) and RespiratoryDatabase@TR

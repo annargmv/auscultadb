@@ -1,0 +1,256 @@
+<meta charset="utf-8">
+<title>AuscultaDB Lite</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: the full app's shell — fixed dark sidebar, content column — with six pages: home, batch, patient, analyze,
+   conclusions, data. Data colours (teal = measurement, red = flagged) are the only saturated colours. */
+:root{
+  --bg:#f3f5f8; --panel:#ffffff; --panel-2:#f8fafc; --line:#e4e8ef; --ink:#0e1726; --muted:#55637a; --soft:#eef2f6;
+  --side:#0b1220; --side-2:#16213a; --side-ink:#c9d3e3; --side-mute:#8796ae;
+  --accent:#0e7480; --accent-soft:#e1f1f2; --flag:#b42d2d; --flag-soft:#fde8e8; --ok:#176b3c; --ok-soft:#e4f6ec; --mid:#8a4e12; --mid-soft:#fdf0e3;
+  --wave:#8fb4c9; --side-w:236px; --radius:14px;
+  --f:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'JetBrains Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1218; --panel:#131b23; --panel-2:#17212a; --line:#263340; --ink:#e4ebf1; --muted:#a3b0bc; --soft:#1a2530;
+  --side:#070c14; --side-2:#141e30; --accent:#55c3cd; --accent-soft:#143239; --flag:#f08f8f; --flag-soft:#3a1d1d; --ok:#71d29d; --ok-soft:#163021; --mid:#e3b66b; --mid-soft:#33281a; --wave:#3e6476; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1218; --panel:#131b23; --panel-2:#17212a; --line:#263340; --ink:#e4ebf1; --muted:#a3b0bc; --soft:#1a2530;
+  --side:#070c14; --side-2:#141e30; --accent:#55c3cd; --accent-soft:#143239; --flag:#f08f8f; --flag-soft:#3a1d1d; --ok:#71d29d; --ok-soft:#163021; --mid:#e3b66b; --mid-soft:#33281a; --wave:#3e6476; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:14.5px/1.55 var(--f)}
+a{color:var(--accent)}
+header{position:fixed;inset:0 auto 0 0;width:var(--side-w);background:var(--side);color:var(--side-ink);padding:18px 14px calc(18px + env(safe-area-inset-bottom,0px)) max(14px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:16px;z-index:20}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:16px;color:#fff;padding:2px 6px}
+.brand small{display:block;font-weight:500;font-size:11px;color:var(--side-mute)}
+.logo{width:32px;height:32px;border-radius:9px;background:var(--accent);display:grid;place-items:center;color:#06232a;font:700 14px/1 var(--mono);flex:none}
+header nav{display:flex;flex-direction:column;gap:2px}
+header nav a{display:block;padding:8px 10px;border-radius:9px;color:var(--side-ink);text-decoration:none;font-weight:500}
+header nav a:hover{background:var(--side-2);color:#fff}
+header nav a.active{background:#fff;color:#0e1726}
+header .foot{margin-top:auto;font-size:11.5px;color:var(--side-mute)}
+#navToggle{display:none}
+main{margin-left:var(--side-w);max-width:1180px;padding:28px 34px 48px max(34px,env(safe-area-inset-right,0px))}
+@media (max-width:900px){
+  header{position:sticky;top:env(safe-area-inset-top,0px);width:auto;flex-direction:row;align-items:center;flex-wrap:wrap;padding:10px max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px));gap:10px}
+  header nav{display:none;width:100%}header.open nav{display:flex}header .foot{display:none}
+  #navToggle{display:inline-flex;margin-left:auto;background:var(--side-2);color:#fff;border:0;border-radius:8px;padding:7px 11px;font:600 13px var(--f);cursor:pointer}
+  main{margin-left:0;padding:20px max(16px,env(safe-area-inset-right,0px)) 40px max(16px,env(safe-area-inset-left,0px))}
+  body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:21;background:var(--side)}
+}
+h1{font-size:24px;margin:0 0 4px;letter-spacing:-.02em;text-wrap:balance}
+h2{font-size:15.5px;margin:0 0 10px}
+.sub{color:var(--muted);margin:0 0 20px;max-width:860px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;min-width:0}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:820px){.g2,.g3{grid-template-columns:1fr}}
+.pt{grid-template-columns:minmax(0,300px) minmax(0,1fr)}
+@media (max-width:1000px){.pt{grid-template-columns:1fr}}
+.pill{display:inline-flex;align-items:center;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;background:var(--soft);color:var(--muted);white-space:nowrap}
+.pill.works,.pill.ok{background:var(--ok-soft);color:var(--ok)}.pill.partly,.pill.mid{background:var(--mid-soft);color:var(--mid)}.pill.flag{background:var(--flag-soft);color:var(--flag)}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;margin:0}.kv dt{color:var(--muted);font-size:12.5px}.kv dd{margin:0}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;background:var(--panel-2)}
+tr.click{cursor:pointer}tr.click:hover td{background:var(--panel-2)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.stat b{display:block;font-size:26px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}.stat span{color:var(--muted);font-size:13px}
+.btn{display:inline-flex;align-items:center;gap:6px;font:600 13px var(--f);padding:8px 13px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.chip{font:600 12.5px var(--f);padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.wave{border-radius:10px;overflow:hidden;background:var(--soft);min-height:160px}
+.ctrl{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.ctrl select{font:500 13px var(--f);padding:6px 8px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink)}
+.find{display:flex;flex-direction:column;gap:4px;padding:12px 0;border-top:1px solid var(--line)}
+.find:first-of-type{border-top:0;padding-top:4px}
+.find .row{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
+.find .name{font-weight:600}.find .val{font:600 17px var(--mono);font-variant-numeric:tabular-nums}.find .vs{font:400 12.5px var(--mono);color:var(--muted)}
+.val-line{font-size:13px;color:var(--muted);border-left:3px solid var(--accent);padding:2px 0 2px 10px;margin-top:4px}
+.val-line b{color:var(--ink);font-weight:600}
+.ref{background:var(--panel-2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;font-size:13.5px}
+.notice{background:var(--mid-soft);color:var(--mid);border-radius:10px;padding:9px 12px;font-size:13px}
+ol.concl{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:10px}ol.concl li{max-width:78ch}
+ul.plain{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:6px}
+.chart{position:relative;height:250px}
+.formrow{display:flex;flex-wrap:wrap;gap:12px;align-items:end}
+.formrow label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted)}
+.formrow select,.formrow input{font:500 13.5px var(--f);padding:7px 9px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);max-width:100%}
+.crumb{font-size:13px;color:var(--muted);text-decoration:none}
+.pager{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
+.err{color:var(--flag)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header id="hdr">
+  <div class="brand"><div class="logo">A</div><div>AuscultaDB Lite<small>heart and lung sounds, validated</small></div></div>
+  <button id="navToggle" type="button" aria-expanded="false" aria-controls="nav">Menu</button>
+  <nav id="nav" aria-label="Pages">
+    <a href="#home" data-r="home">Home</a>
+    <a href="#patients" data-r="patients">Batch of 10</a>
+    <a href="#analyze" data-r="analyze">Analyze a recording</a>
+    <a href="#conclusions" data-r="conclusions">Conclusions</a>
+    <a href="#data" data-r="data">Data and methods</a>
+  </nav>
+  <div class="foot">Research and teaching. Not a diagnostic device.</div>
+</header>
+<main id="view" aria-live="polite"><div class="sub">Loading…</div></main>
+
+<script src="https://unpkg.com/wavesurfer.js@7.12.12/dist/wavesurfer.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7.12.12/dist/plugins/spectrogram.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7.12.12/dist/plugins/regions.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7.12.12/dist/plugins/timeline.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js"></script>
+<script src="engine.js"></script>
+<script>
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])), css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+let BR=null, LS=null, WS=null, charts=[], FILTER='all';
+const EVID={'Murmur network':c=>c.adult?'external adults':'held-out children','Heart rate':c=>c.adult?'research-grade ECG':'held-out children','HRV (RMSSD)':()=>'held-out children','Wheeze / rhonchi':()=>'external adults','COPD severity':()=>'tested · not reported'};
+const getJSON=async u=>{const r=await fetch(u);if(!r.ok)throw new Error(u+' '+r.status);return r.json()};
+async function ensureModels(kind){ if(kind==='heart'){ if(!CNN)CNN=await getJSON('data/cnn_murmur.json'); if(!SEG)SEG=await getJSON('data/segmenter.json') } else if(!LS){ LS=await getJSON('data/lung_sound.json') } }
+async function caseBlob(c){const j=await getJSON(`audio/${c.id}.json`),bin=atob(j[c.file]),u=new Uint8Array(bin.length);for(let k=0;k<bin.length;k++)u[k]=bin.charCodeAt(k);return new Blob([u],{type:'audio/mpeg'})}
+function killPlayer(){if(WS){try{WS.destroy()}catch(e){}WS=null}charts.forEach(c=>c.destroy());charts=[]}
+function makePlayer(el,url,marks){
+  if(!window.WaveSurfer){el.innerHTML='<p class="sub" style="padding:10px">Waveform library unavailable.</p>';return null}
+  const regions=WaveSurfer.Regions?WaveSurfer.Regions.create():null;
+  const plugins=[WaveSurfer.Spectrogram?WaveSurfer.Spectrogram.create({height:110,labels:true,labelsColor:css('--muted'),frequencyMin:0,frequencyMax:1500,fftSamples:256,noverlap:192,scale:'linear',colorMap:'roseus',sampleRate:8000}):null,
+    WaveSurfer.Timeline?WaveSurfer.Timeline.create({height:14,style:{fontSize:'10px',color:css('--muted')}}):null,regions].filter(Boolean);
+  const w=WaveSurfer.create({container:el,url,height:64,waveColor:css('--wave'),progressColor:css('--accent'),cursorColor:css('--ink'),normalize:true,sampleRate:8000,plugins});
+  w.on('ready',()=>{window.__ready=(window.__ready||0)+1;(marks||[]).forEach(m=>regions&&regions.addRegion({start:m.t0,end:m.t1,color:m.color||'rgba(180,45,45,.18)',drag:false,resize:false}))});
+  return {w,regions};
+}
+// ---------------- pages
+function renderHome(){
+  const B=BR,E=B.evidence,ad=B.cases.filter(c=>c.adult).length;
+  $('#view').innerHTML=`<h1>What a stethoscope recording can measure today</h1>
+  <p class="sub">A lighter version of AuscultaDB: only the measurements that held up on patients the models never saw, a batch of ten real recordings with each result shown beside its validation, and the conclusions they support.</p>
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card stat"><b>${B.cases.length}</b><span>recordings in the batch (${ad} adults)</span></div>
+    <div class="card stat"><b>${E.totalTested.toLocaleString()}</b><span>recordings and clips in held-out and external tests</span></div>
+    <div class="card stat"><b>${B.sources.length}</b><span>open datasets, licences checked</span></div></div>
+  <div class="card" style="margin-bottom:16px"><h2>Measurements that held up</h2><div class="tbl"><table><thead><tr><th>Measurement</th><th>Tested on</th><th>Result</th><th>Status</th></tr></thead><tbody>
+    ${B.skills.map(s=>`<tr><td>${esc(s.skill)}</td><td>${esc(s.evidence)}</td><td class="num">${esc(s.result)}</td><td><span class="pill ${s.status}">${s.status==='works'?'validated':'moderate'}</span></td></tr>`).join('')}</tbody></table></div>
+    <p class="sub" style="margin:10px 0 0;font-size:13px">AUC: 0.5 is chance, 0.7–0.8 moderate, 0.8–0.9 good, above 0.9 excellent. ICC: agreement between two measurements, 1 = identical.</p></div>
+  <div class="card"><h2>Main conclusion</h2><p>Heart rate measured from a heart-sound recording matches a research-grade ECG within ${Math.max(...E.hrAdult.session.loa.map(Math.abs))} bpm over a session in adults. Each 10 beats/min of resting heart rate carries a relative risk of 1.09 (1.07–1.12) for all-cause death (Zhang et al., CMAJ 2016). Murmur screening works in children (AUC ${E.murmurChild.auc.value}); in adults it needs calibration per stethoscope.</p>
+    <div class="ctrl"><a class="btn primary" href="#patients">Open the batch of 10</a><a class="btn" href="#conclusions">All conclusions</a></div></div>`;
+}
+function keyResult(c){const o=c.outputs[0];return `${esc(o.skill)} <span class="num">${esc(o.value)}</span>${o.flagText?` <span class="pill ${o.flag?'flag':''}">${esc(o.flagText)}</span>`:''}`}
+function renderPatients(){
+  const B=BR,show=c=>FILTER==='all'||(FILTER==='heart'&&c.kind==='heart')||(FILTER==='lung'&&c.kind==='lung')||(FILTER==='adult'&&c.adult)||(FILTER==='child'&&!c.adult);
+  $('#view').innerHTML=`<h1>Batch of 10</h1><p class="sub">One recording was drawn at random within each group before any output was looked at (seed ${B.seed}). Every result is shown as it came out.</p>
+  <div class="chips" role="group" aria-label="Filter">${[['all','All'],['heart','Heart'],['lung','Lungs'],['adult','Adults'],['child','Children']].map(([k,l])=>`<button class="chip" type="button" data-f="${k}" aria-pressed="${FILTER===k}">${l}</button>`).join('')}</div>
+  <div class="card tbl" style="padding:0"><table><thead><tr><th>#</th><th>Recording</th><th>Who</th><th>Reference</th><th>Key result</th></tr></thead><tbody>
+    ${B.cases.map((c,i)=>show(c)?`<tr class="click" data-i="${i}" tabindex="0"><td class="num">${i+1}</td><td><a href="#patient-${i}">${esc(c.title)}</a></td><td>${esc(c.who)}</td><td>${esc(c.reference)}</td><td>${keyResult(c)}</td></tr>`:'').join('')}</tbody></table></div>`;
+  document.querySelectorAll('.chip').forEach(b=>b.onclick=()=>{FILTER=b.dataset.f;renderPatients()});
+  document.querySelectorAll('tr.click').forEach(r=>{r.onclick=()=>location.hash='#patient-'+r.dataset.i;r.onkeydown=e=>{if(e.key==='Enter')location.hash='#patient-'+r.dataset.i}});
+}
+function findingsHTML(c,outs){return outs.map(o=>`<div class="find"><div class="row"><span class="name">${esc(o.skill)}</span><span class="val">${esc(o.value)}</span>${o.flagText?`<span class="pill ${o.flag?'flag':''}">${esc(o.flagText)}</span>`:''}${o.ref?`<span class="vs">${esc(o.ref)}</span>`:''}</div>
+  <div class="val-line"><b>Validation (${esc((EVID[o.skill]||(()=>''))(c))}):</b> ${esc(o.validation)}</div></div>`).join('')}
+async function renderPatient(i){
+  const B=BR,c=B.cases[i]; if(!c){location.hash='#patients';return}
+  $('#view').innerHTML=`<a class="crumb" href="#patients">← Batch of 10</a><h1 style="margin-top:6px">${esc(c.title)}</h1><p class="sub">${esc(c.who)}</p>
+  <div class="grid pt"><div class="grid" style="align-content:start">
+    <div class="card"><h2>Profile</h2><dl class="kv"><dt>Group</dt><dd>${c.adult?'Adult':'Child'} · ${c.kind==='heart'?'heart sounds':'lung sounds'}</dd><dt>Source</dt><dd>${esc(c.source)}</dd><dt>Licence</dt><dd>${esc(c.licence)}</dd></dl></div>
+    <div class="ref"><b>Reference:</b> ${esc(c.reference)}</div></div>
+  <div class="grid" style="align-content:start">
+    <div class="card"><div class="wave" id="pw" role="img" aria-label="Waveform and spectrogram of this recording"></div>
+      <div class="ctrl"><button class="btn primary" id="pplay" type="button" disabled>▶ Play</button><select id="prate" aria-label="Playback speed"><option value="1">1×</option><option value="0.5">0.5×</option></select>
+      <span class="sub" id="pmark" style="margin:0;font-size:12.5px"></span></div></div>
+    <div class="card"><h2>Findings</h2>${findingsHTML(c,c.outputs)}</div></div></div>
+  <div class="pager">${i>0?`<a class="btn" href="#patient-${i-1}">← ${esc(B.cases[i-1].title)}</a>`:'<span></span>'}${i<B.cases.length-1?`<a class="btn" href="#patient-${i+1}">${esc(B.cases[i+1].title)} →</a>`:''}</div>`;
+  try{const blob=await caseBlob(c),url=URL.createObjectURL(blob);let marks=[];
+    if(c.regions&&c.regions.length){marks=c.regions.map(r=>({t0:r.t0,t1:r.t1,color:'rgba(14,116,128,.25)'}));$('#pmark').textContent=`Shaded: ${c.regions.length} segments where the detector found continuous sound (wheeze / rhonchi).`}
+    else if(c.kind==='heart'){await ensureModels('heart');const {x}=await decodeToSR(blob,60),s=segmentHeartSounds(x);
+      if(s&&s.s1.length){marks=s.s1.map(t=>({t0:t,t1:t+0.05,color:'rgba(180,45,45,.45)'}));const h=hrvFromTimes(s.s1);$('#pmark').textContent=`Red ticks: ${s.s1.length} first heart sounds found by the beat finder in this audio${h&&h.hr?` (${Math.round(h.hr)} bpm)`:''}.`}}
+    if(location.hash!=='#patient-'+i)return;
+    killPlayer();const P=makePlayer($('#pw'),url,marks);if(!P)return;WS=P.w;const b=$('#pplay');
+    WS.on('ready',()=>b.disabled=false);b.onclick=()=>WS.playPause();WS.on('play',()=>b.textContent='❚❚ Pause');WS.on('pause',()=>b.textContent='▶ Play');WS.on('finish',()=>b.textContent='▶ Play');
+    $('#prate').onchange=e=>WS.setPlaybackRate(+e.target.value,true)}
+  catch(e){$('#pw').innerHTML=`<p class="err" style="padding:10px">Audio not loaded: ${esc(e.message)}</p>`}
+}
+function renderAnalyze(){
+  const B=BR;
+  $('#view').innerHTML=`<h1>Analyze a recording</h1><p class="sub">The browser runs the same validated models used above; nothing is uploaded. Heart recordings: murmur network, heart rate, and HRV for children and adolescents. Lung recordings: wheeze / rhonchi. Results that failed validation are not offered.</p>
+  <div class="card" style="margin-bottom:16px"><div class="formrow">
+    <label for="aFile">Recording (WAV or MP3, at least 5 s)<input type="file" id="aFile" accept="audio/*"></label>
+    <label for="aCase">or one from the batch<select id="aCase"><option value="">—</option>${B.cases.map((c,i)=>`<option value="${i}">${i+1}. ${esc(c.title)}</option>`).join('')}</select></label>
+    <label for="aKind">Recording of<select id="aKind"><option value="heart">heart sounds</option><option value="lung">lung sounds</option></select></label>
+    <label for="aAge">Age group<select id="aAge"><option value="adult">adult</option><option value="Adolescent">adolescent</option><option value="Child">child</option><option value="Infant">infant</option></select></label>
+    <button class="btn primary" id="aGo" type="button">Analyze</button></div></div>
+  <div id="aOut"></div>`;
+  $('#aCase').onchange=e=>{const c=B.cases[+e.target.value];if(c){$('#aKind').value=c.kind;$('#aAge').value=c.adult?'adult':(c.ageBand||'Child')}};
+  $('#aGo').onclick=runAnalyze;
+}
+async function runAnalyze(){
+  const B=BR,V=B.validation,out=$('#aOut'),f=$('#aFile').files[0],ci=$('#aCase').value,kind=$('#aKind').value,age=$('#aAge').value;
+  let blob=f||null,name=f?f.name:'';
+  if(!blob&&ci!==''){const c=B.cases[+ci];blob=await caseBlob(c);name=c.title}
+  if(!blob){out.innerHTML='<div class="notice">Choose a recording first.</div>';return}
+  out.innerHTML='<div class="card">Analysing…</div>';const t0=performance.now();
+  try{await ensureModels(kind);const {x,srcDur}=await decodeToSR(blob,120);if(x.length<5*SR)throw new Error('the recording is shorter than 5 s');
+    const adult=age==='adult',outs=[],mk={heart:o=>o,lung:o=>o};
+    if(kind==='heart'){const m=cnnMurmur(x),s=segmentHeartSounds(x),h=s?hrvFromTimes(s.s1):null;
+      if(m)outs.push({skill:'Murmur network',value:`${Math.round(100*m.p)} %`,flag:m.p>=CNN.threshold,flagText:m.p>=CNN.threshold?'flagged':'not flagged',validation:adult?(V.murmur_adult_a+' Its flag level was set on children and needs calibration per stethoscope.'):V.murmur_child});
+      if(h&&h.hr)outs.push({skill:'Heart rate',value:`${Math.round(h.hr)} bpm`,validation:adult?V.hr_adult:V.hr_child});
+      if(h&&h.rmssd!=null&&(age==='Child'||age==='Adolescent'))outs.push({skill:'HRV (RMSSD)',value:`${h.rmssd} ms`,validation:V.hrv_child});
+      else outs.push({skill:'HRV (RMSSD)',value:'not reported',validation:adult?V.hrv_adult:'Valid in children and adolescents only; not in infants.'})}
+    else{const A=analyzeSignal(x),lf=recordingFeatures(A),p=modelProba(LS,LS.features.map(k=>lf[k]==null?null:+lf[k])),pc=p[1]+p[3];
+      outs.push({skill:'Wheeze / rhonchi',value:`${Math.round(100*pc)} %`,flag:p[1]>=LS.thresholds[1],flagText:p[1]>=LS.thresholds[1]?'flagged':'not flagged',validation:V.wheeze_adult+(adult?'':' Tested on adults; children were not part of this test.')})}
+    const c={adult};
+    out.innerHTML=`<div class="card"><h2>${esc(name)} · ${srcDur.toFixed(1)} s · analysed in ${Math.round(performance.now()-t0)} ms</h2>${findingsHTML(c,outs)}<p class="sub" style="margin:10px 0 0;font-size:12.5px">Research output, not a diagnosis.${ci!==''&&!f?' Batch recordings here are the 32 kbps playback copies; the batch page shows the results from the original files.':''}</p></div>`;
+    window.__analyze={outs}}
+  catch(e){out.innerHTML=`<div class="notice">Could not analyse this recording: ${esc(e.message)}.</div>`}
+}
+function renderConclusions(){
+  const B=BR,E=B.evidence,sk=n=>B.skills.find(s=>s.skill.startsWith(n));
+  const mur=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Murmur network').map(o=>({c,o}))),mp=mur.filter(x=>x.c.positive),mn=mur.filter(x=>x.c.positive===false);
+  const wz=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill.startsWith('Wheeze')).map(o=>({c,o}))),hrRows=B.cases.flatMap(c=>c.outputs.filter(o=>o.skill==='Heart rate'&&o.ref));
+  const ses=Math.max(...E.hrAdult.session.loa.map(Math.abs)),hv=sk('Heart-rate variability, RMSSD (adults)');
+  const C=[`In the batch the murmur network flagged ${mp.filter(x=>x.o.flag).length} of ${mp.length} recordings with a murmur or valve disease and ${mn.filter(x=>x.o.flag).length} of ${mn.length} without; ${wz.filter(x=>x.o.flag&&x.c.positive).length} of ${wz.filter(x=>x.c.positive).length} lung recordings with expert-labelled wheeze were flagged and ${wz.filter(x=>x.o.flag&&x.c.positive===false).length} of ${wz.filter(x=>x.c.positive===false).length} without. Ten recordings illustrate; accuracy comes from the validations.`,
+    `Heart rate: over a recording session the stethoscope matches a research-grade ECG within ${ses} bpm in adults${hrRows.length?` (batch: ${hrRows.map(o=>o.value+' vs '+o.ref).join(', ')})`:''}. Each 10 beats/min of resting heart rate carries a relative risk of 1.09 (1.07–1.12) for all-cause death (Zhang et al., CMAJ 2016, meta-analysis of 46 cohorts).`,
+    `Murmurs: excellent in children (AUC ${E.murmurChild.auc.value}). In adults the network ranks loud valve disease well but soft murmurs weakly (${sk('Murmur in adults')?sk('Murmur in adults').result:''}), and its flag level must be calibrated for each stethoscope.`,
+    hv?`HRV also agrees with the ECG in adults (${hv.result}).`:`HRV (RMSSD) is validated in children and adolescents; in adults it just missed its pre-set rule against the ECG, so it is not reported for adults.`,
+    `Lungs: wheeze is detected with moderate accuracy in adults (AUC ${E.wheezeAdult.auc.value}); COPD severity cannot be read from breath sounds (ρ ${B.copd.rho}, ${B.copd.n} patients).`,
+    'Next: one stethoscope model, recordings paired with an ECG, and follow-up — so that sound-derived heart rate and HRV can be tested as risk markers, not only as measurements.'];
+  $('#view').innerHTML=`<h1>Conclusions</h1><p class="sub">Written from the validation results and the batch; nothing here is typed in by hand.</p>
+  <div class="card" style="margin-bottom:16px"><ol class="concl">${C.map(t=>`<li>${esc(t)}</li>`).join('')}</ol></div>
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="card"><h2>Heart rate from the sound against the ECG</h2><div class="chart"><canvas id="cHr" aria-label="Heart rate from heart sounds against ECG"></canvas></div><p class="sub" style="margin:8px 0 0;font-size:12.5px">${esc(B.ecgSource)} · dashed line: perfect agreement.</p></div>
+    <div class="card"><h2>Murmur network on six adult databases</h2><div class="chart"><canvas id="cAuc" aria-label="AUC with 95 % interval per adult database"></canvas></div><p class="sub" style="margin:8px 0 0;font-size:12.5px">Bar: 95 % interval; dot: AUC; dashed line: the 0.70 level set before the test. Trained on children only.</p></div></div>
+  <div class="card"><h2>Not ready, and not shown</h2><ul class="plain">${B.notReady.map(t=>`<li>${esc(t)}</li>`).join('')}</ul></div>`;
+  if(!window.Chart)return;const mut=css('--muted'),line=css('--line'),acc=css('--accent'),ink=css('--ink'),warn=css('--mid');Chart.defaults.color=mut;Chart.defaults.borderColor=line;Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+  const pts=B.ecgPoints.map(([e,p])=>({x:e,y:p})),lo=Math.floor((Math.min(...pts.map(p=>Math.min(p.x,p.y)))-5)/10)*10,hi=Math.ceil((Math.max(...pts.map(p=>Math.max(p.x,p.y)))+5)/10)*10;
+  charts.push(new Chart($('#cHr'),{type:'scatter',data:{datasets:[{data:pts,pointRadius:2.4,backgroundColor:acc},{type:'line',data:[{x:lo,y:lo},{x:hi,y:hi}],borderColor:mut,borderDash:[4,4],pointRadius:0}]},options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:lo,max:hi,title:{display:true,text:'ECG (bpm)'}},y:{min:lo,max:hi,title:{display:true,text:'heart sounds (bpm)'}}}}}));
+  const A=B.adultMurmur,lab=A.map(a=>`set ${a.db} · n ${a.n}`);
+  charts.push(new Chart($('#cAuc'),{type:'bar',data:{labels:lab,datasets:[{data:A.map(a=>[a.auc.lo,a.auc.hi]),backgroundColor:A.map(a=>'ac'.includes(a.db)?acc+'55':mut+'44'),borderColor:A.map(a=>'ac'.includes(a.db)?acc:mut),borderWidth:1,barPercentage:.5},{type:'scatter',data:A.map((a,i)=>({x:a.auc.value,y:i})),backgroundColor:ink,pointRadius:4,clip:false}]},
+    options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const a=A[c.dataIndex];return `${a.what}: AUC ${a.auc.value} (${a.auc.lo}–${a.auc.hi})`}}}},scales:{x:{min:0.4,max:1.02,ticks:{callback:v=>v<=1?v.toFixed(1):''},title:{display:true,text:'AUC, abnormal vs normal'}},y:{type:'category',labels:lab}}},
+    plugins:[{id:'ref',afterDraw(ch){const x=ch.scales.x.getPixelForValue(0.7),{top,bottom}=ch.chartArea,g=ch.ctx;g.save();g.strokeStyle=warn;g.setLineDash([4,4]);g.beginPath();g.moveTo(x,top);g.lineTo(x,bottom);g.stroke();g.restore()}}]}));
+}
+function renderData(){
+  const B=BR;
+  $('#view').innerHTML=`<h1>Data and methods</h1><p class="sub">How the batch was chosen, how each measurement was validated, and where the recordings come from.</p>
+  <div class="grid g2"><div class="card"><h2>Methods</h2><ul class="plain">
+    <li>The batch: one recording drawn at random in each group (seed ${B.seed}) before any output was looked at.</li>
+    <li>Every model was frozen before it was tested; the pass rule for each test was written down before the result was seen.</li>
+    <li>Held-out tests use patients whose recordings were never used in training; external tests use databases from other hospitals and devices.</li>
+    <li>Statistics: AUC with Hanley–McNeil 95 % CI; agreement by ICC(2,1), bias and 95 % limits; proportions with Agresti–Coull CIs.</li>
+    <li>The analysis code in this app is copied from the full application, so the results here and there come from the same functions.</li></ul></div>
+  <div class="card"><h2>Data and licences</h2><ul class="plain">${B.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>
+    <p class="sub" style="margin:10px 0 0;font-size:13px">Full application: <a href="https://claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW" target="_blank" rel="noopener">AuscultaDB</a>. Built ${esc(B.generated.slice(0,10))}.</p></div></div>`;
+}
+function route(){
+  killPlayer();const h=(location.hash||'#home').slice(1);document.querySelectorAll('header nav a').forEach(a=>a.classList.toggle('active',h===a.dataset.r||(h.startsWith('patient-')&&a.dataset.r==='patients')));
+  $('#hdr').classList.remove('open');$('#navToggle').setAttribute('aria-expanded','false');window.scrollTo(0,0);
+  if(h==='patients')renderPatients();else if(h.startsWith('patient-'))renderPatient(+h.slice(8));else if(h==='analyze')renderAnalyze();else if(h==='conclusions')renderConclusions();else if(h==='data')renderData();else renderHome();
+}
+$('#navToggle').onclick=()=>{const o=$('#hdr').classList.toggle('open');$('#navToggle').setAttribute('aria-expanded',String(o))};
+(async()=>{try{BR=await getJSON('data/lite.json');window.__lite=BR}catch(e){$('#view').innerHTML=`<p class="err">Could not load the data (${esc(e.message)}).</p>`;return}
+  addEventListener('hashchange',route);route()})();
+</script>

@@ -135,7 +135,7 @@ def main():
     skills = [
         {'skill': 'Murmur at a heart valve (children)', 'evidence': f"{T['patients']} held-out children", 'result': f"AUC {T['auc']['value']}", 'status': 'works'},
         {'skill': 'Murmur in adults with valve disease', 'evidence': f"{cdb['a']['recordings']} + {cdb['c']['recordings']} adult recordings (external)" if 'a' in cdb and 'c' in cdb else 'adult recordings',
-         'result': ' · '.join(f"set {d} AUC {cdb[d]['auc']['value']}" for d in 'ac' if d in cdb), 'status': 'works' if CV['murmur']['transfers'] else 'partly'},
+         'result': (f"AUC {cdb['a']['auc']['value']:.2f} (prolapse, benign murmurs) to {cdb['c']['auc']['value']:.2f} (aortic stenosis / mitral regurgitation)" if 'a' in cdb and 'c' in cdb else ''), 'status': 'works' if CV['murmur']['transfers'] else 'partly'},
         {'skill': 'Heart rate from heart sounds (children)', 'evidence': f"{SEG['seg']['hr']['n']:,} held-out recordings vs experts", 'result': f"ICC {SEG['seg']['hr']['icc']}", 'status': 'works'},
         {'skill': 'Heart rate from heart sounds (adults)', 'evidence': f"{EP['subjects']} men at rest vs research-grade ECG ({hrA['n']} 30-s windows)", 'result': f"bias {hrA['bias']} bpm, ±{max(abs(hrA['loa'][0]), abs(hrA['loa'][1]))} bpm per window; session ICC {hrR['icc']}", 'status': 'works' if hrA['pass'] else 'partly'},
         {'skill': 'Heart-rate variability, RMSSD (children, adolescents)', 'evidence': f"{band['Child']['n'] + band['Adolescent']['n']} held-out recordings vs experts", 'result': f"ICC {band['Child']['icc']} / {band['Adolescent']['icc']}", 'status': 'works'},
@@ -160,6 +160,7 @@ def main():
                'KAUH lung sounds — Fraiwan et al., Mendeley Data jwyy9np4gv v3; CC BY 4.0',
                'RespiratoryDatabase@TR — Altan, Kutlu et al., Mendeley Data 10.17632/p9z4h98s6j.2; CC BY 4.0',
                'EPHNOGRAM 1.0.0 — Kazemnejad et al., PhysioNet, doi 10.13026/tjtq-5911; ODC-By 1.0 (analysis only; no EPHNOGRAM audio in this brief)']}
+    out['validation'] = V
     out['evidence'] = {
         'murmurChild': {'patients': T['patients'], 'recordings': T['recordings'], 'auc': T['auc'], 'sens': T['sens']['value'], 'spec': T['spec']['value']},
         'murmurAdult': {'recordings': CV['n'], 'databases': len(CV['murmur']['all']), 'valveAuc': {d: cdb[d]['auc'] for d in 'ac' if d in cdb}},
