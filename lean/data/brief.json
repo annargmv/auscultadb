@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-21T23:36:38.146852+00:00",
+ "generated": "2026-11-22T01:07:34.098457+00:00",
  "seed": 20261121,
  "threshold": 0.5927,
  "skills": [
@@ -1864,5 +1864,71 @@
   "KAUH lung sounds — Fraiwan et al., Mendeley Data jwyy9np4gv v3; CC BY 4.0",
   "RespiratoryDatabase@TR — Altan, Kutlu et al., Mendeley Data 10.17632/p9z4h98s6j.2; CC BY 4.0",
   "EPHNOGRAM 1.0.0 — Kazemnejad et al., PhysioNet, doi 10.13026/tjtq-5911; ODC-By 1.0 (analysis only; no EPHNOGRAM audio in this brief)"
- ]
+ ],
+ "evidence": {
+  "murmurChild": {
+   "patients": 349,
+   "recordings": 1185,
+   "auc": {
+    "value": 0.91,
+    "lo": 0.882,
+    "hi": 0.939
+   },
+   "sens": 69.6,
+   "spec": 94.2
+  },
+  "murmurAdult": {
+   "recordings": 3240,
+   "databases": 6,
+   "valveAuc": {
+    "a": {
+     "value": 0.687,
+     "lo": 0.634,
+     "hi": 0.741
+    },
+    "c": {
+     "value": 1.0,
+     "lo": 1.0,
+     "hi": 1.0
+    }
+   }
+  },
+  "hrAdult": {
+   "men": 12,
+   "windows": 367,
+   "bias": -0.5,
+   "loa": [
+    -10.3,
+    9.3
+   ],
+   "session": {
+    "n": 14,
+    "icc": 0.999,
+    "loa": [
+     -1.2,
+     0.9
+    ]
+   }
+  },
+  "hrChild": {
+   "recordings": 1166,
+   "icc": 0.95,
+   "within5": 97.3
+  },
+  "wheezeAdult": {
+   "adults": 111,
+   "auc": {
+    "value": 0.761,
+    "lo": 0.664,
+    "hi": 0.858
+   },
+   "sens": 78,
+   "spec": 55.7
+  },
+  "copd": {
+   "patients": 42,
+   "channels": 504
+  },
+  "totalTested": 5407
+ }
 }

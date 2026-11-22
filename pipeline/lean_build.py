@@ -160,6 +160,14 @@ def main():
                'KAUH lung sounds — Fraiwan et al., Mendeley Data jwyy9np4gv v3; CC BY 4.0',
                'RespiratoryDatabase@TR — Altan, Kutlu et al., Mendeley Data 10.17632/p9z4h98s6j.2; CC BY 4.0',
                'EPHNOGRAM 1.0.0 — Kazemnejad et al., PhysioNet, doi 10.13026/tjtq-5911; ODC-By 1.0 (analysis only; no EPHNOGRAM audio in this brief)']}
+    out['evidence'] = {
+        'murmurChild': {'patients': T['patients'], 'recordings': T['recordings'], 'auc': T['auc'], 'sens': T['sens']['value'], 'spec': T['spec']['value']},
+        'murmurAdult': {'recordings': CV['n'], 'databases': len(CV['murmur']['all']), 'valveAuc': {d: cdb[d]['auc'] for d in 'ac' if d in cdb}},
+        'hrAdult': {'men': EP['subjects'], 'windows': hrA['n'], 'bias': hrA['bias'], 'loa': hrA['loa'], 'session': {'n': hrR['n'], 'icc': hrR['icc'], 'loa': hrR['loa']}},
+        'hrChild': {'recordings': SEG['seg']['hr']['n'], 'icc': SEG['seg']['hr']['icc'], 'within5': SEG['seg']['hr']['within5bpm']},
+        'wheezeAdult': {'adults': ext['n'], 'auc': kc['auc'], 'sens': kf['sens']['value'], 'spec': kf['spec']['value']},
+        'copd': {'patients': TV['patients'], 'channels': TV['channels']},
+        'totalTested': T['recordings'] + CV['n'] + hrA['n'] + ext['n'] + TV['channels']}
     (OUT / 'data' / 'brief.json').write_text(json.dumps(out, ensure_ascii=False, indent=1))
     print(len(cases), 'cases ->', OUT); [print(' ', c['id'], c['title'], [(o['skill'], o['value'], o.get('flagText')) for o in c['outputs']]) for c in cases]
 

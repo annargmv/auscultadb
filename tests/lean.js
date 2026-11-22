@@ -25,5 +25,14 @@ const OUT = path.join(ROOT, 'tests', 'out'); fs.mkdirSync(OUT, { recursive: true
     check(wide <= 1, `no sideways scroll at phone width (${wide} px over)`);
     await pg.screenshot({ path: path.join(OUT, 'lean-phone.png'), fullPage: false });
     check(errors.length === 0, `no page errors${errors.length ? ': ' + errors.slice(0, 2).join(' | ') : ''}`);
+    // investor demo page (lean/demo.html): same data, hero recording, three tiles, batch player switches recordings
+    await pg.setViewportSize({ width: 1360, height: 1000 }); await pg.goto(url('').replace('index.html', 'demo.html'));
+    await pg.waitForFunction(() => window.__demo && (window.__ready || 0) >= 2, null, { timeout: 60000 });
+    await pg.click('.pick[data-i="5"]'); await pg.waitForFunction(() => (window.__ready || 0) >= 3, null, { timeout: 60000 });
+    const d = await pg.evaluate(() => ({ tiles: document.querySelectorAll('.tile').length, hero: document.querySelectorAll('#hRead .ro').length, picks: document.querySelectorAll('.pick').length,
+      shown: document.querySelector('#detail h3').textContent, want: window.__demo.cases[5].title, notDx: /not a diagnos/i.test(document.body.innerText), charts: document.querySelectorAll('canvas').length }));
+    check(d.tiles === 3 && d.hero >= 2 && d.picks === 10 && d.shown === d.want && d.notDx && d.charts >= 2, `investor demo: hero readouts ${d.hero}, ${d.tiles} tiles, player switches to "${d.shown}", ${d.charts} charts`);
+    await pg.screenshot({ path: path.join(OUT, 'demo-desktop.png'), fullPage: true });
+    check(errors.length === 0, `demo: no page errors${errors.length ? ': ' + errors.slice(0, 2).join(' | ') : ''}`);
   } catch (e) { check(false, 'lean brief: ' + e.message) } finally { await close() }
 })();
