@@ -86,6 +86,8 @@ ul.plain{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:6px
 .crumb{font-size:13px;color:var(--muted);text-decoration:none}
 .pager{display:flex;justify-content:space-between;gap:10px;margin-top:16px}
 .err{color:var(--flag)}
+.refs li{margin-bottom:6px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:12.5px;color:var(--muted)}.legend label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.legend i{display:inline-block;width:14px;height:10px;border-radius:3px;border:1px solid var(--line)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -96,6 +98,8 @@ ul.plain{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:6px
     <a href="#home" data-r="home">Home</a>
     <a href="#patients" data-r="patients">Batch of 10</a>
     <a href="#analyze" data-r="analyze">Analyze a recording</a>
+    <a href="#disease" data-r="disease">Which disease?</a>
+    <a href="#longevity" data-r="longevity">Longevity</a>
     <a href="#conclusions" data-r="conclusions">Conclusions</a>
     <a href="#data" data-r="data">Data and methods</a>
   </nav>
@@ -123,9 +127,28 @@ function makePlayer(el,url,marks){
   const plugins=[WaveSurfer.Spectrogram?WaveSurfer.Spectrogram.create({height:110,labels:true,labelsColor:css('--muted'),frequencyMin:0,frequencyMax:1500,fftSamples:256,noverlap:192,scale:'linear',colorMap:'roseus',sampleRate:8000}):null,
     WaveSurfer.Timeline?WaveSurfer.Timeline.create({height:14,style:{fontSize:'10px',color:css('--muted')}}):null,regions].filter(Boolean);
   const w=WaveSurfer.create({container:el,url,height:64,waveColor:css('--wave'),progressColor:css('--accent'),cursorColor:css('--ink'),normalize:true,sampleRate:8000,plugins});
-  w.on('ready',()=>{window.__ready=(window.__ready||0)+1;(marks||[]).forEach(m=>regions&&regions.addRegion({start:m.t0,end:m.t1,color:m.color||'rgba(180,45,45,.18)',drag:false,resize:false}))});
+  w.on('ready',()=>{window.__ready=(window.__ready||0)+1;drawMarks(regions,marks)});
   return {w,regions};
 }
+// ---- annotations: what is heard, computed in the browser by the same engine (labelled regions on the waveform)
+const LAYERS={s1:{label:'S1',color:'rgba(190,40,40,.55)',on:true},s2:{label:'S2',color:'rgba(30,90,200,.55)',on:true},mur:{label:'murmur-like (network above its flag level)',color:'rgba(190,40,40,.13)',on:true},
+  insp:{label:'inspiration',color:'rgba(14,116,128,.16)',on:true},exp:{label:'expiration',color:'rgba(138,78,18,.12)',on:true},wz:{label:'wheeze / rhonchi',color:'rgba(120,60,170,.30)',on:true}};
+function drawMarks(regions,marks){if(!regions)return;regions.clearRegions();(marks||[]).filter(m=>LAYERS[m.layer]&&LAYERS[m.layer].on).forEach(m=>{const el=document.createElement('span');el.textContent=m.text||'';el.style.cssText='font:600 9.5px Inter,system-ui,sans-serif;color:var(--ink);padding:1px 2px;pointer-events:none';
+  regions.addRegion({start:m.t0,end:m.t1,color:LAYERS[m.layer].color,content:m.text?el:undefined,drag:false,resize:false})})}
+function runsOf(path,state,t0,hop){const R=[];let a=-1;for(let f=0;f<=path.length;f++){const inS=f<path.length&&path[f]===state;if(inS&&a<0)a=f;if(!inS&&a>=0){R.push([t0+a*hop,t0+f*hop]);a=-1}}return R}
+async function annotate(c,blob){
+  const {x}=await decodeToSR(blob,60),M=[];let note='';
+  if(c.kind==='heart'){await ensureModels('heart');const s=segmentHeartSounds(x),m=cnnMurmur(x);
+    if(s){runsOf(s.path,0,s.t0,s.hop).forEach(([a,b])=>M.push({layer:'s1',t0:a,t1:Math.max(b,a+0.03)}));runsOf(s.path,2,s.t0,s.hop).forEach(([a,b])=>M.push({layer:'s2',t0:a,t1:Math.max(b,a+0.03)}))}
+    if(m){mergeRuns(m.windows.map((p,i)=>p>=CNN.threshold?[i*CNN_HOP*0.01,i*CNN_HOP*0.01+CNN_WIN*0.01]:null).filter(Boolean),0).forEach(([a,b])=>M.push({layer:'mur',t0:a,t1:Math.min(b,x.length/SR),text:'murmur-like'}))}
+    const h=s?hrvFromTimes(s.s1):null;note=`${s?s.s1.length:0} beats found (S1 red, S2 blue)${h&&h.hr?`, ${Math.round(h.hr)} bpm`:''}; ${m?m.windows.filter(p=>p>=CNN.threshold).length:0} of ${m?m.windows.length:0} three-second windows above the murmur network's flag level (light red).`}
+  else{const A=analyzeSignal(x);(A.cycles||[]).filter(q=>!q.single).forEach(q=>{M.push({layer:'insp',t0:q.start,t1:q.split,text:'In'});M.push({layer:'exp',t0:q.split,t1:q.expEnd||q.end,text:'Ex'})});
+    const T=(A.tonal||[]).map(t=>[t.t0,Math.max(t.t1,t.t0+0.05),t.freq]);mergeRuns(T,0.3).forEach(([a,b])=>{const f=T.filter(t=>t[0]<b&&t[1]>a).map(t=>t[2]).sort((u,v)=>u-v);M.push({layer:'wz',t0:a,t1:b,text:`wheeze ~${Math.round(f[f.length>>1])} Hz`})});
+    note=`${(A.cycles||[]).filter(q=>!q.single).length} breath cycles (inspiration teal, expiration amber${(A.cycles||[]).some(q=>q.estimated)?', phases estimated from sound activity':''}); ${M.filter(q=>q.layer==='wz').length} wheeze segments (parts under 0.3 s apart joined), labelled with their median pitch.`}
+  const dur=x.length/SR;M.forEach(q=>{if(q.text&&q.t1-q.t0<dur*0.04)q.text=''});   // label only regions wide enough to read
+  return {M,note}}
+function mergeRuns(R,gap){const S=R.slice().sort((a,b)=>a[0]-b[0]),O=[];S.forEach(r=>{const l=O[O.length-1];if(l&&r[0]<=l[1]+gap)l[1]=Math.max(l[1],r[1]);else O.push([r[0],r[1]])});return O}
+function legendHTML(kind){const ks=kind==='heart'?['s1','s2','mur']:['insp','exp','wz'];return `<div class="legend">${ks.map(k=>`<label><input type="checkbox" data-layer="${k}" ${LAYERS[k].on?'checked':''}><i style="background:${LAYERS[k].color}"></i>${esc(LAYERS[k].label)}</label>`).join('')}</div>`}
 // ---------------- pages
 function renderHome(){
   const B=BR,E=B.evidence,ad=B.cases.filter(c=>c.adult).length;
@@ -162,17 +185,16 @@ async function renderPatient(i){
   <div class="grid" style="align-content:start">
     <div class="card"><div class="wave" id="pw" role="img" aria-label="Waveform and spectrogram of this recording"></div>
       <div class="ctrl"><button class="btn primary" id="pplay" type="button" disabled>▶ Play</button><select id="prate" aria-label="Playback speed"><option value="1">1×</option><option value="0.5">0.5×</option></select>
-      <span class="sub" id="pmark" style="margin:0;font-size:12.5px"></span></div></div>
+      </div><div id="plegend"></div><p class="sub" id="pmark" style="margin:6px 0 0;font-size:12.5px"></p><p class="sub" style="margin:4px 0 0;font-size:12px">Annotations are computed in this browser from the recording by the same validated code. S1/S2 timing: 94.6 % of expert-marked S1 found within 50 ms (held-out children). Wheeze segments and breath phases come from the detector and are approximate.</p></div>
     <div class="card"><h2>Findings</h2>${findingsHTML(c,c.outputs)}</div></div></div>
   <div class="pager">${i>0?`<a class="btn" href="#patient-${i-1}">← ${esc(B.cases[i-1].title)}</a>`:'<span></span>'}${i<B.cases.length-1?`<a class="btn" href="#patient-${i+1}">${esc(B.cases[i+1].title)} →</a>`:''}</div>`;
-  try{const blob=await caseBlob(c),url=URL.createObjectURL(blob);let marks=[];
-    if(c.regions&&c.regions.length){marks=c.regions.map(r=>({t0:r.t0,t1:r.t1,color:'rgba(14,116,128,.25)'}));$('#pmark').textContent=`Shaded: ${c.regions.length} segments where the detector found continuous sound (wheeze / rhonchi).`}
-    else if(c.kind==='heart'){await ensureModels('heart');const {x}=await decodeToSR(blob,60),s=segmentHeartSounds(x);
-      if(s&&s.s1.length){marks=s.s1.map(t=>({t0:t,t1:t+0.05,color:'rgba(180,45,45,.45)'}));const h=hrvFromTimes(s.s1);$('#pmark').textContent=`Red ticks: ${s.s1.length} first heart sounds found by the beat finder in this audio${h&&h.hr?` (${Math.round(h.hr)} bpm)`:''}.`}}
+  try{const blob=await caseBlob(c),url=URL.createObjectURL(blob);const an=await annotate(c,blob);
     if(location.hash!=='#patient-'+i)return;
-    killPlayer();const P=makePlayer($('#pw'),url,marks);if(!P)return;WS=P.w;const b=$('#pplay');
+    $('#pmark').textContent=an.note;$('#plegend').innerHTML=legendHTML(c.kind);
+    killPlayer();const P=makePlayer($('#pw'),url,an.M);if(!P)return;WS=P.w;const b=$('#pplay');
+    $('#plegend').querySelectorAll('input').forEach(cb=>cb.onchange=()=>{LAYERS[cb.dataset.layer].on=cb.checked;drawMarks(P.regions,an.M)});
     WS.on('ready',()=>b.disabled=false);b.onclick=()=>WS.playPause();WS.on('play',()=>b.textContent='❚❚ Pause');WS.on('pause',()=>b.textContent='▶ Play');WS.on('finish',()=>b.textContent='▶ Play');
-    $('#prate').onchange=e=>WS.setPlaybackRate(+e.target.value,true)}
+    $('#prate').onchange=e=>WS.setPlaybackRate(+e.target.value,true);window.__annot={n:an.M.length,layers:[...new Set(an.M.map(m=>m.layer))]}}
   catch(e){$('#pw').innerHTML=`<p class="err" style="padding:10px">Audio not loaded: ${esc(e.message)}</p>`}
 }
 function renderAnalyze(){
@@ -245,10 +267,106 @@ function renderData(){
   <div class="card"><h2>Data and licences</h2><ul class="plain">${B.sources.map(s=>`<li>${esc(s)}</li>`).join('')}</ul>
     <p class="sub" style="margin:10px 0 0;font-size:13px">Full application: <a href="https://claude.ai/artifact/AwfP2h99UAWWWchAJFhjUW" target="_blank" rel="noopener">AuscultaDB</a>. Built ${esc(B.generated.slice(0,10))}.</p></div></div>`;
 }
+// ---- Disease: multi-database training, children and adults (pipeline/disease_train.py → meta/disease_model.json)
+const pct=v=>Math.round(v*100)+' %',ci=a=>`${a.value} (${a.lo}–${a.hi})`;
+function refList(R){return `<ul class="plain refs">${R.map(r=>`<li>${esc(r.cite)}. <a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">doi:${esc(r.doi)}</a>${r.pmid?` · PMID ${esc(r.pmid)}`:''}${r.why?`<br><span class="sub">${esc(r.why)}</span>`:''}</li>`).join('')}</ul>`}
+function renderDisease(){
+  const D=BR.disease,P=D.populations,pops=[['children','Children'],['adults','Adults']];
+  const lung=BR.cases.map((c,i)=>({c,i})).filter(x=>x.c.diseaseOof),top=o=>Object.entries(o).sort((a,b)=>b[1]-a[1])[0],hit=lung.filter(x=>top(x.c.diseaseOof)[0]===x.c.diagnosisClass).length;
+  const why=p=>{const r=[];if(p.macroAuc<0.70)r.push(`macro AUC ${p.macroAuc} is below 0.70`);if(p.macroAuc<=p.baselines.databaseOnly)r.push(`knowing only which database a recording came from does as well (${p.baselines.databaseOnly})`);if(p.macroAuc<=p.baselines.ageOnly)r.push(`age alone does as well (${p.baselines.ageOnly})`);
+    const bad=p.leaveOneDatabaseOut.filter(l=>l.auc.lo<=0.5);if(bad.length)r.push(`on a database it was not trained on, ${bad.length} of ${p.leaveOneDatabaseOut.length} class tests include chance (AUC 0.5)`);return r};
+  const one=(p,k)=>p.classByDatabase.filter(c=>c.largestShare>=0.9).map(c=>`${c.class} (${pct(c.largestShare)} from ${c.largest})`);
+  $('#view').innerHTML=`<h1>Which disease? Training across the open databases</h1>
+  <p class="sub">One model per population, trained on every open respiratory-sound database with a diagnosis, then tested the way a new hospital would use it. Retrained daily; this run ${esc(D.generated.slice(0,10))}.</p>
+  <div class="card" style="margin-bottom:16px;border:1.5px solid var(--flag)"><h2 style="color:var(--flag)">Result: failed validation in ${pops.filter(([k])=>!P[k].passed).length===2?'both populations':'one population'} — not used to suggest a diagnosis</h2>
+    <ul class="plain">${pops.map(([k,n])=>`<li><b>${n}</b> (${P[k].patients} patients): ${P[k].passed?'passed':esc(why(P[k]).join('; '))}.</li>`).join('')}</ul></div>
+  <div class="card" style="margin-bottom:16px"><h2>The batch: what the model answered for each lung recording</h2>
+    <div class="tbl"><table><thead><tr><th>Recording</th><th>Diagnosis on record</th><th>Model's top class</th><th>Matches</th></tr></thead><tbody>
+    ${lung.map(({c,i})=>{const t=top(c.diseaseOof);return `<tr><td><a href="#patient-${i}">${esc(c.title)}</a></td><td>${esc(c.diagnosisClass)}</td><td>${esc(t[0])} <span class="num">${pct(t[1])}</span></td><td>${t[0]===c.diagnosisClass?'yes':'no'}</td></tr>`}).join('')}</tbody></table></div>
+    <p class="sub" style="margin:10px 0 0;font-size:13px">Each answer comes from a model that did not see this patient (patient-grouped 5-fold cross-validation). Top class matched in ${hit} of ${lung.length}. A COPD answer for a RespiratoryDatabase@TR or chronic-bronchitis/emphysema recording can come from the collection alone, because those databases hold only COPD.</p></div>
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="card"><h2>Disease or collection?</h2><div class="chart"><canvas id="dBase" aria-label="Macro AUC of the model against database-only and age-only baselines"></canvas></div><p class="sub" style="margin:8px 0 0;font-size:12.5px">Macro AUC, patient-grouped 5-fold CV. A model that only knows the database, or only the age, is the baseline it must beat. Dashed: 0.70, the level set before training.</p></div>
+    <div class="card"><h2>Tested on a database it never saw</h2><div class="chart" style="height:${Math.max(250,22*(P.children.leaveOneDatabaseOut.length+P.adults.leaveOneDatabaseOut.length)+60)}px"><canvas id="dLodo" aria-label="Leave-one-database-out AUC with 95 % intervals"></canvas></div><p class="sub" style="margin:8px 0 0;font-size:12.5px">Trained on the other databases, tested on the one named. Bar: 95 % interval; dot: AUC; dashed: chance.</p></div></div>
+  <div class="card" style="margin-bottom:16px"><h2>Training data</h2><div class="tbl"><table><thead><tr><th>Population</th><th>Database</th><th>Stethoscope</th><th class="num">Patients</th><th class="num">Recordings</th><th>Diagnoses (patients)</th></tr></thead><tbody>
+    ${pops.flatMap(([k,n])=>P[k].inventory.map(v=>`<tr><td>${n}</td><td>${esc(v.db)}</td><td>${esc(v.device)}</td><td class="num">${v.patients}</td><td class="num">${v.recordings.toLocaleString()}</td><td>${esc(Object.entries(v.classes).sort((a,b)=>b[1]-a[1]).map(([c,m])=>c+' '+m).join(', '))}</td></tr>`)).join('')}</tbody></table></div>
+    <p class="sub" style="margin:10px 0 0;font-size:13px">Features: the app's ${D.features.length} recording measurements (spectral shape, breathing rate, crackle rate, wheeze fraction, I:E), averaged per patient; recording length left out because it differs by protocol, not by disease. Gradient boosting with fixed settings. ICBHI audio is analysed only (research licence).</p></div>
+  <div class="card" style="margin-bottom:16px"><h2>What is missing to answer "which disease do these patients have"</h2><ol class="concl">
+    <li>The same diagnoses recorded in several hospitals. ${esc(one(P.adults).concat(one(P.children)).join('; ')||'—')} — so a model can learn where a recording was made instead of the disease.</li>
+    <li>Healthy controls in every database. RespiratoryDatabase@TR and the chronic-bronchitis/emphysema set contain only COPD; healthy adults come from one hospital.</li>
+    <li>A confirmed reference standard per patient (spirometry, imaging, echocardiography) and age and sex for every recording; the chronic-bronchitis/emphysema set has neither patient numbers nor ages.</li>
+    <li>Recordings from more than one stethoscope per disease, so device and disease can be told apart, and a per-device calibration measured.</li>
+    <li>Context a clinician uses with the sound: symptoms, vital signs, oxygen saturation. Crackles and wheeze are shared by several diseases (Bohadana 2014).</li>
+    <li>A prospective test set from one site and one stethoscope, collected after the model is frozen. The meta-analysis below finds the same gap across 41 studies.</li></ol></div>
+  <div class="card"><h2>Literature</h2>${refList(D.refs)}</div>`;
+  if(!window.Chart)return;const mut=css('--muted'),line=css('--line'),acc=css('--accent'),ink=css('--ink'),warn=css('--mid'),fl=css('--flag');Chart.defaults.color=mut;Chart.defaults.borderColor=line;Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+  const refLine=(v,c)=>({id:'r'+v,afterDraw(ch){const s=ch.scales[ch.options.indexAxis==='y'?'x':'y'],p=s.getPixelForValue(v),{left,right,top,bottom}=ch.chartArea,g=ch.ctx;g.save();g.strokeStyle=c;g.setLineDash([4,4]);g.beginPath();if(ch.options.indexAxis==='y'){g.moveTo(p,top);g.lineTo(p,bottom)}else{g.moveTo(left,p);g.lineTo(right,p)}g.stroke();g.restore()}});
+  charts.push(new Chart($('#dBase'),{type:'bar',data:{labels:pops.map(p=>p[1]),datasets:[{label:'model (sound features)',data:pops.map(([k])=>P[k].macroAuc),backgroundColor:acc},{label:'database only',data:pops.map(([k])=>P[k].baselines.databaseOnly),backgroundColor:mut+'88'},{label:'age only',data:pops.map(([k])=>P[k].baselines.ageOnly),backgroundColor:warn+'99'}]},
+    options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}},scales:{y:{min:0.4,max:1,title:{display:true,text:'macro AUC'}}}},plugins:[refLine(0.7,fl)]}));
+  const L=pops.flatMap(([k,n])=>P[k].leaveOneDatabaseOut.map(l=>({...l,pop:n==='Children'?'Child':'Adult'}))),lab=L.map(l=>`${l.pop} · ${l.heldOut.replace('RespiratoryDatabase@TR','TR')} · ${l.class.replace(' / bronchiolitis','')}`);
+  charts.push(new Chart($('#dLodo'),{type:'bar',data:{labels:lab,datasets:[{data:L.map(l=>[l.auc.lo,l.auc.hi]),backgroundColor:L.map(l=>l.auc.lo>0.5?acc+'55':mut+'44'),borderColor:L.map(l=>l.auc.lo>0.5?acc:mut),borderWidth:1,barPercentage:.55},{type:'scatter',data:L.map((l,i)=>({x:l.auc.value,y:i})),backgroundColor:ink,pointRadius:3.5}]},
+    options:{indexAxis:'y',animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const l=L[c.dataIndex];return `AUC ${ci(l.auc)} · ${l.pos} of ${l.n} patients`}}}},scales:{x:{min:0,max:1,title:{display:true,text:'AUC on the held-out database'}},y:{type:'category',labels:lab,ticks:{font:{size:10.5}}}}},plugins:[refLine(0.5,warn)]}));
+}
+// ---- Longevity: problem found → published solution → predicted change (pipeline/longevity_train.py → meta/longevity_model.json)
+function coxRisk(M,x){const c=M.cox;let lp=0;c.vars.forEach((v,k)=>lp+=c.coef[k]*(x[v]-c.mean[k]));return 1-Math.pow(c.s0,Math.exp(lp))}
+function renderLongevity(){
+  const M=BR.longevity,H=M.hazardRatios,T=M.test,co=M.cohort,sc=M.scenarios;
+  const hrCases=BR.cases.map((c,i)=>({c,i,o:c.outputs.find(o=>o.skill==='Heart rate')})).filter(x=>x.o&&x.c.adult);
+  const wz=BR.cases.flatMap(c=>c.outputs.filter(o=>o.skill.startsWith('Wheeze'))),wzF=wz.filter(o=>o.flag).length;
+  const f2=v=>v.toFixed(2),hrTxt=v=>`${f2(v.hr)} (${f2(v.lo)}–${f2(v.hi)})`;
+  $('#view').innerHTML=`<h1>Longevity: what the recording found, and what could change it</h1>
+  <p class="sub">A survival model trained on public data, applied to the two findings a stethoscope recording gives here and that also carry prognostic information. Associations, not proven treatment effects. Retrained daily; this run ${esc(M.generated.slice(0,10))}.</p>
+  <div class="grid g3" style="margin-bottom:16px">
+    <div class="card"><h2>1 · Problem found</h2><p><b>Resting heart rate</b> from the heart sounds${hrCases.length?` (batch adults: ${hrCases.map(x=>esc(x.o.value)).join(', ')})`:''}; it matches a research-grade ECG within about 1 bpm over a session.</p><p><b>Wheeze</b> in the breath sounds: ${wzF} of ${wz.length} batch lung recordings flagged.</p></div>
+    <div class="card"><h2>2 · What it means</h2><p>In ${(co.train+co.test).toLocaleString()} US adults aged ${co.ages[0]}–${co.ages[1]} followed for up to 20 years, adjusted for age, sex, BMI and smoking:</p><p>each 10 beats/min higher: hazard ratio <b>${hrTxt(H.hr10)}</b><br>wheeze in the past year: <b>${hrTxt(H.wheeze)}</b></p></div>
+    <div class="card"><h2>3 · Solution with evidence</h2><p><b>Exercise</b> lowered resting heart rate by ${-sc[0].deltaHr} beats/min against controls across 191 trials, and endurance training by up to ${-sc[1].deltaHr} (Reimers 2018).</p><p><b>Wheeze</b> calls for a clinical work-up (asthma, COPD). No trial gives a survival effect of treating it, so no change is predicted for it.</p></div></div>
+  <div class="card" style="margin-bottom:16px"><h2>Predicted 5-year risk of death, and the change exercise could bring</h2>
+    <div class="formrow" style="flex-wrap:wrap">
+      <label>Batch recording <select id="lgCase"><option value="">— set by hand —</option>${hrCases.map(x=>`<option value="${x.i}">${esc(x.c.title)} · ${esc(x.o.value)}</option>`).join('')}</select></label>
+      <label>Heart rate <input id="lgHr" type="number" min="45" max="120" value="${hrCases.length?parseFloat(hrCases[0].o.value):72}" style="width:70px"> bpm</label>
+      <label>Age <input id="lgAge" type="number" min="${co.ages[0]}" max="${co.ages[1]}" value="60" style="width:64px"></label>
+      <label>Sex <select id="lgSex"><option value="0">male</option><option value="1">female</option></select></label>
+      <label>BMI <input id="lgBmi" type="number" min="15" max="60" step="0.5" value="27" style="width:64px"></label>
+      <label>Smoking <select id="lgSmk"><option value="never">never</option><option value="former">former</option><option value="now">current</option></select></label>
+      <label><input id="lgWz" type="checkbox"> wheeze</label></div>
+    <div class="chart" style="height:290px"><canvas id="lgChart" aria-label="Predicted 5-year risk against resting heart rate"></canvas></div>
+    <p id="lgOut" style="margin:10px 0 0"></p>
+    <p class="sub" style="margin:6px 0 0;font-size:12.5px">Curve: the model's 5-year risk across resting heart rates for this profile; dashed: the same profile with the other wheeze status. Points: now, and after the two published exercise effects. Age and the other inputs are not in the recording; set them for the person.</p></div>
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="card"><h2>How well the model predicts</h2><div class="tbl"><table><thead><tr><th>Model (trained ${esc(co.trainCycles)}, tested ${esc(co.testCycles)})</th><th class="num">C-index</th><th class="num">5-year AUC</th></tr></thead><tbody>
+      ${[['A','age and sex'],['B','+ resting heart rate'],['C','+ wheeze, BMI, smoking (used here)'],['G','gradient boosting, same inputs']].map(([k,n])=>`<tr><td>${n}</td><td class="num">${T.cIndex[k]}</td><td class="num">${T.auc5y[k]}</td></tr>`).join('')}</tbody></table></div>
+      <p class="sub" style="margin:10px 0 0;font-size:13px">Tested on ${co.test.toLocaleString()} people from later survey years (${co.deathsTest.toLocaleString()} deaths). Heart rate and wheeze with the other inputs add ${T.deltaC_vs_ageSex.value} to the C-index over age and sex (95 % CI ${T.deltaC_vs_ageSex.ci.join(' to ')}). The machine-learning comparator did ${T.deltaC_gb_vs_cox.value<0?'worse':'better'} (${T.deltaC_gb_vs_cox.value}, CI ${T.deltaC_gb_vs_cox.ci.join(' to ')}), so the ${T.deployed==='C'?'Cox model':'gradient-boosting model'} is used, as fixed before training.</p></div>
+    <div class="card"><h2>Calibration on the test years</h2><div class="chart"><canvas id="lgCal" aria-label="Predicted against observed 5-year risk by tenth of predicted risk"></canvas></div><p class="sub" style="margin:8px 0 0;font-size:12.5px">Each dot: one tenth of the test cohort, predicted against observed (Kaplan–Meier) 5-year risk; dashed: perfect calibration.</p></div></div>
+  <div class="grid g2"><div class="card"><h2>Limits</h2><ul class="plain">
+    <li>NHANES heart rate is a 60-s pulse count after rest; a stethoscope rate from a short clip agrees with the ECG over a session, less well per 30-s window.</li>
+    <li>NHANES wheeze is self-reported over 12 months, not heard on a recording.</li>
+    <li>The predicted change carries an association through the model. Lowering heart rate by exercise has not been shown in a trial to lower mortality by this amount.</li>
+    <li>US adults ${co.ages[0]}–${co.ages[1]}; survey weights not used; ${T.calibration.length?`the highest-risk tenth is over-predicted (${pct(T.calibration.at(-1).pred)} vs ${pct(T.calibration.at(-1).obs)} observed)`:''}.</li></ul>
+    <p class="sub" style="margin:10px 0 0;font-size:13px">${esc(M.source)}. Public domain (US government work); NCHS asks users to cite the data.</p></div>
+    <div class="card"><h2>Literature</h2>${refList(M.refs)}</div></div>`;
+  const get=()=>({hr:+$('#lgHr').value,age:+$('#lgAge').value,female:+$('#lgSex').value,bmi:+$('#lgBmi').value,smk:$('#lgSmk').value,wz:$('#lgWz').checked?1:0});
+  const X=(p,hr,wz)=>({age:p.age,female:p.female,hr10:hr/10,wheeze:wz,bmi:p.bmi,smoke_now:p.smk==='now'?1:0,smoke_former:p.smk==='former'?1:0});
+  let ch=null,cal=null;const mut=css('--muted'),line=css('--line'),acc=css('--accent'),ink=css('--ink'),warn=css('--mid'),ok=css('--ok');
+  const draw=()=>{const p=get();if(!(p.hr>=40&&p.hr<=140&&p.age>0))return;const hs=[];for(let h=45;h<=115;h++)hs.push(h);
+    const r0=coxRisk(M,X(p,p.hr,p.wz)),rs=sc.map(s=>coxRisk(M,X(p,p.hr+s.deltaHr,p.wz)));
+    $('#lgOut').innerHTML=`Now: <b>${(100*r0).toFixed(1)} %</b> predicted 5-year risk at ${p.hr} bpm. ${sc.map((s,k)=>`${esc(s.label)} (${s.deltaHr} bpm): <b>${(100*rs[k]).toFixed(1)} %</b> (${(100*(rs[k]-r0)).toFixed(1)} points, ${Math.round(100*(rs[k]/r0-1))} % relative)`).join(' · ')}.`;
+    if(!window.Chart)return;Chart.defaults.color=mut;Chart.defaults.borderColor=line;Chart.defaults.font.family="'Inter',system-ui,sans-serif";
+    const ds=[{label:p.wz?'with wheeze':'no wheeze',data:hs.map(h=>({x:h,y:100*coxRisk(M,X(p,h,p.wz))})),borderColor:acc,pointRadius:0,borderWidth:2},
+      {label:p.wz?'no wheeze':'with wheeze',data:hs.map(h=>({x:h,y:100*coxRisk(M,X(p,h,1-p.wz))})),borderColor:mut,borderDash:[5,4],pointRadius:0,borderWidth:1.5},
+      {type:'scatter',label:'now',data:[{x:p.hr,y:100*r0}],backgroundColor:ink,pointRadius:6},
+      {type:'scatter',label:'after exercise (published effects)',data:sc.map((s,k)=>({x:p.hr+s.deltaHr,y:100*rs[k]})),backgroundColor:ok,pointRadius:5,pointStyle:'triangle'}];
+    if(ch){ch.data.datasets=ds;ch.update();return}
+    ch=new Chart($('#lgChart'),{type:'line',data:{datasets:ds},options:{animation:false,responsive:true,maintainAspectRatio:false,parsing:false,plugins:{legend:{position:'bottom'},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.parsed.x} bpm → ${c.parsed.y.toFixed(1)} %`}}},scales:{x:{type:'linear',min:45,max:115,title:{display:true,text:'resting heart rate (beats/min)'}},y:{beginAtZero:true,title:{display:true,text:'predicted 5-year risk of death (%)'}}}}});charts.push(ch)};
+  ['#lgHr','#lgAge','#lgSex','#lgBmi','#lgSmk','#lgWz'].forEach(s=>$(s).addEventListener('input',()=>{$('#lgCase').value='';draw()}));
+  $('#lgCase').onchange=e=>{const x=hrCases.find(q=>String(q.i)===e.target.value);if(x)$('#lgHr').value=parseFloat(x.o.value);draw()};
+  draw();window.__longevity={risk:coxRisk(M,X(get(),get().hr,get().wz))};
+  if(window.Chart&&T.calibration.length){const C=T.calibration,mx=Math.ceil(100*Math.max(...C.map(c=>Math.max(c.pred,c.obs)))/5)*5;
+    charts.push(new Chart($('#lgCal'),{type:'scatter',data:{datasets:[{data:C.map(c=>({x:100*c.pred,y:100*c.obs})),backgroundColor:acc,pointRadius:4},{type:'line',data:[{x:0,y:0},{x:mx,y:mx}],borderColor:mut,borderDash:[4,4],pointRadius:0}]},
+      options:{animation:false,responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{min:0,max:mx,title:{display:true,text:'predicted (%)'}},y:{min:0,max:mx,title:{display:true,text:'observed (%)'}}}}}))}
+}
 function route(){
   killPlayer();const h=(location.hash||'#home').slice(1);document.querySelectorAll('header nav a').forEach(a=>a.classList.toggle('active',h===a.dataset.r||(h.startsWith('patient-')&&a.dataset.r==='patients')));
   $('#hdr').classList.remove('open');$('#navToggle').setAttribute('aria-expanded','false');window.scrollTo(0,0);
-  if(h==='patients')renderPatients();else if(h.startsWith('patient-'))renderPatient(+h.slice(8));else if(h==='analyze')renderAnalyze();else if(h==='conclusions')renderConclusions();else if(h==='data')renderData();else renderHome();
+  if(h==='patients')renderPatients();else if(h.startsWith('patient-'))renderPatient(+h.slice(8));else if(h==='analyze')renderAnalyze();else if(h==='conclusions')renderConclusions();else if(h==='disease')renderDisease();else if(h==='longevity')renderLongevity();else if(h==='data')renderData();else renderHome();
 }
 $('#navToggle').onclick=()=>{const o=$('#hdr').classList.toggle('open');$('#navToggle').setAttribute('aria-expanded',String(o))};
 (async()=>{try{BR=await getJSON('data/lite.json');window.__lite=BR}catch(e){$('#view').innerHTML=`<p class="err">Could not load the data (${esc(e.message)}).</p>`;return}

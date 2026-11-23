@@ -1,0 +1,71 @@
+{
+ "date": "2026-11-23",
+ "started": "2026-11-23T00:27:24.455251+00:00",
+ "finished": "2026-11-23T00:30:30.426285+00:00",
+ "inputs": {
+  "meta/features/spr.0.jsonl": "bb2a0383e81fd6f9938bb100a25bd2120b91b0ae02f516940fb6c12bea3c62ee",
+  "meta/features/spr.1.jsonl": "037546e701a5c05181f38984505856bda10191f48563bddc42b2f6d7f7f4e927",
+  "meta/features/icbhi.jsonl": "7ddd6381809bcb8a7211bc05b2878a62db81d62466eb3e435d4829680853e87a",
+  "meta/features/kauh.jsonl": "ed72f620fdc80b21ee965fc83c4ce0d3f8929ea8d0a04b1aa4bc1686526b0dd9",
+  "meta/features/cbemph.jsonl": "e8044a9540f37ae005ac955bb7bea0e96ca6892db3956d5c72a82924feebb9d7",
+  "meta/features/respdbtr.jsonl": "171d09b51862ab328a16ee69e9b6c89ddc72d2d393e9637f14ef04158b7c2304",
+  "meta/icbhi_index.json": "f2cc79cb2e8b4ffa0f397ce4e7201bfd8d89d39a63218faa4725f9025c63204b",
+  "meta/respdbtr_validation.json": "bbf3cf3dc774b94f4d4f4d5f560d1ff73c5db2ed5dbcd08720ab853a42119cf8",
+  "meta/nhanes_cohort.csv": "5997305fa63dd7592431ae0357d96cdcb3220efbd05455c933c5bc9342cc6578"
+ },
+ "summary": {
+  "disease": {
+   "children": {
+    "patients": 789,
+    "macroAuc": 0.629,
+    "databaseOnly": 0.548,
+    "ageOnly": 0.588,
+    "lodoAboveChance": 0,
+    "lodoTests": 7,
+    "passed": false
+   },
+   "adults": {
+    "patients": 458,
+    "macroAuc": 0.819,
+    "databaseOnly": 0.865,
+    "ageOnly": 0.854,
+    "lodoAboveChance": 2,
+    "lodoTests": 7,
+    "passed": false
+   }
+  },
+  "longevity": {
+   "train": 9926,
+   "test": 9676,
+   "cIndex": {
+    "A": 0.7346,
+    "B": 0.7445,
+    "C": 0.7637,
+    "G": 0.7533
+   },
+   "deltaC_vs_ageSex": {
+    "value": 0.0291,
+    "ci": [
+     0.0231,
+     0.0348
+    ]
+   },
+   "deployed": "C",
+   "hrPer10bpm": {
+    "hr": 1.166,
+    "lo": 1.134,
+    "hi": 1.198
+   },
+   "wheeze": {
+    "hr": 1.459,
+    "lo": 1.33,
+    "hi": 1.599
+   }
+  }
+ },
+ "comparison": {
+  "previous": null,
+  "note": "first daily run; a repeat run on the same inputs (2026-11-23) reproduced every metric exactly"
+ },
+ "notDone": "No new database added automatically (licence check by a person); pass rules unchanged; nothing published or pushed."
+}

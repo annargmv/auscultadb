@@ -404,6 +404,7 @@ computed from the loaded index. Footer, sidebar data stamp ("data built … UTC 
 | EPHNOGRAM 1.0.0 | in use: adult HR/HRV vs research-grade ECG, 14 resting records | ODC-By 1.0 | 8 kHz PCG + ECG, healthy men 23–29; checksums verified (SHA256SUMS.txt); analysis only |
 | RespiratoryDatabase@TR | in use: COPD severity test; 1 recording in the lean brief | CC BY 4.0 | 42 COPD adults GOLD 0–4, 12 channels, 4 kHz, Littmann 3200 |
 | HF_Lung | optional | V1_IP CC BY-NC | |
+| NHANES 1999–2012 + NCHS Linked Mortality (2019) | in use: lite Longevity model | public domain (US government; cite NCHS) | pulse, self-reported wheeze, BMI, smoking; `nhanes_prep.py` |
 
 ## Known limitations and what is blocked
 
@@ -599,6 +600,29 @@ All tests run the page's FROZEN code; rules are in each script's header and were
   mostly work, each output with its own validation line; batch of 10 drawn at random per group (seed 20261121) before
   looking at outputs; conclusions and the two charts (adult HR vs ECG, adult murmur AUC per database) computed from the
   result files. EPHNOGRAM audio is not in the brief (analysis only). Published as its own artifact, separate from web/.
+
+## Disease atlas, longevity model, daily retraining (owner, 2026-11-23) — lite app pages "Which disease?" and "Longevity"
+- **Lite player annotations**: `annotate()` in `lite/index.html` draws what is heard as wavesurfer regions, computed in the browser
+  by the engine — S1/S2 (learned beat finder path), murmur-like windows (network ≥ its flag level), inspiration/expiration
+  (`analyzeSignal` cycles), wheeze (tonal segments < 0.3 s apart joined, median pitch). Toggle per layer; labels only on regions
+  ≥ 4 % of the clip.
+- **`pipeline/disease_train.py` → `meta/disease_model.json`**: children (SPRSound, ICBHI children) and adults (KAUH mode D, ICBHI
+  adults, CB/emphysema, RespiratoryDatabase@TR GOLD ≥ 1), 9 recordingFeatures averaged per patient, gradient boosting, patient-grouped
+  5-fold CV, baselines database-only / age-only, leave-one-database-out. Rules in the header, fixed before the first run.
+  **Result: fails in both** — children macro 0.63 (< 0.70, LODO at chance); adults 0.82 but database-only 0.87 and age-only 0.85
+  (it learns the collection). Batch: out-of-fold top class matches 2 of 5. Gap analysis with PubMed refs: `docs/DISEASE_GAPS.md`.
+  Never present its output as a diagnosis.
+- **`pipeline/nhanes_prep.py` → `meta/nhanes_cohort.csv`** (NHANES 1999–2018 DEMO/BPX/BMX/SMQ/RDQ + NCHS linked mortality to 2019,
+  public domain; raw in `raw/nhanes`, sha256 in `meta/nhanes_files.json`). **`pipeline/longevity_train.py` → `meta/longevity_model.json`**:
+  ages 40–79, train 1999–2006 / test 2007–2012, Cox(age, sex, resting HR/10, wheeze, BMI, smoking) vs age+sex and vs gradient
+  boosting. Test C 0.764 vs 0.735 (ΔC +0.029, CI 0.023–0.035); GB worse (−0.010) → Cox deployed. HR per 10 bpm 1.17, wheeze 1.46.
+  Top risk decile over-predicted (24 % vs 18 %). The page's `coxRisk` reproduces lifelines (`cox.check`, e2e). Improvement
+  scenarios = Reimers 2018 (PMID 30513777) exercise effects −3.3 / −5.8 bpm; association carried through the model, not a trial
+  effect. No improvement is predicted for wheeze (no trial gives one). Survey weights not used.
+- **`pipeline/daily_train.py`**: input sha256 → disease_train → longevity_train → `meta/daily/<date>.json` (summary, comparison with
+  the previous day; exits 2 if metrics move while inputs did not) → lite_build. `--refresh-nhanes` re-downloads from CDC,
+  `--remote` uploads `meta/daily` to the private store. It never adds a database (licence check is a person's job), never
+  changes a pass rule, never publishes or pushes.
 
 ## AuscultaDB Lite `lite/` (owner, 2026-11-22) — the app, lighter, for a clinician audience
 Same shell as the full app, five pages only: Home (validated measurements), Batch of 10 (the brief's pre-registered batch),

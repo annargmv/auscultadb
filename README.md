@@ -118,8 +118,12 @@ python3 pipeline/merge.py --add circor   # append to web/data, leaving the other
 - **CirCor DigiScope** — ODC-By 1.0 (Open Data Commons Attribution). J. Oliveira et al., "The CirCor DigiScope Dataset: From Murmur Detection to Murmur Classification," *IEEE J. Biomed. Health Inform.* 26(6):2524–2535, 2022. https://physionet.org/content/circor-heart-sound/1.0.3/
 - **ICBHI 2017 Respiratory Sound Database** — research use (ICBHI challenge); analysed only, audio not published. B. M. Rocha et al., "An open access database for the evaluation of respiratory sound classification algorithms," *Physiological Measurement* 40:035001, 2019. doi:10.1088/1361-6579/ab03ea
 - **PSG-Audio** — CC BY 4.0; analysed only, audio not published (see above).
+- **NHANES and NCHS Linked Mortality Files** — public domain (US government work). National Center for Health Statistics, National Health and Nutrition Examination Survey 1999–2012 and NHANES Public-use Linked Mortality Files (follow-up through 31 Dec 2019). https://wwwn.cdc.gov/nchs/nhanes/ · https://www.cdc.gov/nchs/data-linkage/mortality-public.htm. Used for the lite app's Longevity model (`pipeline/nhanes_prep.py`, `pipeline/longevity_train.py`).
+- **PhysioNet/CinC 2016, EPHNOGRAM** — ODC-By 1.0; **RespiratoryDatabase@TR** — CC BY 4.0 (see CLAUDE.md, adult external tests).
 - **Libraries** (loaded from CDN, pinned): wavesurfer.js 7.12.12 (BSD-3-Clause), Meyda 5.6.3 (MIT), Chart.js 4.6.1 (MIT).
 
 `web/audio` and `web/data` contain derived copies of the CC BY and ODC-By recordings and labels. Keep the attribution when you share the site.
+
+Daily retraining of the disease and longevity models: `python3 pipeline/daily_train.py` (see `docs/DISEASE_GAPS.md` for why disease prediction fails on today's open data).
 
 See `CLAUDE.md` for the architecture and the code map, and `OPEN_WORK.md` for what is not done yet and how to finish it.

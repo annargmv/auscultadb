@@ -1,0 +1,1680 @@
+{
+ "generated": "2026-11-23T00:27:28.135690+00:00",
+ "seed": 20261123,
+ "features": [
+  "f50",
+  "f75",
+  "cen",
+  "rr",
+  "hr",
+  "crkRate",
+  "fineRate",
+  "tonFrac",
+  "ie"
+ ],
+ "refs": [
+  {
+   "pmid": "40249944",
+   "doi": "10.2196/66491",
+   "cite": "Park JS et al. Artificial intelligence models for pediatric lung sound analysis: systematic review and meta-analysis. J Med Internet Res 2025",
+   "why": "41 studies; high accuracy for wheeze and abnormal-sound detection, but most use small single-centre datasets with little external validation"
+  },
+  {
+   "pmid": "36070274",
+   "doi": "10.1109/TBCAS.2022.3204910",
+   "cite": "Zhang Q et al. SPRSound: open-source SJTU paediatric respiratory sound database. IEEE Trans Biomed Circuits Syst 2022",
+   "why": "the children's database here; its own record-level classification scores were 38\u201362 %"
+  },
+  {
+   "pmid": "30708353",
+   "doi": "10.1088/1361-6579/ab03ea",
+   "cite": "Rocha BM et al. An open access database for the evaluation of respiratory sound classification algorithms. Physiol Meas 2019",
+   "why": "ICBHI 2017: four devices, and diagnosis tracks age and device"
+  },
+  {
+   "pmid": "24552321",
+   "doi": "10.1056/NEJMra1302901",
+   "cite": "Bohadana A, Izbicki G, Kraman SS. Fundamentals of lung auscultation. N Engl J Med 2014",
+   "why": "crackles and wheeze are signs shared by several diseases, not specific to one"
+  }
+ ],
+ "populations": {
+  "children": {
+   "classes": [
+    "Healthy",
+    "Pneumonia",
+    "Bronchitis / bronchiolitis",
+    "Asthma",
+    "Other"
+   ],
+   "patients": 789,
+   "perClass": [
+    {
+     "class": "Healthy",
+     "n": 98,
+     "auc": {
+      "value": 0.626,
+      "lo": 0.564,
+      "hi": 0.689
+     }
+    },
+    {
+     "class": "Pneumonia",
+     "n": 441,
+     "auc": {
+      "value": 0.651,
+      "lo": 0.613,
+      "hi": 0.688
+     }
+    },
+    {
+     "class": "Bronchitis / bronchiolitis",
+     "n": 120,
+     "auc": {
+      "value": 0.602,
+      "lo": 0.545,
+      "hi": 0.66
+     }
+    },
+    {
+     "class": "Asthma",
+     "n": 66,
+     "auc": {
+      "value": 0.612,
+      "lo": 0.537,
+      "hi": 0.687
+     }
+    },
+    {
+     "class": "Other",
+     "n": 64,
+     "auc": {
+      "value": 0.656,
+      "lo": 0.58,
+      "hi": 0.731
+     }
+    }
+   ],
+   "macroAuc": 0.629,
+   "baselines": {
+    "databaseOnly": 0.548,
+    "ageOnly": 0.588,
+    "commonestClassShare": 0.559
+   },
+   "leaveOneDatabaseOut": [
+    {
+     "heldOut": "ICBHI",
+     "class": "Healthy",
+     "n": 49,
+     "pos": 26,
+     "auc": {
+      "value": 0.478,
+      "lo": 0.315,
+      "hi": 0.642
+     }
+    },
+    {
+     "heldOut": "ICBHI",
+     "class": "Bronchitis / bronchiolitis",
+     "n": 49,
+     "pos": 6,
+     "auc": {
+      "value": 0.38,
+      "lo": 0.155,
+      "hi": 0.605
+     }
+    },
+    {
+     "heldOut": "ICBHI",
+     "class": "Other",
+     "n": 49,
+     "pos": 16,
+     "auc": {
+      "value": 0.597,
+      "lo": 0.423,
+      "hi": 0.77
+     }
+    },
+    {
+     "heldOut": "SPRSound",
+     "class": "Healthy",
+     "n": 740,
+     "pos": 72,
+     "auc": {
+      "value": 0.498,
+      "lo": 0.428,
+      "hi": 0.568
+     }
+    },
+    {
+     "heldOut": "SPRSound",
+     "class": "Pneumonia",
+     "n": 740,
+     "pos": 440,
+     "auc": {
+      "value": 0.484,
+      "lo": 0.442,
+      "hi": 0.527
+     }
+    },
+    {
+     "heldOut": "SPRSound",
+     "class": "Bronchitis / bronchiolitis",
+     "n": 740,
+     "pos": 114,
+     "auc": {
+      "value": 0.502,
+      "lo": 0.444,
+      "hi": 0.559
+     }
+    },
+    {
+     "heldOut": "SPRSound",
+     "class": "Other",
+     "n": 740,
+     "pos": 48,
+     "auc": {
+      "value": 0.518,
+      "lo": 0.433,
+      "hi": 0.604
+     }
+    }
+   ],
+   "passed": false,
+   "inventory": [
+    {
+     "db": "ICBHI",
+     "patients": 49,
+     "recordings": 76,
+     "device": "four devices",
+     "classes": {
+      "Other": 16,
+      "Healthy": 26,
+      "Bronchitis / bronchiolitis": 6,
+      "Pneumonia": 1
+     }
+    },
+    {
+     "db": "SPRSound",
+     "patients": 740,
+     "recordings": 5398,
+     "device": "Yunting model II",
+     "classes": {
+      "Pneumonia": 440,
+      "Healthy": 72,
+      "Bronchitis / bronchiolitis": 114,
+      "Other": 48,
+      "Asthma": 66
+     }
+    }
+   ],
+   "classByDatabase": [
+    {
+     "class": "Healthy",
+     "patients": 98,
+     "databases": 2,
+     "largestShare": 0.735,
+     "largest": "SPRSound"
+    },
+    {
+     "class": "Pneumonia",
+     "patients": 441,
+     "databases": 2,
+     "largestShare": 0.998,
+     "largest": "SPRSound"
+    },
+    {
+     "class": "Bronchitis / bronchiolitis",
+     "patients": 120,
+     "databases": 2,
+     "largestShare": 0.95,
+     "largest": "SPRSound"
+    },
+    {
+     "class": "Asthma",
+     "patients": 66,
+     "databases": 1,
+     "largestShare": 1.0,
+     "largest": "SPRSound"
+    },
+    {
+     "class": "Other",
+     "patients": 64,
+     "databases": 2,
+     "largestShare": 0.75,
+     "largest": "SPRSound"
+    }
+   ],
+   "batchOof": {}
+  },
+  "adults": {
+   "classes": [
+    "Healthy",
+    "Asthma",
+    "COPD",
+    "Heart failure",
+    "Pneumonia",
+    "Other"
+   ],
+   "patients": 458,
+   "perClass": [
+    {
+     "class": "Healthy",
+     "n": 35,
+     "auc": {
+      "value": 0.845,
+      "lo": 0.762,
+      "hi": 0.927
+     }
+    },
+    {
+     "class": "Asthma",
+     "n": 33,
+     "auc": {
+      "value": 0.901,
+      "lo": 0.83,
+      "hi": 0.972
+     }
+    },
+    {
+     "class": "COPD",
+     "n": 342,
+     "auc": {
+      "value": 0.917,
+      "lo": 0.893,
+      "hi": 0.942
+     }
+    },
+    {
+     "class": "Heart failure",
+     "n": 18,
+     "auc": {
+      "value": 0.832,
+      "lo": 0.715,
+      "hi": 0.95
+     }
+    },
+    {
+     "class": "Pneumonia",
+     "n": 10,
+     "auc": {
+      "value": 0.725,
+      "lo": 0.544,
+      "hi": 0.906
+     }
+    },
+    {
+     "class": "Other",
+     "n": 20,
+     "auc": {
+      "value": 0.696,
+      "lo": 0.565,
+      "hi": 0.827
+     }
+    }
+   ],
+   "macroAuc": 0.819,
+   "baselines": {
+    "databaseOnly": 0.865,
+    "ageOnly": 0.854,
+    "commonestClassShare": 0.747
+   },
+   "leaveOneDatabaseOut": [
+    {
+     "heldOut": "ICBHI",
+     "class": "COPD",
+     "n": 76,
+     "pos": 63,
+     "auc": {
+      "value": 0.686,
+      "lo": 0.542,
+      "hi": 0.831
+     }
+    },
+    {
+     "heldOut": "ICBHI",
+     "class": "Pneumonia",
+     "n": 76,
+     "pos": 5,
+     "auc": {
+      "value": 0.806,
+      "lo": 0.57,
+      "hi": 1.0
+     }
+    },
+    {
+     "heldOut": "ICBHI",
+     "class": "Other",
+     "n": 76,
+     "pos": 7,
+     "auc": {
+      "value": 0.538,
+      "lo": 0.309,
+      "hi": 0.768
+     }
+    },
+    {
+     "heldOut": "KAUH",
+     "class": "Asthma",
+     "n": 112,
+     "pos": 32,
+     "auc": {
+      "value": 0.546,
+      "lo": 0.426,
+      "hi": 0.666
+     }
+    },
+    {
+     "heldOut": "KAUH",
+     "class": "COPD",
+     "n": 112,
+     "pos": 9,
+     "auc": {
+      "value": 0.677,
+      "lo": 0.478,
+      "hi": 0.877
+     }
+    },
+    {
+     "heldOut": "KAUH",
+     "class": "Pneumonia",
+     "n": 112,
+     "pos": 5,
+     "auc": {
+      "value": 0.45,
+      "lo": 0.2,
+      "hi": 0.701
+     }
+    },
+    {
+     "heldOut": "KAUH",
+     "class": "Other",
+     "n": 112,
+     "pos": 13,
+     "auc": {
+      "value": 0.606,
+      "lo": 0.434,
+      "hi": 0.777
+     }
+    }
+   ],
+   "passed": false,
+   "inventory": [
+    {
+     "db": "CB/emphysema",
+     "patients": 234,
+     "recordings": 234,
+     "device": "Littmann 3200",
+     "classes": {
+      "COPD": 234
+     }
+    },
+    {
+     "db": "ICBHI",
+     "patients": 76,
+     "recordings": 838,
+     "device": "four devices",
+     "classes": {
+      "Asthma": 1,
+      "COPD": 63,
+      "Other": 7,
+      "Pneumonia": 5
+     }
+    },
+    {
+     "db": "KAUH",
+     "patients": 112,
+     "recordings": 112,
+     "device": "Littmann 3200",
+     "classes": {
+      "Asthma": 32,
+      "Healthy": 35,
+      "Other": 13,
+      "COPD": 9,
+      "Heart failure": 18,
+      "Pneumonia": 5
+     }
+    },
+    {
+     "db": "RespiratoryDatabase@TR",
+     "patients": 36,
+     "recordings": 432,
+     "device": "Littmann 3200",
+     "classes": {
+      "COPD": 36
+     }
+    }
+   ],
+   "classByDatabase": [
+    {
+     "class": "Healthy",
+     "patients": 35,
+     "databases": 1,
+     "largestShare": 1.0,
+     "largest": "KAUH"
+    },
+    {
+     "class": "Asthma",
+     "patients": 33,
+     "databases": 2,
+     "largestShare": 0.97,
+     "largest": "KAUH"
+    },
+    {
+     "class": "COPD",
+     "patients": 342,
+     "databases": 4,
+     "largestShare": 0.684,
+     "largest": "CB/emphysema"
+    },
+    {
+     "class": "Heart failure",
+     "patients": 18,
+     "databases": 1,
+     "largestShare": 1.0,
+     "largest": "KAUH"
+    },
+    {
+     "class": "Pneumonia",
+     "patients": 10,
+     "databases": 2,
+     "largestShare": 0.5,
+     "largest": "ICBHI"
+    },
+    {
+     "class": "Other",
+     "patients": 20,
+     "databases": 2,
+     "largestShare": 0.65,
+     "largest": "KAUH"
+    }
+   ],
+   "batchOof": {
+    "K001": {
+     "Healthy": 0.022,
+     "Asthma": 0.807,
+     "COPD": 0.161,
+     "Heart failure": 0.005,
+     "Pneumonia": 0.003,
+     "Other": 0.002
+    },
+    "K010": {
+     "Healthy": 0.001,
+     "Asthma": 0.227,
+     "COPD": 0.703,
+     "Heart failure": 0.057,
+     "Pneumonia": 0.003,
+     "Other": 0.01
+    },
+    "K100": {
+     "Healthy": 0.073,
+     "Asthma": 0.772,
+     "COPD": 0.094,
+     "Heart failure": 0.029,
+     "Pneumonia": 0.016,
+     "Other": 0.015
+    },
+    "K101": {
+     "Healthy": 0.736,
+     "Asthma": 0.034,
+     "COPD": 0.105,
+     "Heart failure": 0.015,
+     "Pneumonia": 0.005,
+     "Other": 0.104
+    },
+    "K102": {
+     "Healthy": 0.053,
+     "Asthma": 0.431,
+     "COPD": 0.286,
+     "Heart failure": 0.182,
+     "Pneumonia": 0.014,
+     "Other": 0.033
+    },
+    "K103": {
+     "Healthy": 0.137,
+     "Asthma": 0.28,
+     "COPD": 0.391,
+     "Heart failure": 0.17,
+     "Pneumonia": 0.006,
+     "Other": 0.016
+    },
+    "K104": {
+     "Healthy": 0.618,
+     "Asthma": 0.025,
+     "COPD": 0.18,
+     "Heart failure": 0.053,
+     "Pneumonia": 0.043,
+     "Other": 0.082
+    },
+    "K105": {
+     "Healthy": 0.814,
+     "Asthma": 0.041,
+     "COPD": 0.044,
+     "Heart failure": 0.072,
+     "Pneumonia": 0.018,
+     "Other": 0.01
+    },
+    "K106": {
+     "Healthy": 0.005,
+     "Asthma": 0.895,
+     "COPD": 0.095,
+     "Heart failure": 0.002,
+     "Pneumonia": 0.001,
+     "Other": 0.002
+    },
+    "K107": {
+     "Healthy": 0.034,
+     "Asthma": 0.161,
+     "COPD": 0.016,
+     "Heart failure": 0.005,
+     "Pneumonia": 0.005,
+     "Other": 0.778
+    },
+    "K108": {
+     "Healthy": 0.325,
+     "Asthma": 0.003,
+     "COPD": 0.122,
+     "Heart failure": 0.152,
+     "Pneumonia": 0.001,
+     "Other": 0.397
+    },
+    "K109": {
+     "Healthy": 0.141,
+     "Asthma": 0.048,
+     "COPD": 0.071,
+     "Heart failure": 0.206,
+     "Pneumonia": 0.02,
+     "Other": 0.513
+    },
+    "K011": {
+     "Healthy": 0.045,
+     "Asthma": 0.009,
+     "COPD": 0.623,
+     "Heart failure": 0.008,
+     "Pneumonia": 0.053,
+     "Other": 0.263
+    },
+    "K110": {
+     "Healthy": 0.032,
+     "Asthma": 0.734,
+     "COPD": 0.111,
+     "Heart failure": 0.004,
+     "Pneumonia": 0.005,
+     "Other": 0.114
+    },
+    "K111": {
+     "Healthy": 0.15,
+     "Asthma": 0.04,
+     "COPD": 0.713,
+     "Heart failure": 0.047,
+     "Pneumonia": 0.019,
+     "Other": 0.031
+    },
+    "K112": {
+     "Healthy": 0.302,
+     "Asthma": 0.156,
+     "COPD": 0.507,
+     "Heart failure": 0.031,
+     "Pneumonia": 0.002,
+     "Other": 0.002
+    },
+    "K012": {
+     "Healthy": 0.246,
+     "Asthma": 0.124,
+     "COPD": 0.162,
+     "Heart failure": 0.234,
+     "Pneumonia": 0.013,
+     "Other": 0.221
+    },
+    "K013": {
+     "Healthy": 0.141,
+     "Asthma": 0.085,
+     "COPD": 0.191,
+     "Heart failure": 0.013,
+     "Pneumonia": 0.009,
+     "Other": 0.561
+    },
+    "K014": {
+     "Healthy": 0.385,
+     "Asthma": 0.189,
+     "COPD": 0.126,
+     "Heart failure": 0.261,
+     "Pneumonia": 0.019,
+     "Other": 0.021
+    },
+    "K015": {
+     "Healthy": 0.099,
+     "Asthma": 0.01,
+     "COPD": 0.867,
+     "Heart failure": 0.016,
+     "Pneumonia": 0.002,
+     "Other": 0.006
+    },
+    "K016": {
+     "Healthy": 0.055,
+     "Asthma": 0.57,
+     "COPD": 0.269,
+     "Heart failure": 0.015,
+     "Pneumonia": 0.015,
+     "Other": 0.077
+    },
+    "K017": {
+     "Healthy": 0.009,
+     "Asthma": 0.304,
+     "COPD": 0.088,
+     "Heart failure": 0.325,
+     "Pneumonia": 0.001,
+     "Other": 0.273
+    },
+    "K018": {
+     "Healthy": 0.031,
+     "Asthma": 0.319,
+     "COPD": 0.64,
+     "Heart failure": 0.008,
+     "Pneumonia": 0.001,
+     "Other": 0.001
+    },
+    "K019": {
+     "Healthy": 0.14,
+     "Asthma": 0.097,
+     "COPD": 0.639,
+     "Heart failure": 0.004,
+     "Pneumonia": 0.101,
+     "Other": 0.019
+    },
+    "K002": {
+     "Healthy": 0.012,
+     "Asthma": 0.292,
+     "COPD": 0.656,
+     "Heart failure": 0.004,
+     "Pneumonia": 0.003,
+     "Other": 0.033
+    },
+    "K020": {
+     "Healthy": 0.581,
+     "Asthma": 0.022,
+     "COPD": 0.188,
+     "Heart failure": 0.108,
+     "Pneumonia": 0.017,
+     "Other": 0.084
+    },
+    "K021": {
+     "Healthy": 0.35,
+     "Asthma": 0.278,
+     "COPD": 0.256,
+     "Heart failure": 0.019,
+     "Pneumonia": 0.034,
+     "Other": 0.062
+    },
+    "K022": {
+     "Healthy": 0.905,
+     "Asthma": 0.034,
+     "COPD": 0.037,
+     "Heart failure": 0.02,
+     "Pneumonia": 0.004,
+     "Other": 0.0
+    },
+    "K023": {
+     "Healthy": 0.08,
+     "Asthma": 0.098,
+     "COPD": 0.146,
+     "Heart failure": 0.176,
+     "Pneumonia": 0.327,
+     "Other": 0.172
+    },
+    "K024": {
+     "Healthy": 0.484,
+     "Asthma": 0.016,
+     "COPD": 0.143,
+     "Heart failure": 0.229,
+     "Pneumonia": 0.009,
+     "Other": 0.12
+    },
+    "K025": {
+     "Healthy": 0.258,
+     "Asthma": 0.185,
+     "COPD": 0.516,
+     "Heart failure": 0.032,
+     "Pneumonia": 0.002,
+     "Other": 0.007
+    },
+    "K026": {
+     "Healthy": 0.002,
+     "Asthma": 0.001,
+     "COPD": 0.977,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.001,
+     "Other": 0.018
+    },
+    "K027": {
+     "Healthy": 0.004,
+     "Asthma": 0.135,
+     "COPD": 0.268,
+     "Heart failure": 0.073,
+     "Pneumonia": 0.485,
+     "Other": 0.035
+    },
+    "K028": {
+     "Healthy": 0.382,
+     "Asthma": 0.003,
+     "COPD": 0.276,
+     "Heart failure": 0.201,
+     "Pneumonia": 0.003,
+     "Other": 0.136
+    },
+    "K029": {
+     "Healthy": 0.026,
+     "Asthma": 0.813,
+     "COPD": 0.029,
+     "Heart failure": 0.098,
+     "Pneumonia": 0.023,
+     "Other": 0.011
+    },
+    "K003": {
+     "Healthy": 0.023,
+     "Asthma": 0.416,
+     "COPD": 0.53,
+     "Heart failure": 0.014,
+     "Pneumonia": 0.001,
+     "Other": 0.015
+    },
+    "K030": {
+     "Healthy": 0.454,
+     "Asthma": 0.277,
+     "COPD": 0.172,
+     "Heart failure": 0.009,
+     "Pneumonia": 0.024,
+     "Other": 0.063
+    },
+    "K031": {
+     "Healthy": 0.011,
+     "Asthma": 0.004,
+     "COPD": 0.844,
+     "Heart failure": 0.091,
+     "Pneumonia": 0.002,
+     "Other": 0.048
+    },
+    "K032": {
+     "Healthy": 0.064,
+     "Asthma": 0.009,
+     "COPD": 0.365,
+     "Heart failure": 0.037,
+     "Pneumonia": 0.002,
+     "Other": 0.523
+    },
+    "K033": {
+     "Healthy": 0.039,
+     "Asthma": 0.708,
+     "COPD": 0.166,
+     "Heart failure": 0.011,
+     "Pneumonia": 0.003,
+     "Other": 0.073
+    },
+    "K034": {
+     "Healthy": 0.194,
+     "Asthma": 0.011,
+     "COPD": 0.666,
+     "Heart failure": 0.024,
+     "Pneumonia": 0.038,
+     "Other": 0.066
+    },
+    "K035": {
+     "Healthy": 0.203,
+     "Asthma": 0.229,
+     "COPD": 0.089,
+     "Heart failure": 0.117,
+     "Pneumonia": 0.005,
+     "Other": 0.358
+    },
+    "K036": {
+     "Healthy": 0.02,
+     "Asthma": 0.826,
+     "COPD": 0.069,
+     "Heart failure": 0.028,
+     "Pneumonia": 0.002,
+     "Other": 0.056
+    },
+    "K037": {
+     "Healthy": 0.165,
+     "Asthma": 0.528,
+     "COPD": 0.226,
+     "Heart failure": 0.017,
+     "Pneumonia": 0.031,
+     "Other": 0.032
+    },
+    "K038": {
+     "Healthy": 0.07,
+     "Asthma": 0.89,
+     "COPD": 0.033,
+     "Heart failure": 0.005,
+     "Pneumonia": 0.001,
+     "Other": 0.001
+    },
+    "K039": {
+     "Healthy": 0.117,
+     "Asthma": 0.147,
+     "COPD": 0.668,
+     "Heart failure": 0.032,
+     "Pneumonia": 0.01,
+     "Other": 0.027
+    },
+    "K004": {
+     "Healthy": 0.005,
+     "Asthma": 0.003,
+     "COPD": 0.878,
+     "Heart failure": 0.06,
+     "Pneumonia": 0.005,
+     "Other": 0.049
+    },
+    "K040": {
+     "Healthy": 0.003,
+     "Asthma": 0.251,
+     "COPD": 0.432,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.006,
+     "Other": 0.308
+    },
+    "K041": {
+     "Healthy": 0.574,
+     "Asthma": 0.008,
+     "COPD": 0.025,
+     "Heart failure": 0.361,
+     "Pneumonia": 0.002,
+     "Other": 0.029
+    },
+    "K042": {
+     "Healthy": 0.084,
+     "Asthma": 0.531,
+     "COPD": 0.305,
+     "Heart failure": 0.013,
+     "Pneumonia": 0.007,
+     "Other": 0.059
+    },
+    "K043": {
+     "Healthy": 0.06,
+     "Asthma": 0.275,
+     "COPD": 0.166,
+     "Heart failure": 0.081,
+     "Pneumonia": 0.4,
+     "Other": 0.018
+    },
+    "K044": {
+     "Healthy": 0.498,
+     "Asthma": 0.233,
+     "COPD": 0.046,
+     "Heart failure": 0.203,
+     "Pneumonia": 0.001,
+     "Other": 0.02
+    },
+    "K045": {
+     "Healthy": 0.022,
+     "Asthma": 0.065,
+     "COPD": 0.047,
+     "Heart failure": 0.858,
+     "Pneumonia": 0.001,
+     "Other": 0.007
+    },
+    "K046": {
+     "Healthy": 0.289,
+     "Asthma": 0.143,
+     "COPD": 0.533,
+     "Heart failure": 0.029,
+     "Pneumonia": 0.004,
+     "Other": 0.003
+    },
+    "K047": {
+     "Healthy": 0.786,
+     "Asthma": 0.154,
+     "COPD": 0.05,
+     "Heart failure": 0.008,
+     "Pneumonia": 0.001,
+     "Other": 0.002
+    },
+    "K048": {
+     "Healthy": 0.128,
+     "Asthma": 0.014,
+     "COPD": 0.539,
+     "Heart failure": 0.183,
+     "Pneumonia": 0.026,
+     "Other": 0.109
+    },
+    "K049": {
+     "Healthy": 0.008,
+     "Asthma": 0.0,
+     "COPD": 0.989,
+     "Heart failure": 0.003,
+     "Pneumonia": 0.0,
+     "Other": 0.0
+    },
+    "K005": {
+     "Healthy": 0.029,
+     "Asthma": 0.054,
+     "COPD": 0.615,
+     "Heart failure": 0.069,
+     "Pneumonia": 0.231,
+     "Other": 0.002
+    },
+    "K050": {
+     "Healthy": 0.058,
+     "Asthma": 0.003,
+     "COPD": 0.66,
+     "Heart failure": 0.014,
+     "Pneumonia": 0.019,
+     "Other": 0.246
+    },
+    "K051": {
+     "Healthy": 0.303,
+     "Asthma": 0.094,
+     "COPD": 0.078,
+     "Heart failure": 0.02,
+     "Pneumonia": 0.072,
+     "Other": 0.433
+    },
+    "K052": {
+     "Healthy": 0.81,
+     "Asthma": 0.003,
+     "COPD": 0.105,
+     "Heart failure": 0.042,
+     "Pneumonia": 0.003,
+     "Other": 0.037
+    },
+    "K053": {
+     "Healthy": 0.064,
+     "Asthma": 0.006,
+     "COPD": 0.918,
+     "Heart failure": 0.006,
+     "Pneumonia": 0.001,
+     "Other": 0.004
+    },
+    "K054": {
+     "Healthy": 0.523,
+     "Asthma": 0.035,
+     "COPD": 0.161,
+     "Heart failure": 0.05,
+     "Pneumonia": 0.006,
+     "Other": 0.224
+    },
+    "K055": {
+     "Healthy": 0.002,
+     "Asthma": 0.858,
+     "COPD": 0.07,
+     "Heart failure": 0.066,
+     "Pneumonia": 0.001,
+     "Other": 0.004
+    },
+    "K056": {
+     "Healthy": 0.583,
+     "Asthma": 0.159,
+     "COPD": 0.056,
+     "Heart failure": 0.106,
+     "Pneumonia": 0.071,
+     "Other": 0.025
+    },
+    "K057": {
+     "Healthy": 0.003,
+     "Asthma": 0.27,
+     "COPD": 0.698,
+     "Heart failure": 0.024,
+     "Pneumonia": 0.004,
+     "Other": 0.002
+    },
+    "K058": {
+     "Healthy": 0.049,
+     "Asthma": 0.004,
+     "COPD": 0.92,
+     "Heart failure": 0.02,
+     "Pneumonia": 0.003,
+     "Other": 0.003
+    },
+    "K059": {
+     "Healthy": 0.168,
+     "Asthma": 0.014,
+     "COPD": 0.149,
+     "Heart failure": 0.655,
+     "Pneumonia": 0.001,
+     "Other": 0.014
+    },
+    "K006": {
+     "Healthy": 0.331,
+     "Asthma": 0.377,
+     "COPD": 0.259,
+     "Heart failure": 0.027,
+     "Pneumonia": 0.002,
+     "Other": 0.005
+    },
+    "K060": {
+     "Healthy": 0.08,
+     "Asthma": 0.002,
+     "COPD": 0.882,
+     "Heart failure": 0.015,
+     "Pneumonia": 0.003,
+     "Other": 0.018
+    },
+    "K061": {
+     "Healthy": 0.099,
+     "Asthma": 0.028,
+     "COPD": 0.656,
+     "Heart failure": 0.187,
+     "Pneumonia": 0.005,
+     "Other": 0.025
+    },
+    "K062": {
+     "Healthy": 0.517,
+     "Asthma": 0.001,
+     "COPD": 0.436,
+     "Heart failure": 0.024,
+     "Pneumonia": 0.001,
+     "Other": 0.021
+    },
+    "K063": {
+     "Healthy": 0.235,
+     "Asthma": 0.006,
+     "COPD": 0.363,
+     "Heart failure": 0.098,
+     "Pneumonia": 0.001,
+     "Other": 0.297
+    },
+    "K064": {
+     "Healthy": 0.007,
+     "Asthma": 0.948,
+     "COPD": 0.008,
+     "Heart failure": 0.018,
+     "Pneumonia": 0.009,
+     "Other": 0.009
+    },
+    "K065": {
+     "Healthy": 0.007,
+     "Asthma": 0.019,
+     "COPD": 0.664,
+     "Heart failure": 0.165,
+     "Pneumonia": 0.14,
+     "Other": 0.003
+    },
+    "K066": {
+     "Healthy": 0.113,
+     "Asthma": 0.018,
+     "COPD": 0.427,
+     "Heart failure": 0.048,
+     "Pneumonia": 0.002,
+     "Other": 0.392
+    },
+    "K067": {
+     "Healthy": 0.352,
+     "Asthma": 0.364,
+     "COPD": 0.081,
+     "Heart failure": 0.056,
+     "Pneumonia": 0.02,
+     "Other": 0.127
+    },
+    "K068": {
+     "Healthy": 0.122,
+     "Asthma": 0.776,
+     "COPD": 0.038,
+     "Heart failure": 0.028,
+     "Pneumonia": 0.004,
+     "Other": 0.033
+    },
+    "K069": {
+     "Healthy": 0.112,
+     "Asthma": 0.084,
+     "COPD": 0.273,
+     "Heart failure": 0.445,
+     "Pneumonia": 0.011,
+     "Other": 0.074
+    },
+    "K007": {
+     "Healthy": 0.005,
+     "Asthma": 0.67,
+     "COPD": 0.204,
+     "Heart failure": 0.112,
+     "Pneumonia": 0.005,
+     "Other": 0.004
+    },
+    "K070": {
+     "Healthy": 0.265,
+     "Asthma": 0.243,
+     "COPD": 0.288,
+     "Heart failure": 0.2,
+     "Pneumonia": 0.001,
+     "Other": 0.002
+    },
+    "K071": {
+     "Healthy": 0.059,
+     "Asthma": 0.006,
+     "COPD": 0.894,
+     "Heart failure": 0.037,
+     "Pneumonia": 0.002,
+     "Other": 0.001
+    },
+    "K072": {
+     "Healthy": 0.003,
+     "Asthma": 0.001,
+     "COPD": 0.996,
+     "Heart failure": 0.0,
+     "Pneumonia": 0.0,
+     "Other": 0.0
+    },
+    "K073": {
+     "Healthy": 0.552,
+     "Asthma": 0.003,
+     "COPD": 0.282,
+     "Heart failure": 0.026,
+     "Pneumonia": 0.004,
+     "Other": 0.132
+    },
+    "K074": {
+     "Healthy": 0.064,
+     "Asthma": 0.014,
+     "COPD": 0.028,
+     "Heart failure": 0.029,
+     "Pneumonia": 0.088,
+     "Other": 0.778
+    },
+    "K075": {
+     "Healthy": 0.422,
+     "Asthma": 0.004,
+     "COPD": 0.223,
+     "Heart failure": 0.018,
+     "Pneumonia": 0.012,
+     "Other": 0.321
+    },
+    "K076": {
+     "Healthy": 0.535,
+     "Asthma": 0.294,
+     "COPD": 0.029,
+     "Heart failure": 0.007,
+     "Pneumonia": 0.072,
+     "Other": 0.064
+    },
+    "K077": {
+     "Healthy": 0.058,
+     "Asthma": 0.74,
+     "COPD": 0.174,
+     "Heart failure": 0.015,
+     "Pneumonia": 0.006,
+     "Other": 0.007
+    },
+    "K078": {
+     "Healthy": 0.176,
+     "Asthma": 0.348,
+     "COPD": 0.349,
+     "Heart failure": 0.033,
+     "Pneumonia": 0.004,
+     "Other": 0.089
+    },
+    "K079": {
+     "Healthy": 0.079,
+     "Asthma": 0.495,
+     "COPD": 0.316,
+     "Heart failure": 0.007,
+     "Pneumonia": 0.061,
+     "Other": 0.041
+    },
+    "K008": {
+     "Healthy": 0.441,
+     "Asthma": 0.01,
+     "COPD": 0.39,
+     "Heart failure": 0.089,
+     "Pneumonia": 0.003,
+     "Other": 0.066
+    },
+    "K080": {
+     "Healthy": 0.07,
+     "Asthma": 0.323,
+     "COPD": 0.519,
+     "Heart failure": 0.06,
+     "Pneumonia": 0.017,
+     "Other": 0.01
+    },
+    "K081": {
+     "Healthy": 0.103,
+     "Asthma": 0.025,
+     "COPD": 0.66,
+     "Heart failure": 0.19,
+     "Pneumonia": 0.005,
+     "Other": 0.017
+    },
+    "K082": {
+     "Healthy": 0.113,
+     "Asthma": 0.01,
+     "COPD": 0.812,
+     "Heart failure": 0.062,
+     "Pneumonia": 0.002,
+     "Other": 0.002
+    },
+    "K083": {
+     "Healthy": 0.378,
+     "Asthma": 0.012,
+     "COPD": 0.197,
+     "Heart failure": 0.01,
+     "Pneumonia": 0.011,
+     "Other": 0.392
+    },
+    "K084": {
+     "Healthy": 0.238,
+     "Asthma": 0.005,
+     "COPD": 0.07,
+     "Heart failure": 0.613,
+     "Pneumonia": 0.068,
+     "Other": 0.006
+    },
+    "K085": {
+     "Healthy": 0.023,
+     "Asthma": 0.013,
+     "COPD": 0.89,
+     "Heart failure": 0.004,
+     "Pneumonia": 0.003,
+     "Other": 0.067
+    },
+    "K086": {
+     "Healthy": 0.742,
+     "Asthma": 0.002,
+     "COPD": 0.193,
+     "Heart failure": 0.009,
+     "Pneumonia": 0.027,
+     "Other": 0.028
+    },
+    "K087": {
+     "Healthy": 0.016,
+     "Asthma": 0.907,
+     "COPD": 0.07,
+     "Heart failure": 0.004,
+     "Pneumonia": 0.001,
+     "Other": 0.001
+    },
+    "K088": {
+     "Healthy": 0.848,
+     "Asthma": 0.01,
+     "COPD": 0.119,
+     "Heart failure": 0.012,
+     "Pneumonia": 0.007,
+     "Other": 0.004
+    },
+    "K089": {
+     "Healthy": 0.022,
+     "Asthma": 0.001,
+     "COPD": 0.976,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.0,
+     "Other": 0.0
+    },
+    "K009": {
+     "Healthy": 0.003,
+     "Asthma": 0.005,
+     "COPD": 0.99,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.001,
+     "Other": 0.001
+    },
+    "K090": {
+     "Healthy": 0.32,
+     "Asthma": 0.285,
+     "COPD": 0.324,
+     "Heart failure": 0.06,
+     "Pneumonia": 0.002,
+     "Other": 0.009
+    },
+    "K091": {
+     "Healthy": 0.177,
+     "Asthma": 0.546,
+     "COPD": 0.232,
+     "Heart failure": 0.006,
+     "Pneumonia": 0.037,
+     "Other": 0.002
+    },
+    "K092": {
+     "Healthy": 0.875,
+     "Asthma": 0.004,
+     "COPD": 0.074,
+     "Heart failure": 0.011,
+     "Pneumonia": 0.004,
+     "Other": 0.032
+    },
+    "K093": {
+     "Healthy": 0.325,
+     "Asthma": 0.017,
+     "COPD": 0.554,
+     "Heart failure": 0.021,
+     "Pneumonia": 0.002,
+     "Other": 0.081
+    },
+    "K094": {
+     "Healthy": 0.031,
+     "Asthma": 0.852,
+     "COPD": 0.019,
+     "Heart failure": 0.077,
+     "Pneumonia": 0.008,
+     "Other": 0.013
+    },
+    "K095": {
+     "Healthy": 0.53,
+     "Asthma": 0.426,
+     "COPD": 0.03,
+     "Heart failure": 0.002,
+     "Pneumonia": 0.003,
+     "Other": 0.009
+    },
+    "K096": {
+     "Healthy": 0.121,
+     "Asthma": 0.013,
+     "COPD": 0.071,
+     "Heart failure": 0.087,
+     "Pneumonia": 0.006,
+     "Other": 0.701
+    },
+    "K097": {
+     "Healthy": 0.126,
+     "Asthma": 0.177,
+     "COPD": 0.354,
+     "Heart failure": 0.323,
+     "Pneumonia": 0.006,
+     "Other": 0.014
+    },
+    "K098": {
+     "Healthy": 0.093,
+     "Asthma": 0.799,
+     "COPD": 0.023,
+     "Heart failure": 0.021,
+     "Pneumonia": 0.028,
+     "Other": 0.037
+    },
+    "K099": {
+     "Healthy": 0.401,
+     "Asthma": 0.031,
+     "COPD": 0.287,
+     "Heart failure": 0.132,
+     "Pneumonia": 0.039,
+     "Other": 0.111
+    },
+    "H002": {
+     "Healthy": 0.004,
+     "Asthma": 0.007,
+     "COPD": 0.986,
+     "Heart failure": 0.002,
+     "Pneumonia": 0.0,
+     "Other": 0.001
+    },
+    "H003": {
+     "Healthy": 0.006,
+     "Asthma": 0.004,
+     "COPD": 0.987,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.0,
+     "Other": 0.0
+    },
+    "H004": {
+     "Healthy": 0.006,
+     "Asthma": 0.1,
+     "COPD": 0.816,
+     "Heart failure": 0.017,
+     "Pneumonia": 0.061,
+     "Other": 0.001
+    },
+    "H005": {
+     "Healthy": 0.002,
+     "Asthma": 0.021,
+     "COPD": 0.975,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.001,
+     "Other": 0.001
+    },
+    "H006": {
+     "Healthy": 0.195,
+     "Asthma": 0.013,
+     "COPD": 0.773,
+     "Heart failure": 0.005,
+     "Pneumonia": 0.007,
+     "Other": 0.007
+    },
+    "H007": {
+     "Healthy": 0.007,
+     "Asthma": 0.003,
+     "COPD": 0.974,
+     "Heart failure": 0.015,
+     "Pneumonia": 0.001,
+     "Other": 0.0
+    },
+    "H008": {
+     "Healthy": 0.359,
+     "Asthma": 0.005,
+     "COPD": 0.327,
+     "Heart failure": 0.297,
+     "Pneumonia": 0.003,
+     "Other": 0.009
+    },
+    "H009": {
+     "Healthy": 0.096,
+     "Asthma": 0.0,
+     "COPD": 0.894,
+     "Heart failure": 0.005,
+     "Pneumonia": 0.002,
+     "Other": 0.002
+    },
+    "H010": {
+     "Healthy": 0.149,
+     "Asthma": 0.314,
+     "COPD": 0.419,
+     "Heart failure": 0.017,
+     "Pneumonia": 0.07,
+     "Other": 0.031
+    },
+    "H011": {
+     "Healthy": 0.006,
+     "Asthma": 0.001,
+     "COPD": 0.99,
+     "Heart failure": 0.003,
+     "Pneumonia": 0.001,
+     "Other": 0.0
+    },
+    "H012": {
+     "Healthy": 0.095,
+     "Asthma": 0.137,
+     "COPD": 0.763,
+     "Heart failure": 0.002,
+     "Pneumonia": 0.003,
+     "Other": 0.001
+    },
+    "H013": {
+     "Healthy": 0.013,
+     "Asthma": 0.142,
+     "COPD": 0.835,
+     "Heart failure": 0.002,
+     "Pneumonia": 0.002,
+     "Other": 0.006
+    },
+    "H014": {
+     "Healthy": 0.133,
+     "Asthma": 0.066,
+     "COPD": 0.78,
+     "Heart failure": 0.007,
+     "Pneumonia": 0.002,
+     "Other": 0.011
+    },
+    "H015": {
+     "Healthy": 0.045,
+     "Asthma": 0.002,
+     "COPD": 0.94,
+     "Heart failure": 0.009,
+     "Pneumonia": 0.003,
+     "Other": 0.001
+    },
+    "H017": {
+     "Healthy": 0.018,
+     "Asthma": 0.02,
+     "COPD": 0.955,
+     "Heart failure": 0.002,
+     "Pneumonia": 0.002,
+     "Other": 0.003
+    },
+    "H018": {
+     "Healthy": 0.002,
+     "Asthma": 0.138,
+     "COPD": 0.852,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.004,
+     "Other": 0.003
+    },
+    "H022": {
+     "Healthy": 0.012,
+     "Asthma": 0.002,
+     "COPD": 0.983,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.001,
+     "Other": 0.001
+    },
+    "H023": {
+     "Healthy": 0.001,
+     "Asthma": 0.002,
+     "COPD": 0.986,
+     "Heart failure": 0.005,
+     "Pneumonia": 0.0,
+     "Other": 0.005
+    },
+    "H024": {
+     "Healthy": 0.005,
+     "Asthma": 0.083,
+     "COPD": 0.878,
+     "Heart failure": 0.025,
+     "Pneumonia": 0.005,
+     "Other": 0.003
+    },
+    "H025": {
+     "Healthy": 0.014,
+     "Asthma": 0.033,
+     "COPD": 0.944,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.004,
+     "Other": 0.004
+    },
+    "H026": {
+     "Healthy": 0.409,
+     "Asthma": 0.184,
+     "COPD": 0.33,
+     "Heart failure": 0.013,
+     "Pneumonia": 0.064,
+     "Other": 0.001
+    },
+    "H028": {
+     "Healthy": 0.156,
+     "Asthma": 0.132,
+     "COPD": 0.619,
+     "Heart failure": 0.016,
+     "Pneumonia": 0.021,
+     "Other": 0.054
+    },
+    "H029": {
+     "Healthy": 0.014,
+     "Asthma": 0.007,
+     "COPD": 0.959,
+     "Heart failure": 0.008,
+     "Pneumonia": 0.011,
+     "Other": 0.001
+    },
+    "H030": {
+     "Healthy": 0.003,
+     "Asthma": 0.016,
+     "COPD": 0.98,
+     "Heart failure": 0.0,
+     "Pneumonia": 0.002,
+     "Other": 0.0
+    },
+    "H031": {
+     "Healthy": 0.001,
+     "Asthma": 0.003,
+     "COPD": 0.995,
+     "Heart failure": 0.0,
+     "Pneumonia": 0.0,
+     "Other": 0.0
+    },
+    "H032": {
+     "Healthy": 0.032,
+     "Asthma": 0.016,
+     "COPD": 0.927,
+     "Heart failure": 0.015,
+     "Pneumonia": 0.007,
+     "Other": 0.003
+    },
+    "H033": {
+     "Healthy": 0.084,
+     "Asthma": 0.04,
+     "COPD": 0.755,
+     "Heart failure": 0.045,
+     "Pneumonia": 0.073,
+     "Other": 0.003
+    },
+    "H034": {
+     "Healthy": 0.149,
+     "Asthma": 0.001,
+     "COPD": 0.841,
+     "Heart failure": 0.003,
+     "Pneumonia": 0.004,
+     "Other": 0.001
+    },
+    "H035": {
+     "Healthy": 0.034,
+     "Asthma": 0.196,
+     "COPD": 0.757,
+     "Heart failure": 0.003,
+     "Pneumonia": 0.008,
+     "Other": 0.002
+    },
+    "H036": {
+     "Healthy": 0.018,
+     "Asthma": 0.003,
+     "COPD": 0.974,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.003,
+     "Other": 0.001
+    },
+    "H038": {
+     "Healthy": 0.03,
+     "Asthma": 0.003,
+     "COPD": 0.957,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.002,
+     "Other": 0.008
+    },
+    "H039": {
+     "Healthy": 0.026,
+     "Asthma": 0.056,
+     "COPD": 0.897,
+     "Heart failure": 0.007,
+     "Pneumonia": 0.01,
+     "Other": 0.004
+    },
+    "H042": {
+     "Healthy": 0.052,
+     "Asthma": 0.152,
+     "COPD": 0.765,
+     "Heart failure": 0.006,
+     "Pneumonia": 0.004,
+     "Other": 0.021
+    },
+    "H043": {
+     "Healthy": 0.01,
+     "Asthma": 0.002,
+     "COPD": 0.981,
+     "Heart failure": 0.001,
+     "Pneumonia": 0.004,
+     "Other": 0.002
+    },
+    "H044": {
+     "Healthy": 0.06,
+     "Asthma": 0.003,
+     "COPD": 0.927,
+     "Heart failure": 0.004,
+     "Pneumonia": 0.004,
+     "Other": 0.002
+    },
+    "H045": {
+     "Healthy": 0.299,
+     "Asthma": 0.008,
+     "COPD": 0.641,
+     "Heart failure": 0.008,
+     "Pneumonia": 0.002,
+     "Other": 0.042
+    }
+   }
+  }
+ }
+}

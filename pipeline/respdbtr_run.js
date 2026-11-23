@@ -21,7 +21,7 @@ const OUT = path.join(ROOT, 'meta', 'features', 'respdbtr.jsonl');
       const x = normalisePeak(parseWav(await (await fetch(u)).arrayBuffer())), A = analyzeSignal(x), lf = recordingFeatures(A);
       const m = MODELS.models.find(q => q.id === 'lung_sound'), p = modelProba(m, m.features.map(k => lf[k] == null ? null : +lf[k]));
       const R = icbhiScore(A, lf, 60), c = R.cyc;
-      return { dur: +(x.length / SR).toFixed(2), p: p.map(v => +v.toFixed(5)), flags: p.map((q, i) => q >= m.thresholds[i]), rr: lf.rr, tonFrac: lf.tonFrac, crkRate: lf.crkRate,
+      return { dur: +(x.length / SR).toFixed(2), rf: Object.fromEntries(m.features.map(k => [k, lf[k] == null ? null : +lf[k]])), p: p.map(v => +v.toFixed(5)), flags: p.map((q, i) => q >= m.thresholds[i]), rr: lf.rr, tonFrac: lf.tonFrac, crkRate: lf.crkRate,
         nCyc: c.length, wheezeShare: c.length ? +(c.filter(q => q.pw >= 0.5).length / c.length).toFixed(3) : null, crackleShare: c.length ? +(c.filter(q => q.pc >= 0.5).length / c.length).toFixed(3) : null };
     }, `${base}__tr/${encodeURIComponent(f)}`);
     const [pid, ch] = f.replace('.wav', '').split('_');

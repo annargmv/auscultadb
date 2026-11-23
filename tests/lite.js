@@ -19,12 +19,15 @@ const WAV = path.join(ROOT, 'raw', 'cinc2016', 'cinc', 'training-a');
     // heart patient: beats marked, every output with its validation line
     await go('#patient-1'); await pg.waitForFunction(() => (window.__ready || 0) >= 1, null, { timeout: 60000 });
     const p1 = await pg.evaluate(() => ({ finds: document.querySelectorAll('.find').length, vals: document.querySelectorAll('.val-line').length, mark: document.querySelector('#pmark').textContent }));
-    check(p1.finds >= 2 && p1.finds === p1.vals && /first heart sounds/.test(p1.mark), `heart patient: ${p1.finds} findings each with validation; ${p1.mark.slice(0, 60)}…`);
+    const an1 = await pg.evaluate(() => window.__annot);
+    check(p1.finds >= 2 && p1.finds === p1.vals && /beats found/.test(p1.mark) && an1 && an1.layers.includes('s1') && an1.layers.includes('s2'), `heart patient: ${p1.finds} findings with validation; annotated ${an1 && an1.n} regions (${an1 && an1.layers.join(', ')})`);
     await pg.waitForTimeout(2500); await pg.screenshot({ path: path.join(OUT, 'lite-patient-heart.png'), fullPage: true });
     const ia = await pg.evaluate(() => window.__lite.cases.findIndex(c => c.regions && c.regions.length));
-    await go('#patient-' + ia); await pg.waitForFunction(() => (window.__ready || 0) >= 1, null, { timeout: 60000 });
+    await pg.evaluate(() => { window.__annot = null; window.__ready = 0 }); await pg.evaluate(i => location.hash = '#patient-' + i, ia);
+    await pg.waitForFunction(() => window.__annot && (window.__ready || 0) >= 1, null, { timeout: 60000 });
     const pl = await pg.evaluate(() => document.querySelector('#pmark').textContent);
-    check(/segments/.test(pl), `lung patient: ${pl.slice(0, 70)}`);
+    const anl = await pg.evaluate(() => window.__annot);
+    check(/breath cycles/.test(pl) && anl && anl.layers.includes('insp') && anl.layers.includes('wz'), `lung patient annotated: ${anl && anl.layers.join(', ')} — ${pl.slice(0, 60)}…`);
     await pg.waitForTimeout(2500); await pg.screenshot({ path: path.join(OUT, 'lite-patient-lung.png'), fullPage: true });
     // Analyze on batch recordings (playback MP3) agrees with the stored results from the original files
     for (const i of [1, ia]) {
@@ -44,6 +47,18 @@ const WAV = path.join(ROOT, 'raw', 'cinc2016', 'cinc', 'training-a');
     const c = await pg.evaluate(() => ({ li: document.querySelectorAll('ol.concl li').length, charts: [...document.querySelectorAll('canvas')].filter(x => x.width).length }));
     check(c.li >= 5 && c.charts === 2, `conclusions: ${c.li} statements, ${c.charts} charts`);
     await pg.screenshot({ path: path.join(OUT, 'lite-conclusions.png'), fullPage: true });
+    // disease atlas: result stated as failed validation when it failed, batch answers out-of-fold, two charts from the training result
+    await go('#disease'); await pg.waitForSelector('#dLodo');
+    const d = await pg.evaluate(() => { const P = window.__lite.disease.populations; return { failedShown: /failed validation/.test(document.body.innerText), anyFail: !P.children.passed || !P.adults.passed,
+      rows: document.querySelectorAll('.card table')[0].querySelectorAll('tbody tr').length, nOof: window.__lite.cases.filter(c => c.diseaseOof).length, charts: [...document.querySelectorAll('canvas')].filter(x => x.width).length, refs: document.querySelectorAll('.refs a[href^="https://doi.org/"]').length } });
+    check((d.failedShown || !d.anyFail) && d.rows === d.nOof && d.nOof >= 4 && d.charts === 2 && d.refs >= 3, `disease page: ${d.rows} batch answers (out-of-fold), ${d.charts} charts, ${d.refs} DOI links, failed validation stated: ${d.failedShown}`);
+    await pg.screenshot({ path: path.join(OUT, 'lite-disease.png'), fullPage: true });
+    // longevity: the page's Cox formula reproduces lifelines' own prediction, and the exercise scenarios lower the risk
+    await go('#longevity'); await pg.waitForSelector('#lgChart');
+    const L = await pg.evaluate(() => { const M = window.__lite.longevity, k = M.cox.check; return { js: coxRisk(M, k.x), py: k.risk, out: document.querySelector('#lgOut').textContent, charts: [...document.querySelectorAll('canvas')].filter(x => x.width).length } });
+    const nums = [...L.out.matchAll(/(?:Now|\)): ([\d.]+) %/g)].map(m => +m[1]);
+    check(Math.abs(L.js - L.py) < 1e-6 && L.charts === 2 && nums.length === 3 && nums[1] < nums[0] && nums[2] < nums[1], `longevity: page risk ${L.js.toFixed(6)} = lifelines ${L.py.toFixed(6)}; ${L.out.slice(0, 90)}…`);
+    await pg.screenshot({ path: path.join(OUT, 'lite-longevity.png'), fullPage: true });
     await pg.setViewportSize({ width: 400, height: 900 }); await go('#patient-1'); await pg.waitForTimeout(800);
     const wide = await pg.evaluate(() => document.documentElement.scrollWidth - innerWidth);
     check(wide <= 1, `phone width: no sideways scroll (${wide} px)`); await pg.screenshot({ path: path.join(OUT, 'lite-phone.png') });

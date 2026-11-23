@@ -102,6 +102,9 @@ and report on another, and nothing is shown on the pages unless it passes its ga
 - **To apply:** add such a dataset (licence first), retrain with the same gate (beat age-only and stethoscope-only).
   Do not lower the gate.
 
+- **Update 2026-11-23:** all lung databases pooled per population (`pipeline/disease_train.py`, retrained daily) — fails in
+  children (0.63) and adults (database-only beats it). What would fix it: `docs/DISEASE_GAPS.md`.
+
 ### 10. Heart sounds in adults; S3 — **tested 2026-11-21 (CinC 2016, EPHNOGRAM)**
 - Murmur network on adults: AUC 0.687–1.0 by database; the pre-set transfer rule failed (set a). The flag level does not carry
   over between stethoscopes. **To apply:** calibrate the flag per stethoscope on one split of each adult database and report on
@@ -115,6 +118,10 @@ and report on another, and nothing is shown on the pages unless it passes its ga
   open auscultation dataset; no adult acoustic age signal in KAUH or ICBHI).
 - **Missing:** recordings linked to years of follow-up (deaths, cardiovascular events).
 - **To apply:** only with such a cohort (likely a research collaboration and ethics approval); pre-register the analysis.
+
+- **Update 2026-11-23:** a survival model on NHANES (public domain) links the two findings a recording gives — resting heart
+  rate and wheeze — to 5-year mortality (lite Longevity page). It is population evidence, not a test of sound-derived values;
+  recordings with follow-up are still missing.
 
 ### 12. Breath sounds across the lifespan (Discoveries 10, CLAUDE.md task 8)
 - **Status:** replaced by the ICBHI age-clock replication (no adult age signal). A true curve needs healthy people of all

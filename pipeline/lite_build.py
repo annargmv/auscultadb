@@ -9,6 +9,7 @@ For KAUH lung recordings the detected continuous-sound segments (full app's prec
 """
 import json, shutil
 from paths import ROOT, FEATURES, WEB_DATA
+from disease_train import KAU
 
 LITE = ROOT / 'lite'; LEAN = ROOT / 'lean'
 
@@ -31,6 +32,15 @@ def main():
     ls = next(m for m in MO['models'] if m['id'] == 'lung_sound')
     (LITE / 'data' / 'lung_sound.json').write_text(json.dumps(ls, separators=(',', ':')))
     for f in ('cnn_murmur.json', 'segmenter.json'): shutil.copy(WEB_DATA / f, LITE / 'data' / f)
+    # disease atlas (pipeline/disease_train.py) and longevity model (pipeline/longevity_train.py): copied as computed
+    DM = json.loads((ROOT / 'meta' / 'disease_model.json').read_text()); oof = DM['populations']['adults']['batchOof']
+    for c in B['cases']:
+        key = K[c['id'][5:]]['key'] if c['id'].startswith('kauh-') else c['id'][3:].split('_')[0] if c['id'].startswith('tr-') else None
+        if key in oof: c['diseaseOof'] = oof[key]
+        if c['id'].startswith('kauh-'): c['diagnosisClass'] = KAU.get(K[c['id'][5:]]['disease'], 'Other')
+        elif c['id'].startswith('tr-'): c['diagnosisClass'] = 'COPD'
+    for pop in DM['populations'].values(): pop.pop('batchOof', None)
+    B['disease'] = DM; B['longevity'] = json.loads((ROOT / 'meta' / 'longevity_model.json').read_text())
     (LITE / 'data' / 'lite.json').write_text(json.dumps(B, ensure_ascii=False, separators=(',', ':')))
     print(len(B['cases']), 'cases ->', LITE, '| regions:', {c['id']: len(c.get('regions', [])) for c in B['cases'] if 'regions' in c})
 
