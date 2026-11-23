@@ -637,6 +637,8 @@ Data and methods. `lite/engine.js` is the full app's analysis code copied functi
 (headless Chromium, Function.prototype.toString, transitive closure) — rerun it after any analysis change; `npm run test:lite`
 checks engine = full app on an original WAV (murmur probability identical) and Analyze vs stored results on the MP3 copies.
 Build: `npm run build:lite` (lean_build → lite_engine → lite_build → test). Published as its own artifact; web/ unchanged.
+**Theme (owner, 2026-11-23): bright, always light** — light sidebar, `data-theme="light"` set on load so a dark-mode device
+still gets the light page; spectrogram uses `SPEC_MAP` (white = quiet → deep teal = loud) instead of the dark 'roseus' map.
 
 ## Remote data store (2026-11-18) — `pipeline/remote.py`
 The machine's disk is small and replaced between sessions, so `raw/` and the expensive `build/` folders live in a
