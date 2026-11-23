@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-23T00:27:28.135690+00:00",
+ "generated": "2026-11-23T00:42:54.487439+00:00",
  "seed": 20261123,
  "features": [
   "f50",
@@ -14,28 +14,46 @@
  ],
  "refs": [
   {
-   "pmid": "40249944",
-   "doi": "10.2196/66491",
-   "cite": "Park JS et al. Artificial intelligence models for pediatric lung sound analysis: systematic review and meta-analysis. J Med Internet Res 2025",
-   "why": "41 studies; high accuracy for wheeze and abnormal-sound detection, but most use small single-centre datasets with little external validation"
+   "pmid": "42514178",
+   "doi": "10.3390/life16071108",
+   "cite": "Saky et al. Explainable multi-modal deep learning for recording-level classification of respiratory audio signals under internal and domain-shift evaluation. Life (Basel) 2026",
+   "why": "macro AUC 0.99 inside one dataset, but on ICBHI and a COPD cohort healthy recordings were poorly recognised; source overlap inflated internal results \u2014 the same pattern as here"
   },
   {
-   "pmid": "36070274",
-   "doi": "10.1109/TBCAS.2022.3204910",
-   "cite": "Zhang Q et al. SPRSound: open-source SJTU paediatric respiratory sound database. IEEE Trans Biomed Circuits Syst 2022",
-   "why": "the children's database here; its own record-level classification scores were 38\u201362 %"
+   "pmid": "41562629",
+   "doi": "10.2196/83459",
+   "cite": "Yang et al. Accuracy of deep learning in diagnosing chronic obstructive pulmonary disease: systematic review and meta-analysis. J Med Internet Res 2026",
+   "why": "56 studies (12 on breath sounds): high pooled accuracy for COPD yes/no, limited for GOLD stage; heterogeneity and little external validation"
   },
   {
-   "pmid": "30708353",
-   "doi": "10.1088/1361-6579/ab03ea",
-   "cite": "Rocha BM et al. An open access database for the evaluation of respiratory sound classification algorithms. Physiol Meas 2019",
-   "why": "ICBHI 2017: four devices, and diagnosis tracks age and device"
+   "pmid": "42531109",
+   "doi": "10.1109/JBHI.2026.3718492",
+   "cite": "Jeong et al. Smartphone-based detection of abnormal lung sounds using domain-adaptive deep learning. IEEE J Biomed Health Inform 2026",
+   "why": "147 children recorded on both a stethoscope and a smartphone: device changes the spectrum; AUROC 0.91 on the primary set, 0.86 at an external site"
   },
   {
-   "pmid": "24552321",
-   "doi": "10.1056/NEJMra1302901",
-   "cite": "Bohadana A, Izbicki G, Kraman SS. Fundamentals of lung auscultation. N Engl J Med 2014",
-   "why": "crackles and wheeze are signs shared by several diseases, not specific to one"
+   "pmid": "41748911",
+   "doi": "10.1038/s41746-026-02445-4",
+   "cite": "Yang et al. A device-invariant multi-modal learning framework for respiratory disease classification. NPJ Digit Med 2026",
+   "why": "over 10,000 multi-centre adults: sound combined with demographics and symptoms, with training that removes the device effect"
+  },
+  {
+   "pmid": "42985215",
+   "doi": "10.3389/fmed.2026.1987793",
+   "cite": "Yuan et al. Structured auscultation evidence modeling for multi-protocol respiratory sound classification. Front Med 2026",
+   "why": "wheeze, crackle and breath phases as evidence for the class (KAUH, SPRSound, ICBHI); authors state independent-cohort and device-stratified tests are still needed"
+  },
+  {
+   "pmid": "43059005",
+   "doi": "10.1097/CRD.0000000000001559",
+   "cite": "Saeed et al. Diagnostic accuracy of AI-enabled cardiac auscultation for detecting clinically significant valvular heart disease: systematic review and meta-analysis. Cardiol Rev 2026",
+   "why": "8 studies, 4,374 patients against echocardiography: sensitivity 72 %, specificity 82 %; prospective multi-centre validation still needed"
+  },
+  {
+   "pmid": "42799994",
+   "doi": "10.1080/02813432.2026.2739502",
+   "cite": "Melbye et al. Chest auscultation \u2014 tradition and expectations: concerns and promises in the era of smart stethoscopes. Scand J Prim Health Care 2026",
+   "why": "AI output as a reflective aid beside the clinician; more research on the clinical meaning of sound characteristics is needed"
   }
  ],
  "populations": {

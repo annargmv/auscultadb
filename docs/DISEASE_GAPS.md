@@ -41,20 +41,32 @@ and writes `meta/daily/<date>.json`; the lite app's **Which disease?** page alwa
 - **The batch.** Each lung recording in the batch was scored by a fold that did not contain that patient. The top class
   matched the recorded diagnosis in 2 of 5. Both matches are COPD, which the model can get from the collection alone.
 
-## Why — and what the literature says
+## Why — and what the literature says (published November 2025 – November 2026, checked on PubMed 2026-11-23)
 
-- **Most published models are single-centre.** Park et al. reviewed 41 paediatric studies. Wheeze and abnormal-sound
-  detection is accurate (pooled sensitivity about 0.90). But most studies use small, single-centre datasets with little
-  external validation. Park JS et al., J Med Internet Res 2025;27:e66491, [doi:10.2196/66491](https://doi.org/10.2196/66491),
-  PMID 40249944.
-- **Disease from the whole record is hard even in-house.** SPRSound's own record-level classification scores were 38–62 %.
-  Zhang Q et al., IEEE TBioCAS 2022, [doi:10.1109/TBCAS.2022.3204910](https://doi.org/10.1109/TBCAS.2022.3204910),
-  PMID 36070274.
-- **Diagnosis is tied to age and device in ICBHI.** It was recorded on four devices, and its best challenge system scored
-  52.5 %. Rocha BM et al., Physiol Meas 2019, [doi:10.1088/1361-6579/ab03ea](https://doi.org/10.1088/1361-6579/ab03ea),
-  PMID 30708353.
-- **Crackles and wheeze are shared by several diseases.** They are signs, not diagnoses. Bohadana A, Izbicki G, Kraman SS,
-  N Engl J Med 2014, [doi:10.1056/NEJMra1302901](https://doi.org/10.1056/NEJMra1302901), PMID 24552321.
+- **The same failure is reported for deep networks.** Saky et al. reached a macro AUC of 0.99 inside one dataset. Tested on
+  ICBHI and a COPD cohort, healthy recordings were poorly recognised, and source overlap had inflated the internal result.
+  Life (Basel) 2026, [doi:10.3390/life16071108](https://doi.org/10.3390/life16071108), PMID 42514178.
+- **High pooled accuracy, little external validation.** A meta-analysis of 56 deep-learning studies found high pooled
+  accuracy for COPD yes/no (12 on breath sounds), but limited accuracy for GOLD stage. The authors warn of heterogeneity and
+  little external validation. Yang et al., J Med Internet Res 2026, [doi:10.2196/83459](https://doi.org/10.2196/83459),
+  PMID 41562629.
+- **The device changes the sound.** 147 children were recorded on both a stethoscope and a smartphone; the spectra differed.
+  AUROC was 0.91 on the primary set and 0.86 at an external site. Jeong et al., IEEE J Biomed Health Inform 2026,
+  [doi:10.1109/JBHI.2026.3718492](https://doi.org/10.1109/JBHI.2026.3718492), PMID 42531109.
+- **Sound plus context, with the device effect removed.** Over 10,000 multi-centre adults: cough sound combined with
+  demographics and symptoms, trained to ignore the device. Yang et al., NPJ Digit Med 2026,
+  [doi:10.1038/s41746-026-02445-4](https://doi.org/10.1038/s41746-026-02445-4), PMID 41748911.
+- **Signs as evidence, not labels.** Wheeze, crackle and breath phases are used as evidence for the class, on KAUH,
+  SPRSound and ICBHI. The authors state that independent-cohort and device-stratified tests are still needed. Yuan et al.,
+  Front Med 2026, [doi:10.3389/fmed.2026.1987793](https://doi.org/10.3389/fmed.2026.1987793), PMID 42985215.
+- **Heart sounds against echocardiography.** 8 studies, 4,374 patients: sensitivity 72 %, specificity 82 %. Prospective
+  multi-centre validation is still needed. Saeed et al., Cardiol Rev 2026,
+  [doi:10.1097/CRD.0000000000001559](https://doi.org/10.1097/CRD.0000000000001559), PMID 43059005.
+- **AI as an aid beside the clinician.** The output works best as a reflective aid; the clinical meaning of sound features
+  needs more research. Melbye et al., Scand J Prim Health Care 2026,
+  [doi:10.1080/02813432.2026.2739502](https://doi.org/10.1080/02813432.2026.2739502), PMID 42799994.
+
+Dataset papers (SPRSound, ICBHI) stay cited as data sources in `README.md`, as their licences require.
 
 ## What is missing to answer "which disease"
 
@@ -70,9 +82,9 @@ and writes `meta/daily/<date>.json`; the lite app's **Which disease?** page alwa
 4. **More than one stethoscope per disease**, so device and disease can be told apart and a per-device calibration measured.
    The heart-sound results already show that a flag level does not transfer between stethoscopes (CinC 2016 test).
 5. **Clinical context with the sound**: symptoms, vital signs, oxygen saturation, temperature. These are the inputs
-   clinicians use to tell pneumonia from bronchiolitis from asthma.
+   clinicians use to tell pneumonia from bronchiolitis from asthma, and what the 2026 multi-centre model adds (Yang, NPJ Digit Med 2026).
 6. **A prospective test set**: one site, one stethoscope, collected after the model is frozen, with the pass rule written down
-   first. This is what a hospital such as Sheba could contribute, and it is the only test that answers the question for its
+   first. Most of the 2026 papers above name independent or prospective testing as the step still missing. This is what a hospital such as Sheba could contribute, and it is the only test that answers the question for its
    own patients.
 
 ## What can be answered today

@@ -89,10 +89,19 @@ def main():
            'cox': {'vars': V, 'coef': [float(c.params_[v]) for v in V], 'mean': [float(c._norm_mean[v]) for v in V], 's0': s0, 'check': check},
            'scenarios': [{'label': 'Exercise (all trials)', 'deltaHr': -3.3, 'ref': 'Reimers et al., J Clin Med 2018 · PMID 30513777'},
                          {'label': 'Endurance training (upper estimate)', 'deltaHr': -5.8, 'ref': 'Reimers et al., J Clin Med 2018 · PMID 30513777'}],
-           'refs': [{'pmid': '26598376', 'cite': 'Zhang D et al. Resting heart rate and all-cause and cardiovascular mortality in the general population: a meta-analysis. CMAJ 2016', 'doi': '10.1503/cmaj.150535'},
-                    {'pmid': '30513777', 'cite': 'Reimers AK et al. Effects of exercise on the resting heart rate: a systematic review and meta-analysis of interventional studies. J Clin Med 2018', 'doi': '10.3390/jcm7120503'},
-                    {'pmid': '34740593', 'cite': 'Feng W et al. Chronic respiratory symptoms and incident cardiovascular disease and all-cause mortality (CARDIA). Chest 2022', 'doi': '10.1016/j.chest.2021.10.029'},
-                    {'pmid': '2506967', 'cite': 'Carpenter L et al. Respiratory symptoms as predictors of 27 year mortality. BMJ 1989', 'doi': '10.1136/bmj.299.6695.357'}]}
+           'refs': [  # published Nov 2025 – Nov 2026 (PubMed-checked 2026-11-23), plus the meta-analysis the bpm effects come from
+                    {'pmid': '42457225', 'doi': '10.1136/openhrt-2026-004279', 'cite': 'Chen et al. Resting heart rate and long-term mortality in young adults: a population-based cohort study. Open Heart 2026',
+                     'why': 'per 10 bpm: all-cause mortality HR 1.26 (NHANES 1999–2004, age 20–49) and 1.17 (NHANES III) — the same size as this model'},
+                    {'pmid': '42355572', 'doi': '10.3390/jcm15124405', 'cite': 'Cheon et al. Heart rate, electrocardiographic subclinical myocardial injury, and long-term mortality. J Clin Med 2026',
+                     'why': 'resting tachycardia: all-cause mortality HR 3.58; silent myocardial injury explains only a small part of the link'},
+                    {'pmid': '41483539', 'doi': '10.1016/j.hrtlng.2025.102713', 'cite': 'Yu et al. Comorbidity patterns of respiratory symptoms and diseases and their impact on all-cause and respiratory mortality. Heart Lung 2026',
+                     'why': 'NHANES 2007–2011: the asthma–wheezing cluster was not linked with mortality after full adjustment (including lung function); obstruction and chronic cough were'},
+                    {'pmid': '42973833', 'doi': '10.3389/fpubh.2026.1869982', 'cite': 'Wei et al. Recreational football as medicine? A meta-analysis of its effects and feasibility in patients with chronic diseases. Front Public Health 2026',
+                     'why': '17 controlled trials: resting heart rate fell (SMD −1.01) along with blood pressure and fat mass'},
+                    {'pmid': '42420366', 'doi': '10.1038/s41598-026-60452-7', 'cite': 'Mir et al. Efficacy of mental and physical training on blood pressure and resting heart rate among physically inactive young adults: a randomized controlled trial. Sci Rep 2026',
+                     'why': '6 weeks of aerobic training lowered resting heart rate'},
+                    {'pmid': '30513777', 'doi': '10.3390/jcm7120503', 'cite': 'Reimers AK et al. Effects of exercise on the resting heart rate: a systematic review and meta-analysis of interventional studies. J Clin Med 2018',
+                     'why': 'source of the beats/min used in the scenarios (191 trials); no newer meta-analysis reports the effect in beats/min for adults in general'}]}
     (META / 'longevity_model.json').write_text(json.dumps(out, indent=1))
     print('cohort', out['cohort']); print('C-index', C, 'AUC5y', auc); print('ΔC (C−A)', out['test']['deltaC_vs_ageSex'], 'ΔC (GB−Cox)', out['test']['deltaC_gb_vs_cox'], 'deployed', deployed)
     print('HR', {k: v for k, v in hr.items()}); print('calibration', cal[:3], '…', cal[-2:])

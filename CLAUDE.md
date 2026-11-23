@@ -619,6 +619,11 @@ All tests run the page's FROZEN code; rules are in each script's header and were
   Top risk decile over-predicted (24 % vs 18 %). The page's `coxRisk` reproduces lifelines (`cox.check`, e2e). Improvement
   scenarios = Reimers 2018 (PMID 30513777) exercise effects −3.3 / −5.8 bpm; association carried through the model, not a trial
   effect. No improvement is predicted for wheeze (no trial gives one). Survey weights not used.
+- **Literature on these pages (owner, 2026-11-23): articles from the last year only** (Nov 2025 – Nov 2026, PubMed-checked,
+  `REFS` in disease_train.py, `refs` in longevity_train.py, text in `docs/DISEASE_GAPS.md`). One exception, labelled on the page:
+  Reimers 2018, because it is the only meta-analysis giving the exercise effect in beats/min. Chen 2026 (Open Heart) replicates
+  HR 1.17 per 10 bpm; Yu 2026 (Heart Lung) finds the asthma–wheeze cluster not linked with mortality after full adjustment — the
+  Longevity limits say so. Dataset papers stay in README as licence attribution.
 - **`pipeline/daily_train.py`**: input sha256 → disease_train → longevity_train → `meta/daily/<date>.json` (summary, comparison with
   the previous day; exits 2 if metrics move while inputs did not) → lite_build. `--refresh-nhanes` re-downloads from CDC,
   `--remote` uploads `meta/daily` to the private store. It never adds a database (licence check is a person's job), never
