@@ -11,3 +11,4 @@ torch==2.15.0           # murmur / lung spectrogram networks (train_cnn.py, trai
                         # Smaller CPU-only wheel: pip install torch==2.15.0 --index-url https://download.pytorch.org/whl/cpu
 huggingface_hub==2.4.0  # pipeline/remote.py (private data store), model downloads
 transformers==5.23.0    # optional: HeAR (hear_embed.py) and MedGemma (medgemma_draft.py), research only
+lifelines==0.30.3       # pipeline/longevity_train.py (Cox model, daily retraining)
